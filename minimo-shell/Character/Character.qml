@@ -303,7 +303,8 @@ Item {
     // ===== Entrecerrar al escribir (campos del shell) =====
     // Ojos ~50 % más bajos, algo más anchos, mirada apenas hacia abajo (al campo).
     property real squint: 0
-    Behavior on squint { NumberAnimation { duration: c.squint < 0.5 ? 180 : 420; easing.type: Easing.InOutSine } }
+    // Velocidad constante (independiente de los fps): teclas rápidas no reinician la animación.
+    Behavior on squint { SmoothedAnimation { velocity: 3.5 } }
     Timer { id: squintRelax; interval: 600; onTriggered: c.squint = 0 }
     Connections {
         target: CharacterBus

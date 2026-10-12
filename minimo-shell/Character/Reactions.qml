@@ -20,11 +20,12 @@ Item {
 
     // Repertorio espontáneo (raro: cada 45–120 s, ver Character). "yawn" sube si lleva rato quieto.
     function idleWeights(idleMs) {
-        return { hop: 2, doubleHop: 0.8, giggle: 1.2, lookAround: 1.6, hopBack: 0.7,
-                 surprise: 0.6, wink: 1.0, dizzy: 0.3, curious: 1.4, yawn: idleMs > 25000 ? 2.5 : 0.4 }
+        return { hop: 1.8, wink: 2.2, doubleHop: 0.8, giggle: 1.2, lookAround: 1.6, hopBack: 0.8,
+                 surprise: 0.6, dizzy: 0.3, curious: 1.4, yawn: idleMs > 25000 ? 2.5 : 0.4 }
     }
     function pick(weights) {
-        const ks = Object.keys(weights).filter(k => history.indexOf(k) < 0)
+        // El guiño puede repetirse (máx. 2 seguidos); el resto no repite las últimas dos.
+        const ks = Object.keys(weights).filter(k => k === "wink" ? !(history[0] === "wink" && history[1] === "wink") : history.indexOf(k) < 0)
         let total = 0; for (const k of ks) total += weights[k]
         let x = Math.random() * total
         for (const k of ks) { x -= weights[k]; if (x <= 0) return k }
@@ -33,7 +34,7 @@ Item {
     function playRandom(idleMs) { play(pick(idleWeights(idleMs))) }
     function playOpen() { play(pick({ greet: 1.3, happyBounce: 1.1 })) }
     // Clic: ciclo fijo (siempre se ve algo distinto); el primero tras mostrarse es el salto atrás.
-    readonly property var clickCycle: ["hopBack", "giggle", "wink", "hopBack", "happyBounce", "curious"]
+    readonly property var clickCycle: ["hopBack", "wink", "giggle", "wink", "happyBounce", "wink", "curious"]
     property int clickIdx: 0
     function resetClicks() { clickIdx = 0 }
     function playClick() { const n = clickCycle[clickIdx % clickCycle.length]; clickIdx++; play(n, true) }
@@ -101,18 +102,30 @@ Item {
     // cae con squash suave → vuelve adelante con overshoot mínimo.
     SequentialAnimation {
         id: hopBack
-        Squash { who: rx.c; sx: 1.06; sy: 0.94; ms: 120; ease: Easing.OutCubic }
+        // anticipación: se agacha y entrecierra un poco
         ParallelAnimation {
-            Squash { who: rx.c; sx: 0.97; sy: 1.04; toY: -rx.s * 0.14; ms: 220; ease: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "rScale"; to: 0.88; duration: 300; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1.1; duration: 160; easing.type: Easing.OutCubic }
+            Squash { who: rx.c; sx: 1.06; sy: 0.94; ms: 130; ease: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "half"; to: 0.85; duration: 130; easing.type: Easing.OutCubic }
         }
-        Squash { who: rx.c; sx: 1; sy: 1; toY: 0; ms: 170; ease: Easing.InQuad }
-        Squash { who: rx.c; sx: 1.05; sy: 0.95; ms: 80; ease: Easing.OutQuad }
+        // despegue en arco hacia atrás: sube, se achica (profundidad), ojos bien abiertos
         ParallelAnimation {
-            Squash { who: rx.c; sx: 1; sy: 1; ms: 300; ease: Easing.OutBack }
-            NumberAnimation { target: rx.c; property: "rScale"; to: 1; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
-            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1; duration: 360; easing.type: Easing.InOutSine }
+            Squash { who: rx.c; sx: 0.96; sy: 1.05; toY: -rx.s * 0.15; ms: 230; ease: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "rScale"; to: 0.87; duration: 330; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "half"; to: 1; duration: 90; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1.12; duration: 150; easing.type: Easing.OutCubic }
+        }
+        // caída
+        Squash { who: rx.c; sx: 1; sy: 1; toY: 0; ms: 170; ease: Easing.InQuad }
+        // aterrizaje: squash y los ojos "rebotan" (se achican un instante)
+        ParallelAnimation {
+            Squash { who: rx.c; sx: 1.06; sy: 0.94; ms: 80; ease: Easing.OutQuad }
+            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 0.9; duration: 80; easing.type: Easing.OutQuad }
+        }
+        // asentar con resorte y volver adelante
+        ParallelAnimation {
+            Squash { who: rx.c; sx: 1; sy: 1; ms: 340; ease: Easing.OutBack; overshoot: 1.4 }
+            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1; duration: 320; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+            NumberAnimation { target: rx.c; property: "rScale"; to: 1; duration: 440; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
         }
     }
     // ---------- risita: se aleja un poco, sonríe y se balancea ----------
@@ -169,21 +182,30 @@ Item {
     }
 
     // ---------- guiño ----------
+    // Asimétrico: un ojo se cierra rápido con la mejilla que sube (ojo un poco más ancho),
+    // el otro se entrecierra apenas, cabeza inclinada hacia el lado del guiño.
+    // Cierre ~90 ms, pausa ~180 ms, apertura más suave con overshoot mínimo.
     SequentialAnimation {
         id: wink
+        property real side: 1          // 1 = ojo derecho, -1 = izquierdo
+        ScriptAction { script: wink.side = Math.random() < 0.7 ? 1 : -1 }
         ParallelAnimation {
-            NumberAnimation { target: rx.c; property: "openR"; to: 0.1; duration: 120; easing.type: Easing.InQuad }
-            NumberAnimation { target: rx.c; property: "smile"; to: 0.6; duration: 180; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "rRot"; to: 5; duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "openR"; to: wink.side > 0 ? 0.08 : 0.82; duration: wink.side > 0 ? 90 : 140; easing.type: wink.side > 0 ? Easing.InQuad : Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "openL"; to: wink.side > 0 ? 0.82 : 0.08; duration: wink.side > 0 ? 140 : 90; easing.type: wink.side > 0 ? Easing.OutCubic : Easing.InQuad }
+            NumberAnimation { target: rx.c; property: "smile"; to: 0.7; duration: 140; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "eyeWMul"; to: 1.06; duration: 120; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; property: "rRot"; to: 5 * wink.side; duration: 200; easing.type: Easing.OutCubic }
+            Squash { who: rx.c; sx: 1.03; sy: 0.97; ms: 110; ease: Easing.OutCubic }
         }
-        PauseAnimation { duration: 340 }
+        PauseAnimation { duration: 180 }
         ParallelAnimation {
-            NumberAnimation { target: rx.c; property: "openR"; to: 1; duration: 180; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "smile"; to: 0; duration: 320; easing.type: Easing.InOutSine }
-            NumberAnimation { target: rx.c; property: "rRot"; to: 0; duration: 360; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
+            NumberAnimation { target: rx.c; properties: "openR,openL"; to: 1; duration: 260; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+            NumberAnimation { target: rx.c; property: "eyeWMul"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+            Squash { who: rx.c; sx: 1; sy: 1; ms: 300; ease: Easing.OutBack }
+            NumberAnimation { target: rx.c; property: "rRot"; to: 0; duration: 380; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
+            SequentialAnimation { PauseAnimation { duration: 80 } NumberAnimation { target: rx.c; property: "smile"; to: 0; duration: 320; easing.type: Easing.InOutSine } }
         }
     }
-
     // ---------- mareo (más corto y suave) ----------
     SequentialAnimation {
         id: dizzy
