@@ -15,7 +15,7 @@ PanelWindow {
 
     property bool expanded: false
     property bool panel: false            // panel deslizable abierto
-    // Qué panel: izquierda→derecha = "status" (recursos), derecha→izquierda = "apps" (apps abiertas).
+    // Qué panel: izquierda→derecha = "status" (recursos), derecha→izquierda = "apps" (apps en segundo plano).
     property string panelKind: "status"
     readonly property bool open: expanded || panel
     readonly property bool hovered: hoverZone.containsMouse
@@ -160,6 +160,7 @@ PanelWindow {
             }
             if (m.button === Qt.RightButton) return
             if (dragging) {
+                if (Date.now() - lastT > 80) vel = 0          // se detuvo antes de soltar: no es un "fling"
                 const fling = Math.abs(vel) > 0.6 && Math.abs(dragDx) > 16
                 if (Math.abs(dragDx) > 40 || fling) {
                     if (win.panel) win.panel = false          // abierto: deslizar en cualquier sentido cierra
@@ -269,8 +270,11 @@ PanelWindow {
             else if (cmd === "hide") { win.expanded = false; win.shown = false }
             else if (cmd === "open") win.expanded = true
             else if (cmd === "close") win.collapse()
-            else if (cmd === "status") { win.panelKind = "status"; win.panel = !win.panel }
-            else if (cmd === "apps") { win.panelKind = "apps"; win.panel = !win.panel }
+            else if (cmd === "status" || cmd === "apps") {
+                // Si ya está abierto el otro panel, cambiar a este en vez de cerrar.
+                win.panel = !(win.panel && win.panelKind === cmd)
+                win.panelKind = cmd
+            }
         }
     }
 

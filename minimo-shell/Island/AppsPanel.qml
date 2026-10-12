@@ -37,6 +37,8 @@ Item {
     // su icono aunque el panel esté cerrado. La lista solo se enlaza con el panel abierto.
     readonly property var trayItems: SystemTray.items.values
     readonly property var items: open ? trayItems.filter(i => !!i) : []
+    // Si la app del menú abierto desaparece (p. ej. tras "Salir"), olvidar el menú.
+    onItemsChanged: if (menuFor && items.indexOf(menuFor) < 0) menuFor = null
 
     // Ids SNI crudos ("Grok Bot_status_icon_1", "chrome_status_icon_1", "steam-2") → nombre limpio.
     function cleanId(s) {
