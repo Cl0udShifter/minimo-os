@@ -115,18 +115,28 @@ if c:
     log(f"{item_id}: ventana {addr} enfocada")
     sys.exit(0)
 
-# Sin ventana: relanzar.
-name = (entry or comm(pid) or item_id).lower().removesuffix(".desktop")
+# Sin ventana: relanzar (las apps de instancia única muestran la ventana que ya tienen).
+import shutil
 if comm(pid) in ("qs", "quickshell"):
     sys.exit(0)
-if "steam" in name:
-    cmd = ["steam", "steam://open/main"]
-elif entry:
-    cmd = ["gtk-launch", entry.removesuffix(".desktop")]
-elif pid and os.path.exists(f"/proc/{pid}/exe"):
-    cmd = [os.readlink(f"/proc/{pid}/exe")]
-else:
-    log(f"{item_id}: sin ventana ni forma de relanzar")
-    sys.exit(1)
-subprocess.Popen(cmd, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-log(f"{item_id}: relanzado con {cmd}")
+name = (entry or comm(pid) or item_id).lower().removesuffix(".desktop")
+cands = []
+if "steam" in name and shutil.which("steam"):
+    cands.append(["steam", "steam://open/main"])
+if entry and shutil.which("gtk-launch"):
+    cands.append(["gtk-launch", entry.removesuffix(".desktop")])
+if pid:
+    try:
+        cands.append([os.readlink(f"/proc/{pid}/exe")])
+    except OSError:
+        pass
+for cmd in cands:
+    try:
+        subprocess.Popen(cmd, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError as e:
+        log(f"{item_id}: {cmd[0]} falló ({e})")
+        continue
+    log(f"{item_id}: relanzado con {cmd}")
+    sys.exit(0)
+log(f"{item_id}: sin ventana ni forma de relanzar")
+sys.exit(1)

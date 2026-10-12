@@ -328,7 +328,7 @@ Item {
     function toRest() {
         blinkAnim.stop(); petHop.stop(); puffAnim.stop(); petEnd.stop()
         petting = false; clickTimes = []
-        squint = 0
+        squintRelax.stop(); squint = 0
         idleX = 0; idleY = 0; lookX = 0; lookY = asleep ? 0.75 : 0; gOn = 0
         reactions.rest()
         restAnim.restart()
