@@ -16,7 +16,9 @@ Singleton {
     property var queue: []
     readonly property var current: queue.length > 0 ? queue[0] : null
     property bool dnd: false
-    property bool paused: false       // mouse encima: no corre el tiempo
+    // Mouse encima de alguna isla (una por monitor): no corre el tiempo.
+    property int hovers: 0
+    readonly property bool paused: hovers > 0
 
     function keyOf(n) { return ((n.desktopEntry || n.appName || "") + "").toLowerCase() }
     // ¿La app de la notificación es la ventana enfocada?

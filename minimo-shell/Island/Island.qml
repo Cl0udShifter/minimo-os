@@ -23,7 +23,7 @@ PanelWindow {
     readonly property var monitorWs: DisplayState.islandSmartHide ? (Hyprland.monitorFor(win.screen)?.activeWorkspace ?? null) : null
     readonly property int wsWindows: monitorWs && monitorWs.id > 0 ? monitorWs.toplevels.values.length : 0
     readonly property bool occupied: wsWindows > 0
-    readonly property bool hideWanted: DisplayState.islandAutoHide || (DisplayState.islandSmartHide && occupied)
+    readonly property bool hideWanted: DisplayState.islandAutoHide || (DisplayState.islandSmartHide && occupied && !Recorder.recording)
 
     anchors { top: true; left: true; right: true; bottom: win.open }
     implicitHeight: Theme.maxExpandedH + Theme.topMargin + 8
@@ -44,6 +44,7 @@ PanelWindow {
         onTriggered: if (win.hideWanted && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "" && Notifs.current === null) win.shown = false
     }
     onHoveredChanged: {
+        Notifs.hovers = Math.max(0, Notifs.hovers + (hovered ? 1 : -1))
         if (hovered) { hideTimer.stop(); shown = true }
         else if (!open) hideTimer.restart()
     }
@@ -102,7 +103,8 @@ PanelWindow {
             else if (!win.hovered && !win.open) hideTimer.restart()
         }
     }
-    Binding { target: Notifs; property: "paused"; value: win.hovered }
+    // Cada isla suma/resta su hover (con varios monitores no se pisan entre sí).
+    Component.onDestruction: if (hovered) Notifs.hovers = Math.max(0, Notifs.hovers - 1)
 
     // Clic afuera de la isla mientras está expandida: colapsa.
     MouseArea {
