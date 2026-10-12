@@ -83,7 +83,7 @@ Column {
         delegate: Rectangle {
             required property var modelData
             required property int index
-            width: root.width; height: 40; radius: 10
+            width: root.width; height: 40; radius: height / 2      // píldora, como el campo y el lanzador
             color: index === root.selected || hov.containsMouse ? Theme.field : "transparent"
             Image {
                 id: ic
