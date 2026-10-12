@@ -14,7 +14,9 @@ PanelWindow {
     id: win
 
     property bool expanded: false
-    property bool panel: false            // panel de estado del sistema (deslizar)
+    property bool panel: false            // panel deslizable abierto
+    // Qué panel: izquierda→derecha = "status" (recursos), derecha→izquierda = "apps" (apps abiertas).
+    property string panelKind: "status"
     readonly property bool open: expanded || panel
     readonly property bool hovered: hoverZone.containsMouse
     property bool shown: true
@@ -136,11 +138,17 @@ PanelWindow {
         property real pressX: 0
         property bool dragging: false
         property real dragDx: 0
+        // Velocidad horizontal (px/ms, suavizada) para decidir con un gesto rápido y corto.
+        property real vel: 0
+        property real lastX: 0
+        property real lastT: 0
         // Coordenadas de ventana: la zona se mueve con la píldora mientras se arrastra.
-        onPressed: m => { pressX = mapToItem(null, m.x, m.y).x; dragging = false; dragDx = 0 }
+        onPressed: m => { pressX = mapToItem(null, m.x, m.y).x; dragging = false; dragDx = 0; vel = 0; lastX = pressX; lastT = Date.now() }
         onPositionChanged: m => {
             if (!pressed || win.expanded) return
-            const dx = mapToItem(null, m.x, m.y).x - pressX
+            const px = mapToItem(null, m.x, m.y).x, now = Date.now()
+            if (now > lastT) { vel = vel * 0.6 + 0.4 * (px - lastX) / (now - lastT); lastX = px; lastT = now }
+            const dx = px - pressX
             if (!dragging && Math.abs(dx) > 8) dragging = true
             if (dragging) dragDx = dx
         }
@@ -152,7 +160,11 @@ PanelWindow {
             }
             if (m.button === Qt.RightButton) return
             if (dragging) {
-                if (Math.abs(dragDx) > 40) win.panel = !win.panel
+                const fling = Math.abs(vel) > 0.6 && Math.abs(dragDx) > 16
+                if (Math.abs(dragDx) > 40 || fling) {
+                    if (win.panel) win.panel = false          // abierto: deslizar en cualquier sentido cierra
+                    else { win.panelKind = (fling ? vel : dragDx) > 0 ? "status" : "apps"; win.panel = true }
+                }
             } else if (!win.open) win.expanded = true
             dragging = false; dragDx = 0
         }
@@ -190,7 +202,7 @@ PanelWindow {
              : win.panel ? Theme.expandedW
              : Math.max(Theme.compactW, compact.implicitWidth + 32) + Math.abs(rubber) * 1.2
         height: win.expanded ? Math.min(menu.implicitHeight, Theme.maxExpandedH)
-              : win.panel ? Math.min(status.implicitHeight, Theme.maxExpandedH) : Theme.compactH
+              : win.panel ? Math.min(win.panelKind === "apps" ? apps.implicitHeight : status.implicitHeight, Theme.maxExpandedH) : Theme.compactH
         x: (win.width - width) / 2 + rubber * 0.5
         y: win.shown ? Theme.topMargin : -height - 64
         radius: Math.min(height / 2, Theme.radiusCard)
@@ -232,8 +244,18 @@ PanelWindow {
             width: Theme.expandedW
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            open: win.panel
-            opacity: win.panel ? 1 : 0
+            open: win.panel && win.panelKind === "status"
+            opacity: win.panel && win.panelKind === "status" ? 1 : 0
+            visible: opacity > 0
+            Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
+        }
+        AppsPanel {
+            id: apps
+            width: Theme.expandedW
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            open: win.panel && win.panelKind === "apps"
+            opacity: win.panel && win.panelKind === "apps" ? 1 : 0
             visible: opacity > 0
             Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
         }
@@ -247,7 +269,8 @@ PanelWindow {
             else if (cmd === "hide") { win.expanded = false; win.shown = false }
             else if (cmd === "open") win.expanded = true
             else if (cmd === "close") win.collapse()
-            else if (cmd === "status") win.panel = !win.panel
+            else if (cmd === "status") { win.panelKind = "status"; win.panel = !win.panel }
+            else if (cmd === "apps") { win.panelKind = "apps"; win.panel = !win.panel }
         }
     }
 

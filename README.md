@@ -19,7 +19,9 @@ parte superior de la pantalla, acompañada por un pequeño personaje que reaccio
 ## Características
 
 - **Isla dinámica.** Hora, escritorios y estado en una píldora compacta que se oculta sola y aparece al acercar el mouse. Al hacer clic se expande: buscador, música, volumen, brillo, saturación y accesos rápidos.
-- **Personaje.** Una esfera negra con ojos que siguen al mouse con proyección esférica. Parpadea, respira, salta, gira, se ríe, guiña, se marea, bosteza, saluda al abrir la isla y baila con la música.
+- **Personaje.** Una esfera negra con ojos que siguen al mouse con proyección esférica. Parpadea, respira, salta hacia atrás, se ríe, guiña, se marea, bosteza, saluda al abrir la isla y baila con la música.
+- **Paneles deslizables.** Arrastrá la isla de izquierda a derecha para ver los recursos del sistema, o de derecha a izquierda para ver las apps abiertas: ventanas agrupadas por app con su escritorio (o "minimizada"), clic para ir a la ventana y × para cerrarla. Los reproductores sin ventana aparecen en "En segundo plano".
+- **Notificaciones.** La isla muestra las notificaciones entrantes; se pausan al pasar el mouse y se respeta el modo No molestar.
 - **Sueño.** Cuando la PC queda inactiva (1, 2 o 5 minutos) el personaje se duerme y aparecen las "z". Despierta al volver a usar el equipo.
 - **Lanzador.** `Super + B` abre un buscador de aplicaciones centrado, navegable con el teclado.
 - **Grabación de pantalla.** Botón "Grabar" en la isla (wf-recorder, con audio del sistema). Los videos se guardan en `~/Vídeos/Grabaciones`.

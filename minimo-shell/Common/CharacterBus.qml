@@ -45,5 +45,6 @@ Singleton {
         function open(): void { root.islandCommand("open") }
         function close(): void { root.islandCommand("close") }
         function status(): void { root.islandCommand("status") }
+        function apps(): void { root.islandCommand("apps") }
     }
 }
