@@ -15,7 +15,6 @@ PanelWindow {
     property bool expanded: false
     readonly property bool hovered: hoverZone.containsMouse
     property bool shown: true
-    property bool dragging: false      // arrastrando sobre la isla: tira de escritorios
 
     anchors { top: true; left: true; right: true; bottom: win.expanded }
     implicitHeight: Theme.maxExpandedH + Theme.topMargin + 8
@@ -23,7 +22,7 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "minimo-island"
-    WlrLayershell.keyboardFocus: (expanded || dragging) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: expanded ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     mask: Region { x: win.expanded ? 0 : hoverZone.x; y: 0; width: win.expanded ? win.width : hoverZone.width; height: win.expanded ? win.height : hoverZone.height }
 
@@ -33,7 +32,7 @@ PanelWindow {
     Timer {
         id: hideTimer
         interval: Theme.hideDelay
-        onTriggered: if (DisplayState.islandAutoHide && !win.dragging && !win.hovered && !win.expanded && !menu.searchFocused && Recorder.notice === "") win.shown = false
+        onTriggered: if (DisplayState.islandAutoHide && !win.hovered && !win.expanded && !menu.searchFocused && Recorder.notice === "") win.shown = false
     }
     onHoveredChanged: {
         if (hovered) { hideTimer.stop(); shown = true }
@@ -72,15 +71,13 @@ PanelWindow {
     }
 
     // Región única de hover/input. Nunca se reemplaza por otro item.
-    // También es el ÚNICO receptor de clics/arrastres de la isla compacta (cubre toda la
-    // píldora y el margen superior, con su tamaño final aunque la píldora esté animando):
-    // clic → abre el menú al soltar; arrastre horizontal (>8 px) → tira de escritorios.
+    // También es el ÚNICO receptor de clics de la isla compacta (cubre toda la píldora y
+    // el margen superior, con su tamaño final aunque la píldora esté animando).
     MouseArea {
         id: hoverZone
         hoverEnabled: true
-        preventStealing: true
         acceptedButtons: Qt.LeftButton
-        cursorShape: win.expanded ? Qt.ArrowCursor : (win.dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor)
+        cursorShape: win.expanded ? Qt.ArrowCursor : Qt.PointingHandCursor
         // Margen extra alrededor de la píldora: un clic/arrastre que empieza justo en el
         // borde no "se escapa" a la ventana de abajo (que seleccionaría su texto).
         readonly property int pad: 8
@@ -89,22 +86,7 @@ PanelWindow {
         width: win.shown ? pill.width + pad * 2 : win.width
         height: win.shown ? Theme.topMargin + pill.height + pad : 3
 
-        property real pressX: 0
-        property bool cancelled: false
-        onPressed: m => { pressX = m.x; cancelled = false }
-        onPositionChanged: m => {
-            if (!pressed || win.expanded || cancelled) return
-            if (!win.dragging && Math.abs(m.x - pressX) > 8) { win.dragging = true; strip.hovered = -1 }
-            if (win.dragging) strip.hoverAt(mapToItem(strip, m.x, m.y))
-        }
-        onReleased: m => {
-            if (win.dragging) {
-                const ws = strip.hoveredWs
-                win.dragging = false
-                if (ws && ws.id !== Workspaces.activeId) Workspaces.goTo(ws.id)
-            } else if (!cancelled && !win.expanded && containsMouse) win.expanded = true
-        }
-        onCanceled: win.dragging = false
+        onPressed: if (!win.expanded) win.expanded = true
         // Rueda sobre la isla compacta: escritorio anterior/siguiente.
         onWheel: w => { if (!win.expanded) Workspaces.wheel(w.angleDelta.y) }
     }
@@ -132,7 +114,6 @@ PanelWindow {
     Rectangle {
         id: pill
         width: win.expanded ? Theme.expandedW
-             : win.dragging ? strip.implicitWidth + 16
              : Math.max(Theme.compactW, compact.implicitWidth + 32)
         height: win.expanded ? Math.min(menu.implicitHeight, Theme.maxExpandedH) : Theme.compactH
         x: (win.width - width) / 2
@@ -145,29 +126,17 @@ PanelWindow {
         Behavior on height { NumberAnimation { duration: Theme.durNormal + 40; easing.type: Easing.OutBack; easing.overshoot: 0.7 } }
         Behavior on y { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutQuint } }
 
-        focus: win.expanded || win.dragging
-        Keys.onEscapePressed: { if (win.dragging) { hoverZone.cancelled = true; win.dragging = false } else win.collapse() }
+        focus: win.expanded
+        Keys.onEscapePressed: win.collapse()
 
         IslandCompact {
             id: compact
             anchors.centerIn: parent
             active: win.shown && !win.expanded
-            opacity: (win.expanded || win.dragging) ? 0 : 1
+            opacity: win.expanded ? 0 : 1
             visible: opacity > 0
             Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
         }
-
-        // Arrastrar en horizontal: tira de escritorios ocupados.
-        WorkspaceStrip {
-            id: strip
-            anchors.centerIn: parent
-            opacity: win.dragging ? 1 : 0
-            visible: opacity > 0
-            scale: win.dragging ? 1 : 0.92
-            Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
-            Behavior on scale { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutBack } }
-        }
-
 
         IslandMenu {
             id: menu
