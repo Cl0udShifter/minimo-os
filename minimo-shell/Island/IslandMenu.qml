@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+import QtQuick
+import Quickshell
+import "../Common"
+import "../Character"
+import "sections"
+
+// Menú de la isla expandida: compone las secciones con entrada escalonada.
+Item {
+    id: root
+    signal done()
+    property bool open: false
+    readonly property bool searchFocused: search.hasFocus
+    property alias character: chr
+    property string page: "menu"   // "menu" | "desks"
+    implicitHeight: (page === "desks" ? desks.implicitHeight : col.implicitHeight) + 48
+
+    // El buscador no se enfoca solo: se activa al hacerle clic.
+    function opened() { search.reset() }
+
+    // Entrada escalonada: stage sube de a uno cada 45 ms al abrir.
+    property int stage: 0
+    Timer {
+        id: stagger; interval: 45; repeat: true
+        running: root.open && root.stage < 6
+        onTriggered: root.stage++
+    }
+    onOpenChanged: if (!open) { stage = 0; page = "menu" }
+
+    SystemClock { id: clock; precision: SystemClock.Minutes }
+
+    component Reveal: Item {
+        property int step: 0
+        opacity: root.stage > step ? 1 : 0
+        transform: Translate { y: root.stage > step ? 0 : 8; Behavior on y { NumberAnimation { duration: 320; easing.type: Easing.OutQuint } } }
+        Behavior on opacity { NumberAnimation { duration: 260 } }
+    }
+
+    Column {
+        id: col
+        x: root.page === "menu" ? 24 : -root.width * 0.3
+        y: 24
+        opacity: root.page === "menu" ? 1 : 0
+        visible: opacity > 0
+        enabled: root.page === "menu"
+        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutQuint } }
+        Behavior on opacity { NumberAnimation { duration: 220 } }
+        width: parent.width - 48
+        spacing: 24
+
+        Reveal {
+            step: 0; width: parent.width; height: 48
+            Row {
+                spacing: 16
+                Character {
+                    id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
+                    // Clic en el personaje: risita, giro, guiño…
+                    MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: chr.clicked() }
+                }
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 0
+                    Text {
+                        text: Qt.formatDateTime(clock.date, "HH:mm")
+                        color: Theme.text; font.family: Theme.font
+                        font.pixelSize: 26; font.weight: Font.Medium
+                        font.features: { "tnum": 1 }
+                    }
+                    Text {
+                        text: { const t = clock.date.toLocaleDateString(Qt.locale("es_AR"), "dddd d 'de' MMMM"); return t.charAt(0).toUpperCase() + t.slice(1) }
+                        color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12
+                    }
+                }
+            }
+        }
+        Reveal { step: 1; width: parent.width; height: search.implicitHeight
+            SearchSection { id: search; width: parent.width; onLaunched: root.done() } }
+        Reveal { step: 2; width: parent.width; height: media.implicitHeight; visible: media.player !== null
+            MediaSection { id: media; width: parent.width } }
+        Reveal { step: 3; width: parent.width; height: sliders.implicitHeight
+            Column { id: sliders; width: parent.width; spacing: 8
+                VolumeSection { width: parent.width }
+                DisplaySection { width: parent.width } } }
+        Reveal { step: 4; width: parent.width; height: actions.implicitHeight
+            ActionsSection { id: actions; anchors.horizontalCenter: parent.horizontalCenter; onDone: root.done(); onDesktops: { desks.refresh(); root.page = "desks" }
+                onSettings: { root.done(); SettingsState.show() } } }
+    }
+
+    WorkspacesView {
+        id: desks
+        x: root.page === "desks" ? 24 : root.width * 0.3
+        y: 24
+        width: root.width - 48
+        opacity: root.page === "desks" ? 1 : 0
+        visible: opacity > 0
+        enabled: root.page === "desks"
+        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutQuint } }
+        Behavior on opacity { NumberAnimation { duration: 220 } }
+        onBack: root.page = "menu"
+        onPicked: root.done()
+    }
+}

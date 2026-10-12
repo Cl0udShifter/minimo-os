@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+singleton Theme 1.0 Theme.qml
+singleton DisplayState 1.0 DisplayState.qml
+singleton Cursor 1.0 Cursor.qml
+MSlider 1.0 MSlider.qml
+Icon 1.0 Icon.qml
+singleton Workspaces 1.0 Workspaces.qml
+singleton Apps 1.0 Apps.qml
+singleton LauncherState 1.0 LauncherState.qml
+singleton Media 1.0 Media.qml
+singleton Recorder 1.0 Recorder.qml
+singleton SettingsState 1.0 SettingsState.qml
+MSwitch 1.0 MSwitch.qml
+singleton CharacterBus 1.0 CharacterBus.qml
+singleton IdleState 1.0 IdleState.qml

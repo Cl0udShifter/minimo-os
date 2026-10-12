@@ -1,0 +1,18 @@
+#version 300 es
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+// Shader de pantalla de Minimo OS: saturación y brillo por software.
+precision highp float;
+in vec2 v_texcoord;
+uniform sampler2D tex;
+out vec4 fragColor;
+
+const float SATURATION = @SAT@;
+const float BRIGHTNESS = @BRI@;
+
+void main() {
+    vec4 c = texture(tex, v_texcoord);
+    float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+    vec3 rgb = mix(vec3(l), c.rgb, SATURATION) * BRIGHTNESS;
+    fragColor = vec4(clamp(rgb, 0.0, 1.0), c.a);
+}

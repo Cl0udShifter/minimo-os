@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+import QtQuick
+import "../Common"
+
+// Botón circular gris claro con icono de línea y etiqueta gris debajo.
+// Si `confirm` es true, el primer clic lo pone negro ("Confirmar").
+Item {
+    id: btn
+    property string icon
+    property string label
+    property bool confirm: false
+    property bool armed: false
+    property bool active: false        // estado "encendido": negro con icono blanco
+    signal activated()
+
+    width: 80; height: 80
+
+    Rectangle {
+        id: circle
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 52; height: 52; radius: 26
+        color: (btn.armed || btn.active) ? Theme.fill : (mouse.containsMouse ? Theme.hover : Theme.field)
+        scale: mouse.pressed ? 0.92 : 1
+        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+        Icon { anchors.centerIn: parent; name: btn.icon; size: 22; tone: (btn.armed || btn.active) ? "white" : "dark" }
+    }
+    Text {
+        anchors.top: circle.bottom; anchors.topMargin: 8
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: btn.armed ? "Confirmar" : btn.label
+        color: (btn.armed || btn.active) ? Theme.text : Theme.textDim
+        font.family: Theme.font; font.pixelSize: 11; font.weight: (btn.armed || btn.active) ? Font.DemiBold : Font.Normal
+    }
+
+    Timer { id: disarm; interval: 3000; onTriggered: btn.armed = false }
+
+    MouseArea {
+        id: mouse
+        anchors.fill: circle
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (btn.confirm && !btn.armed) { btn.armed = true; disarm.restart(); return }
+            btn.armed = false
+            btn.activated()
+        }
+    }
+}

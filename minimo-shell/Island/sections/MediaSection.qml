@@ -1,0 +1,153 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+import QtQuick
+import QtQuick.Effects
+import Quickshell.Services.Mpris
+import "../../Common"
+
+// Reproductor MPRIS: carátula, título/artista, controles de línea y progreso.
+Item {
+    id: root
+    readonly property var players: Mpris.players.values
+    readonly property MprisPlayer player: {
+        for (const p of players) if (p.isPlaying) return p
+        return players.length > 0 ? players[0] : null
+    }
+    visible: player !== null
+    implicitHeight: visible ? 64 : 0
+
+    Timer {
+        running: root.visible && root.player !== null && root.player.isPlaying
+        interval: 1000; repeat: true
+        onTriggered: root.player.positionChanged()
+    }
+
+    // Carátula circular (recorte real con máscara), gira como un vinilo al reproducir.
+    Item {
+        id: art
+        width: 48; height: 48
+        anchors.verticalCenter: parent.verticalCenter
+        readonly property bool hasArt: cover.status === Image.Ready
+        property real angle: 0
+
+        NumberAnimation {
+            target: art; property: "angle"
+            running: root.visible && root.player !== null && art.hasArt
+            paused: running && !root.player.isPlaying
+            from: art.angle; to: art.angle + 360
+            duration: 8000; loops: Animation.Infinite
+        }
+
+        // Fallback: círculo gris claro con ícono de nota.
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: Theme.field
+            visible: !art.hasArt
+            Icon { anchors.centerIn: parent; name: "music"; tone: "gray"; size: 20 }
+        }
+
+        Image {
+            id: cover
+            anchors.fill: parent
+            source: root.player ? root.player.trackArtUrl : ""
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            smooth: true
+            sourceSize: Qt.size(144, 144)
+            visible: false
+        }
+        Item {
+            id: circleMask
+            anchors.fill: parent
+            visible: false
+            layer.enabled: true
+            layer.smooth: true
+            Rectangle { anchors.fill: parent; radius: width / 2; antialiasing: true }
+        }
+        MultiEffect {
+            anchors.fill: parent
+            visible: art.hasArt
+            source: cover
+            rotation: art.angle
+            maskEnabled: true
+            maskSource: circleMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1.0
+            antialiasing: true
+        }
+        // Aro fino.
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: "transparent"
+            border.width: 1
+            border.color: Qt.rgba(0, 0, 0, 0.12)
+            antialiasing: true
+            visible: art.hasArt
+        }
+        // Agujero central sutil, como un disco.
+        Rectangle {
+            anchors.centerIn: parent
+            width: 7; height: 7; radius: 3.5
+            color: "white"; opacity: 0.85
+            border.width: 1; border.color: Qt.rgba(0, 0, 0, 0.1)
+            visible: art.hasArt
+        }
+    }
+
+    Column {
+        anchors.left: art.right; anchors.leftMargin: 16
+        anchors.right: controls.left; anchors.rightMargin: 16
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 2
+        Text {
+            width: parent.width; elide: Text.ElideRight
+            text: root.player ? (root.player.trackTitle || "Sin título") : ""
+            color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.weight: Font.DemiBold
+        }
+        Text {
+            width: parent.width; elide: Text.ElideRight
+            text: root.player ? (root.player.trackArtist || root.player.identity) : ""
+            color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12
+        }
+        Item { width: 1; height: 6 }
+        Rectangle {
+            width: parent.width; height: 3; radius: 1.5; color: Theme.track
+            visible: root.player !== null && root.player.lengthSupported && root.player.length > 0
+            Rectangle {
+                height: parent.height; radius: 1.5; color: Theme.fill
+                width: root.player && root.player.length > 0 ? parent.width * Math.min(1, root.player.position / root.player.length) : 0
+            }
+        }
+    }
+
+    Row {
+        id: controls
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
+        Repeater {
+            model: [
+                { i: "prev", a: "prev", ok: root.player !== null && root.player.canGoPrevious },
+                { i: root.player && root.player.isPlaying ? "pause" : "play", a: "play", ok: root.player !== null && root.player.canTogglePlaying },
+                { i: "next", a: "next", ok: root.player !== null && root.player.canGoNext }
+            ]
+            delegate: Item {
+                required property var modelData
+                width: 32; height: 32
+                Icon { anchors.centerIn: parent; name: modelData.i; size: 20; tone: modelData.ok ? "dark" : "gray" }
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: modelData.ok
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (modelData.a === "prev") root.player.previous()
+                        else if (modelData.a === "next") root.player.next()
+                        else root.player.togglePlaying()
+                    }
+                }
+            }
+        }
+    }
+}
