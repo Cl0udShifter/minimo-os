@@ -108,19 +108,19 @@ Column {
                     }
                     Column {
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { text: (mcard.m.make && mcard.m.model) ? mcard.m.model : mcard.m.name; color: Theme.text; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.DemiBold }
-                        Text { text: mcard.m.name + " · " + mcard.m.width + "×" + mcard.m.height + " · " + Math.round(mcard.m.refreshRate) + " Hz · ×" + mcard.m.scale; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12 }
+                        Text { text: (mcard.m.make && mcard.m.model) ? mcard.m.model : mcard.m.name; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.DemiBold }
+                        Text { text: mcard.m.name + " · " + mcard.m.width + "×" + mcard.m.height + " · " + Math.round(mcard.m.refreshRate) + " Hz · ×" + mcard.m.scale; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
                     }
                 }
 
                 // Resolución y frecuencia (desplegable).
-                Text { text: "Resolución"; color: Theme.text; font.family: Theme.font; font.pixelSize: 13 }
+                Text { text: "Resolución"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13 }
                 Rectangle {
                     width: parent.width; height: 40; radius: 20; color: Theme.raised
                     Text {
                         x: 18; anchors.verticalCenter: parent.verticalCenter
                         text: mcard.m.width + " × " + mcard.m.height + "  ·  " + mcard.m.refreshRate.toFixed(2) + " Hz"
-                        color: Theme.text; font.family: Theme.font; font.pixelSize: 13
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                     }
                     Icon { anchors.right: parent.right; anchors.rightMargin: 14; anchors.verticalCenter: parent.verticalCenter; name: "chevron"; size: 18; rotation: mcard.listOpen ? 180 : 0 }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: mcard.listOpen = !mcard.listOpen }
@@ -143,7 +143,7 @@ Column {
                             Text {
                                 x: 14; anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.replace("x", " × ").replace("@", "  ·  ").replace("Hz", " Hz")
-                                color: Theme.text; font.family: Theme.font; font.pixelSize: 13
+                                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                                 font.weight: parent.cur ? Font.DemiBold : Font.Normal
                             }
                             Icon { visible: parent.cur; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; name: "check"; size: 16 }
@@ -154,7 +154,7 @@ Column {
                 }
 
                 // Escala (segmentado).
-                Text { text: "Escala"; color: Theme.text; font.family: Theme.font; font.pixelSize: 13 }
+                Text { text: "Escala"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13 }
                 Rectangle {
                     width: parent.width; height: 40; radius: 20; color: Theme.raised
                     Row {
@@ -166,7 +166,7 @@ Column {
                                 readonly property bool cur: Math.abs(modelData - mcard.m.scale) < 0.01
                                 width: (parent.width) / root.scales.length; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (sm.containsMouse ? Theme.field : "transparent")
-                                Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
+                                Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
                                 MouseArea { id: sm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                     onClicked: root.request(mcard.m, root.modeOf(mcard.m), modelData) }
                             }
@@ -197,6 +197,6 @@ Column {
             onIconClicked: DisplayState.set(1.0, DisplayState.brightness)
             onMoved: v => DisplayState.set(Math.abs(v - 1) < 0.04 ? 1.0 : v, DisplayState.brightness)
         }
-        Text { text: "Por software (shader de Hyprland). Tocá la gota para volver al 100%."; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 11 }
+        Text { text: "Por software (shader de Hyprland). Tocá la gota para volver al 100%."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11 }
     }
 }

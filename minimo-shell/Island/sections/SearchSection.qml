@@ -36,17 +36,17 @@ Column {
             anchors.left: lupa.right; anchors.leftMargin: 8
             anchors.right: parent.right; anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            color: Theme.text
+            color: Theme.textPrimary
             selectionColor: Theme.track
-            selectedTextColor: Theme.text
+            selectedTextColor: Theme.textPrimary
             // El cursor "|" solo se dibuja cuando el buscador tiene el foco.
-            cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.text; visible: field.activeFocus && field.cursorVisible }
+            cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary; visible: field.activeFocus && field.cursorVisible }
             font.family: Theme.font; font.pixelSize: 14
             clip: true
             Text {
                 visible: !field.text
                 text: "Buscar"
-                color: Theme.textDim
+                color: Theme.textSecondary
                 font: field.font
             }
             Keys.onDownPressed: root.selected = Math.min(root.selected + 1, root.results.length - 1)
@@ -75,7 +75,7 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 text: modelData.name
-                color: Theme.text; font.family: Theme.font; font.pixelSize: 13
+                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
             }
             MouseArea {
                 id: hov

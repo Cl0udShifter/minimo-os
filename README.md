@@ -36,7 +36,7 @@ parte superior de la pantalla, acompañada por un pequeño personaje que reaccio
 - Arch Linux (usuario normal con `sudo`).
 - Hyprland 0.56 o superior (configuración en Lua).
 - Paquetes (el instalador los instala): `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts networkmanager git`.
-- Opcionales: `fuzzel playerctl wl-clipboard github-cli`.
+- Opcionales: `fuzzel wl-clipboard github-cli` (playerctl ahora es obligatorio: teclas multimedia).
 
 ## Instalación
 

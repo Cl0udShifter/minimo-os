@@ -3,6 +3,6 @@
 import QtQuick
 import "../Common"
 Text {
-    color: Theme.textDim
+    color: Theme.textSecondary
     font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold
 }

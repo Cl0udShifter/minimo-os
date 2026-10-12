@@ -16,8 +16,8 @@ Item {
         anchors.right: sw.left; anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
-        Text { text: row.text; color: Theme.text; font.family: Theme.font; font.pixelSize: 14 }
-        Text { text: row.detail; visible: text !== ""; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12 }
+        Text { text: row.text; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
+        Text { text: row.detail; visible: text !== ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
     }
     MSwitch { id: sw; anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter; checked: row.checked; onToggled: v => row.toggled(v) }
 }

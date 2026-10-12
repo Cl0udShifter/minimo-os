@@ -17,7 +17,7 @@ Item {
             id: z
             required property int index
             text: "z"
-            color: Theme.textDim
+            color: Theme.textSecondary
             Behavior on color { ColorAnimation { duration: 250 } }
             font.family: Theme.font
             font.pixelSize: 9 + index * 1.5

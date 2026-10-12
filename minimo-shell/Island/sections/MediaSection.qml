@@ -104,12 +104,12 @@ Item {
         Text {
             width: parent.width; elide: Text.ElideRight
             text: root.player ? (root.player.trackTitle || "Sin título") : ""
-            color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.weight: Font.DemiBold
+            color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: Font.DemiBold
         }
         Text {
             width: parent.width; elide: Text.ElideRight
             text: root.player ? (root.player.trackArtist || root.player.identity) : ""
-            color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12
+            color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
         }
         Item { width: 1; height: 6 }
         Rectangle {

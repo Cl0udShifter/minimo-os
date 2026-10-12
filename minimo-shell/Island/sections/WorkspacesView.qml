@@ -41,7 +41,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "Escritorios"
-                color: Theme.text; font.family: Theme.font; font.pixelSize: 15; font.weight: Font.DemiBold
+                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 15; font.weight: Font.DemiBold
             }
         }
 
@@ -59,11 +59,11 @@ Item {
                     width: grid.tileW; height: 76; radius: 14
                     color: tileMouse.containsMouse ? Theme.hover : Theme.field
                     border.width: active ? 2 : 0
-                    border.color: Theme.text
+                    border.color: Theme.textPrimary
                     Text {
                         x: 10; y: 8
                         text: modelData.name || modelData.id
-                        color: Theme.textDim; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Medium
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Medium
                     }
                     Row {
                         anchors.centerIn: parent; anchors.verticalCenterOffset: 6
@@ -87,7 +87,7 @@ Item {
             Rectangle {
                 width: grid.tileW; height: 76; radius: 14
                 color: "transparent"
-                border.width: 1.5; border.color: plusMouse.containsMouse ? Theme.textDim : Theme.track
+                border.width: 1.5; border.color: plusMouse.containsMouse ? Theme.textSecondary : Theme.track
                 Icon { anchors.centerIn: parent; name: "plus"; tone: "gray"; size: 22 }
                 MouseArea {
                     id: plusMouse

@@ -23,7 +23,7 @@ Shell mínima de Minimo OS en Quickshell (QML), escrita desde cero.
 ```
 
 ## Diseño (rediseño blanco)
-- Tarjeta blanca con sombra difusa (MultiEffect), texto #0A0A0B / #8E8E93, sin emojis.
+- Tarjeta blanca con sombra difusa (MultiEffect), texto #0A0A0B / #636366 (oscuro: #F5F5F7 / #AEAEB2), contraste AA, sin emojis.
 - `Character/Character.qml`: personaje (esfera negra + ojos-cápsula) dibujado en QML. Mira al cursor,
   parpadea, respira, salta al aparecer, gira y rebota al abrir, gira de vuelta al cerrar.
 - `Common/Cursor.qml`: posición global del cursor vía `hyprctl cursorpos` (~25 Hz), solo mientras

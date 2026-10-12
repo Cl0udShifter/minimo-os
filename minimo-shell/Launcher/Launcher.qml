@@ -87,12 +87,12 @@ PanelWindow {
                     anchors.left: lupa.right; anchors.leftMargin: 12
                     anchors.right: parent.right; anchors.rightMargin: 24
                     anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.text
+                    color: Theme.textPrimary
                     font.family: Theme.font; font.pixelSize: 21
-                    selectionColor: Theme.track; selectedTextColor: Theme.text
-                    cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.text }
+                    selectionColor: Theme.track; selectedTextColor: Theme.textPrimary
+                    cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary }
                     clip: true
-                    Text { visible: !field.text; text: "Buscar aplicaciones"; color: Theme.textDim; font: field.font }
+                    Text { visible: !field.text; text: "Buscar aplicaciones"; color: Theme.textSecondary; font: field.font }
                     Keys.onEscapePressed: LauncherState.hide()
                     Keys.onDownPressed: win.selected = Math.min(win.selected + 1, win.results.length - 1)
                     Keys.onUpPressed: win.selected = Math.max(win.selected - 1, 0)
@@ -126,8 +126,8 @@ PanelWindow {
                         anchors.left: ic.right; anchors.leftMargin: 14
                         anchors.right: parent.right; anchors.rightMargin: 14
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.name; color: Theme.text; font.family: Theme.font; font.pixelSize: 15 }
-                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.genericName || modelData.comment || ""; visible: text !== ""; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12 }
+                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.name; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 15 }
+                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.genericName || modelData.comment || ""; visible: text !== ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
                     }
                     MouseArea {
                         id: rm

@@ -67,14 +67,14 @@ PanelWindow {
         Rectangle {
             id: sidebar
             width: 232; height: parent.height
-            color: Theme.alpha(Theme.subtle, Theme.surfaceOpacity)
+            color: Theme.subtle
             radius: card.radius           // esquinas izquierdas redondeadas como la tarjeta
             Rectangle { anchors.right: parent.right; width: parent.radius; height: parent.height; color: parent.color }
             Column {
                 x: 14; y: 22
                 width: parent.width - 28
                 spacing: 4
-                Text { x: 12; text: "Ajustes"; color: Theme.text; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold; bottomPadding: 14 }
+                Text { x: 12; text: "Ajustes"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold; bottomPadding: 14 }
                 Repeater {
                     model: win.sections
                     delegate: Rectangle {
@@ -86,7 +86,7 @@ PanelWindow {
                         Row {
                             x: 14; anchors.verticalCenter: parent.verticalCenter; spacing: 12
                             Icon { name: modelData.icon; size: 20; tone: cur ? "white" : "dark"; anchors.verticalCenter: parent.verticalCenter }
-                            Text { text: modelData.label; color: cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 14; font.weight: cur ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: modelData.label; color: cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: cur ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
                         }
                         MouseArea { id: sbm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: SettingsState.section = modelData.id }
                     }
@@ -104,7 +104,7 @@ PanelWindow {
                 id: heading
                 x: 36; y: 26
                 text: SettingsState.section === "pantalla" ? "Pantalla" : SettingsState.section === "minimo" ? "Acerca de" : "Personalización"
-                color: Theme.text; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold
+                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold
             }
             Flickable {
                 id: flick
@@ -153,8 +153,8 @@ PanelWindow {
                     width: parent.width - 48
                     spacing: 10
                     Icon { anchors.horizontalCenter: parent.horizontalCenter; name: "display"; size: 30 }
-                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "¿Mantener esta configuración?"; color: Theme.text; font.family: Theme.font; font.pixelSize: 16; font.weight: Font.DemiBold }
-                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "Se revierte en " + display.countdown + " s"; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 13; font.features: { "tnum": 1 } }
+                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "¿Mantener esta configuración?"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 16; font.weight: Font.DemiBold }
+                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "Se revierte en " + display.countdown + " s"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13; font.features: { "tnum": 1 } }
                     Item { width: 1; height: 6 }
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter

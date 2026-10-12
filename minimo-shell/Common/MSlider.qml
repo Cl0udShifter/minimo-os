@@ -63,7 +63,7 @@ Item {
         anchors.right: parent.right; anchors.rightMargin: 16
         anchors.verticalCenter: parent.verticalCenter
         text: s.valueText
-        color: s.frac > 0.9 ? Theme.onFill : Theme.textDim
+        color: s.frac > 0.9 ? Theme.onAccent : Theme.textSecondary
         font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium
         font.features: { "tnum": 1 }
     }

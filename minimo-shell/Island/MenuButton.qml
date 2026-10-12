@@ -30,7 +30,7 @@ Item {
         anchors.top: circle.bottom; anchors.topMargin: 8
         anchors.horizontalCenter: parent.horizontalCenter
         text: btn.armed ? "Confirmar" : btn.label
-        color: (btn.armed || btn.active) ? Theme.text : Theme.textDim
+        color: (btn.armed || btn.active) ? Theme.textPrimary : Theme.textSecondary
         font.family: Theme.font; font.pixelSize: 11; font.weight: (btn.armed || btn.active) ? Font.DemiBold : Font.Normal
     }
 

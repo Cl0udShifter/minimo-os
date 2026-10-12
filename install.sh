@@ -89,13 +89,13 @@ PKGS=(
     hyprland xdg-desktop-portal-hyprland hyprpolkitagent       # compositor, portal, polkit
     quickshell qt6-declarative qt6-svg qt6-wayland             # shell (QtQuick, Effects, iconos SVG)
     pipewire pipewire-pulse wireplumber                        # audio (Pipewire en la shell)
-    cava                                                       # niveles de audio (baile del personaje)
+    cava playerctl                                             # niveles de audio (baile), teclas multimedia
     ghostty grim slurp wf-recorder zenity                      # terminal, capturas, grabación, selector de fondo
     adwaita-fonts                                              # tipografía Adwaita Sans
     networkmanager                                             # Wi-Fi en la isla (nmcli)
     git
 )
-OPTIONAL=(fuzzel playerctl wl-clipboard github-cli)
+OPTIONAL=(fuzzel wl-clipboard github-cli)
 step "Paquetes"
 missing=()
 for p in "${PKGS[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done

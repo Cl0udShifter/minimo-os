@@ -6,7 +6,7 @@ import "../../Common"
 // Cuatro barritas de señal (0..100).
 Row {
     property int signal: 0
-    property color on: Theme.text
+    property color on: Theme.textPrimary
     spacing: 2
     Repeater {
         model: 4

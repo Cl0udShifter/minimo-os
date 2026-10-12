@@ -24,7 +24,7 @@ Item {
             enabled: false              // texto decorativo: sin interacción ni selección
             anchors.verticalCenter: parent.verticalCenter
             text: Qt.formatDateTime(clock.date, "HH:mm")
-            color: Theme.text
+            color: Theme.textPrimary
             font.family: Theme.font
             font.pixelSize: 15
             font.weight: Font.Medium
@@ -38,7 +38,7 @@ Item {
             Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 8; height: 8; radius: 4
-                color: Theme.danger
+                color: Theme.recording
                 SequentialAnimation on opacity {
                     running: Recorder.recording && root.active
                     loops: Animation.Infinite
@@ -50,7 +50,7 @@ Item {
                 enabled: false              // texto decorativo: sin interacción ni selección
                 anchors.verticalCenter: parent.verticalCenter
                 text: Recorder.elapsedText
-                color: Theme.text; font.family: Theme.font; font.pixelSize: 13
+                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                 font.features: { "tnum": 1 }
             }
         }
@@ -60,7 +60,7 @@ Item {
             visible: Recorder.notice !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: Recorder.notice
-            color: Theme.textDim; font.family: Theme.font; font.pixelSize: 12
+            color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
             elide: Text.ElideMiddle
             width: Math.min(implicitWidth, 230)
         }
