@@ -6,6 +6,8 @@
 
 <p align="center">Hyprland minimalista: una isla flotante y un personaje feliz. Nada más de lo necesario.</p>
 
+<p align="center"><a href="https://diegolede.github.io/minimo-os-web/">Web oficial</a></p>
+
 ---
 
 ## Qué es
