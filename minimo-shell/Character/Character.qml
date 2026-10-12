@@ -24,9 +24,11 @@ Item {
     property real lookX: 0
     property real lookY: 0
     readonly property bool tracking: Cursor.ok && Cursor.x >= 0
-    onActiveChanged: active ? Cursor.acquire() : Cursor.release()
-    Component.onCompleted: if (active) Cursor.acquire()
-    Component.onDestruction: { if (active) Cursor.release(); if (dancing) Media.release() }
+    // Sigue el mouse solo si está visible y despierto (dormido no consulta el cursor).
+    readonly property bool followsMouse: active && !asleep
+    onFollowsMouseChanged: followsMouse ? Cursor.acquire() : Cursor.release()
+    Component.onCompleted: if (followsMouse) Cursor.acquire()
+    Component.onDestruction: { if (followsMouse) Cursor.release(); if (dancing) Media.release() }
 
     property real idleX: 0
     property real idleY: 0
