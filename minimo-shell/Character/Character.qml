@@ -172,7 +172,7 @@ Item {
     readonly property real danceRot: danceAmp * 4 * Math.sin(2 * Math.PI * sway)
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: (1 - 0.5 * squint) * blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.62 * petK)
+    readonly property real openness: (1 - 0.8 * squint) * blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.62 * petK)
     // Alegría con pastillas: más bajas y elevadas (mejillas que suben). Bailando, leve.
     readonly property real joy: Math.max(smile, 0.45 * danceOn, 0.8 * petK) * (1 - sleepy)
 
@@ -301,7 +301,7 @@ Item {
     Reactions { id: reactions; c: c }
 
     // ===== Entrecerrar al escribir (campos del shell) =====
-    // Ojos ~50 % más bajos, algo más anchos, mirada apenas hacia abajo (al campo).
+    // Ojos como guion "-": ~20 % de alto, 115 % de ancho, extremos redondos; mirada apenas abajo.
     property real squint: 0
     // Velocidad constante (independiente de los fps): teclas rápidas no reinician la animación.
     Behavior on squint { SmoothedAnimation { velocity: 3.5 } }
@@ -428,7 +428,7 @@ Item {
                     readonly property real kB: Math.max(0.12, cosY)
                     readonly property real kA: Math.max(0.2, c.cosP)
                     readonly property real own: modelData < 0 ? c.openL : c.openR
-                    readonly property real w: c.eyeW * kB * c.eyeWMul * (1 - 0.12 * c.worry) * (1 + 0.1 * c.squint)
+                    readonly property real w: c.eyeW * kB * c.eyeWMul * (1 - 0.12 * c.worry) * (1 + 0.15 * c.squint)
                     opacity: cosY > 0 ? 1 : 0
                     x: cx; y: cy
                     rotation: c.tilt - modelData * 14 * c.worry
