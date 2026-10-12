@@ -39,7 +39,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         width: 96; height: 104
         Character { id: chr; size: 88; anchors.centerIn: parent; active: root.shown && DisplayState.characterAnimated
-            MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: chr.clicked() } }
+            MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) } }
     }
     Column {
         anchors.horizontalCenter: parent.horizontalCenter

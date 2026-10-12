@@ -36,7 +36,6 @@ Singleton {
     property color onAccent: pick("#FFFFFF", "#0A0A0B")                // texto/ícono sobre `fill` (relleno invertido)
     readonly property color onFill: onAccent
     property color danger: pick("#D70015", "#FF6961")                  // texto de error (≥4.5:1)
-    property color heart: pick("#FF5A6E", "#FF7A8A")                  // corazones de caricias (rojo suave)
     property color recording: pick("#FF3B30", "#FF453A")               // punto de grabación
     // Personaje: negro con ojos blancos (claro) / blanco con ojos negros (oscuro)
     property color sphere: pick("#0B0B0C", "#F5F5F7")

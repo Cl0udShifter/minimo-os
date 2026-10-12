@@ -132,9 +132,9 @@ Item {
     property bool doubleBlink: false
     SequentialAnimation {
         id: blinkAnim
-        NumberAnimation { target: c; property: "blink"; to: 0.06; duration: 55; easing.type: Easing.InQuad }
-        PauseAnimation { duration: 25 }
-        NumberAnimation { target: c; property: "blink"; to: 1; duration: 80; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "blink"; to: 0.06; duration: c.petting ? 260 : 55; easing.type: c.petting ? Easing.InOutSine : Easing.InQuad }
+        PauseAnimation { duration: c.petting ? 180 : 25 }
+        NumberAnimation { target: c; property: "blink"; to: 1; duration: c.petting ? 420 : 80; easing.type: c.petting ? Easing.InOutSine : Easing.OutCubic }
         PauseAnimation { duration: c.doubleBlink ? 90 : 0 }
         NumberAnimation { target: c; property: "blink"; to: c.doubleBlink ? 0.06 : 1; duration: c.doubleBlink ? 55 : 0; easing.type: Easing.InQuad }
         NumberAnimation { target: c; property: "blink"; to: 1; duration: c.doubleBlink ? 85 : 0; easing.type: Easing.OutCubic }
@@ -172,7 +172,7 @@ Item {
     readonly property real danceRot: danceAmp * 4 * Math.sin(2 * Math.PI * sway)
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.3 * petK)
+    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.62 * petK)
     // Alegría con pastillas: más bajas y elevadas (mejillas que suben). Bailando, leve.
     readonly property real joy: Math.max(smile, 0.45 * danceOn, 0.8 * petK) * (1 - sleepy)
 
@@ -182,48 +182,77 @@ Item {
     function hop() { if (active && !asleep && !reactions.busy) reactions.play("hop") }
     function react(name) { if (active && !asleep) reactions.play(name) }
     // Clics: dormido → despierta suave. 1 clic → reacción. ≥4 clics en 1,5 s → caricias.
+    // `side` (-1..1): dónde cayó el clic respecto del centro (para acurrucarse hacia ahí).
     property var clickTimes: []
-    function clicked() {
+    function clicked(side) {
         if (!active) return
         if (asleep) { wake(); clickTimes = []; return }
         const now = Date.now()
         clickTimes = clickTimes.filter(t => now - t < 1500).concat([now])
-        if (petting || clickTimes.length >= 4) pet()
+        if (petting || clickTimes.length >= 4) pet(side)
         else if (clickTimes.length === 1) reactions.playClick()
     }
 
     // ===== Caricias =====
-    // Ojos relajados (pastillas entrecerradas y "sonrientes"), balanceo lento de lado a
-    // lado, leve aplastamiento y corazones planos que suben. Dura mientras sigan los clics.
+    // Se acurruca hacia la mano (inclinación 6–9° + leve corrimiento, frotando lento),
+    // ojos de felicidad (pastillas finas ~25 %, algo elevadas, parpadeos lentos), un
+    // "puff" al empezar, saltitos con cada ráfaga de corazones y un suspiro al terminar.
     // Prioridad: debajo de dormir, encima de los trucos.
     property bool petting: false
+    property real petSide: 1
     property real petK: petting ? 1 : 0
-    Behavior on petK { NumberAnimation { duration: c.petting ? 320 : 520; easing.type: c.petting ? Easing.OutCubic : Easing.InOutSine } }
-    property real petLean: 0
-    function pet() {
+    Behavior on petK { NumberAnimation { duration: c.petting ? 700 : 420; easing.type: Easing.InOutSine } }
+    property real petLean: 6          // 6..9° (frotarse)
+    property real petPuff: 1
+    property real petHopY: 0
+    function pet(side) {
         if (!active || asleep) return
-        if (!petting) { reactions.calm(); petting = true }
+        if (side !== undefined && side !== null && Math.abs(side) > 0.05) petSide = side > 0 ? 1 : -1
+        if (!petting) {
+            if (side === undefined || side === null) petSide = Math.random() < 0.5 ? -1 : 1
+            reactions.calm(); petting = true; puffAnim.restart()
+        }
         petEnd.restart()
-        spawnHeart()
+        if (!petHop.running) petHop.restart()
+        const n = 2 + (Math.random() < 0.5 ? 1 : 0)
+        for (let i = 0; i < n; i++) spawnHeart(i * 90)
     }
-    Timer { id: petEnd; interval: 1700; onTriggered: c.petting = false }
-    SequentialAnimation {
+    Timer { id: petEnd; interval: 1700; onTriggered: { c.petting = false; sighAnim.restart() } }
+    SequentialAnimation {           // frotarse: vaivén lento hacia el lado de la mano
         running: c.petK > 0.01 && c.active
         loops: Animation.Infinite
-        NumberAnimation { target: c; property: "petLean"; to: 5; duration: 760; easing.type: Easing.InOutSine }
-        NumberAnimation { target: c; property: "petLean"; to: -5; duration: 760; easing.type: Easing.InOutSine }
-        onStopped: c.petLean = 0
+        NumberAnimation { target: c; property: "petLean"; to: 9; duration: 900; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "petLean"; to: 6; duration: 900; easing.type: Easing.InOutSine }
+    }
+    SequentialAnimation {           // "puff" de alegría al empezar
+        id: puffAnim
+        NumberAnimation { target: c; property: "petPuff"; to: 1.04; duration: 220; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petPuff"; to: 1.0; duration: 460; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+    }
+    SequentialAnimation {           // saltitos felices con cada ráfaga
+        id: petHop
+        NumberAnimation { target: c; property: "petHopY"; to: -c.s * 0.06; duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petHopY"; to: 0; duration: 150; easing.type: Easing.InQuad }
+        NumberAnimation { target: c; property: "petHopY"; to: -c.s * 0.035; duration: 120; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petHopY"; to: 0; duration: 130; easing.type: Easing.InQuad }
+    }
+    SequentialAnimation {           // suspiro satisfecho al terminar + apertura con doble parpadeo
+        id: sighAnim
+        Squash { who: c; sx: 1.04; sy: 0.96; ms: 320; ease: Easing.InOutSine }
+        Squash { who: c; sx: 1; sy: 1; ms: 460; ease: Easing.OutBack }
+        ScriptAction { script: if (!c.asleep) c.doBlink(true) }
     }
     Component { id: heartComp; Heart {} }
-    function spawnHeart() {
+    function spawnHeart(delay) {
         // Los corazones van a la raíz de la ventana: no los recorta la tarjeta (clip).
         const win = c.Window.window
         const host = win && win.contentItem ? win.contentItem : c
         const p = c.mapToItem(host, c.width / 2, c.height * 0.2)
-        const hs = Math.max(8, c.s * 0.26)
+        const hs = Math.max(7, c.s * (0.16 + Math.random() * 0.16))
         heartComp.createObject(host, {
-            size: hs, x: p.x - hs / 2 + (Math.random() - 0.5) * c.s * 0.4, y: p.y - hs / 2,
-            rise: c.s * (0.7 + Math.random() * 0.4), drift: (Math.random() - 0.5) * c.s * 0.6, z: 1000 })
+            size: hs, x: p.x - hs / 2 + (Math.random() - 0.5) * c.s * 0.5, y: p.y - hs / 2,
+            rise: c.s * (0.7 + Math.random() * 0.5), drift: (Math.random() - 0.5) * c.s * 0.7,
+            delay: delay || 0, z: 1000 })
     }
 
     // Propiedades que animan las reacciones (valores neutros).
@@ -307,12 +336,12 @@ Item {
     Item {
         id: body
         width: c.s; height: c.s
-        rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired + c.petLean * c.petK
+        rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired + c.petSide * c.petLean * c.petK
         transform: [
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
-            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: 1 + 0.03 * c.petK; yScale: 1 - 0.03 * c.petK },
-            Translate { x: c.rX; y: c.bounceY + c.danceY + c.rY }
+            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.petPuff * (1 + 0.02 * c.petK); yScale: c.petPuff * (1 - 0.02 * c.petK) },
+            Translate { x: c.rX + c.petSide * c.s * 0.045 * c.petK * (c.petLean - 5) / 4; y: c.bounceY + c.danceY + c.rY + c.petHopY }
         ]
 
         Rectangle {

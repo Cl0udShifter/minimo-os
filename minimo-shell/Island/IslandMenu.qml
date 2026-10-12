@@ -56,7 +56,7 @@ Item {
                 Character {
                     id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
                     // Clic en el personaje: risita, giro, guiño…
-                    MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: chr.clicked() }
+                    MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) }
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
