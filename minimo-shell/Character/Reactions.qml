@@ -20,7 +20,7 @@ Item {
 
     // Repertorio espontáneo (raro: cada 45–120 s, ver Character). "yawn" sube si lleva rato quieto.
     function idleWeights(idleMs) {
-        return { hop: 1.8, wink: 2.2, doubleHop: 0.8, giggle: 1.2, lookAround: 1.6, hopBack: 0.8,
+        return { hop: 1.8, wink: 2.2, doubleHop: 0.8, giggle: 1.2, lookAround: 1.6,
                  surprise: 0.6, dizzy: 0.3, curious: 1.4, yawn: idleMs > 25000 ? 2.5 : 0.4 }
     }
     function pick(weights) {
@@ -33,14 +33,14 @@ Item {
     }
     function playRandom(idleMs) { play(pick(idleWeights(idleMs))) }
     function playOpen() { play(pick({ greet: 1.3, happyBounce: 1.1 })) }
-    // Clic: ciclo fijo (siempre se ve algo distinto); el primero tras mostrarse es el salto atrás.
-    readonly property var clickCycle: ["hopBack", "wink", "giggle", "wink", "happyBounce", "wink", "curious"]
+    // Clic: ciclo fijo (siempre se ve algo distinto); el primero tras mostrarse es el guiño.
+    readonly property var clickCycle: ["wink", "giggle", "wink", "happyBounce", "wink", "curious"]
     property int clickIdx: 0
     function resetClicks() { clickIdx = 0 }
     function playClick() { const n = clickCycle[clickIdx % clickCycle.length]; clickIdx++; play(n, true) }
 
     readonly property var anims: ({ hop: hop, doubleHop: doubleHop, giggle: giggle, lookAround: lookAround,
-        hopBack: hopBack, surprise: surprise, wink: wink, dizzy: dizzy, yawn: yawn, curious: curious,
+        surprise: surprise, wink: wink, dizzy: dizzy, yawn: yawn, curious: curious,
         greet: greet, happyBounce: happyBounce, startled: startled })
 
     function play(name, fromClick) {
@@ -97,37 +97,6 @@ Item {
         Squash { who: rx.c; sx: 1; sy: 1; ms: 280; ease: Easing.OutBack }
     }
 
-    // ---------- salto hacia atrás (juguetón) ----------
-    // Anticipación → sube y "se aleja" (escala menor = profundidad) con ojos algo abiertos →
-    // cae con squash suave → vuelve adelante con overshoot mínimo.
-    SequentialAnimation {
-        id: hopBack
-        // anticipación: se agacha y entrecierra un poco
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 1.06; sy: 0.94; ms: 130; ease: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "half"; to: 0.85; duration: 130; easing.type: Easing.OutCubic }
-        }
-        // despegue en arco hacia atrás: sube, se achica (profundidad), ojos bien abiertos
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 0.96; sy: 1.05; toY: -rx.s * 0.15; ms: 230; ease: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "rScale"; to: 0.87; duration: 330; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "half"; to: 1; duration: 90; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1.12; duration: 150; easing.type: Easing.OutCubic }
-        }
-        // caída
-        Squash { who: rx.c; sx: 1; sy: 1; toY: 0; ms: 170; ease: Easing.InQuad }
-        // aterrizaje: squash y los ojos "rebotan" (se achican un instante)
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 1.06; sy: 0.94; ms: 80; ease: Easing.OutQuad }
-            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 0.9; duration: 80; easing.type: Easing.OutQuad }
-        }
-        // asentar con resorte y volver adelante
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 1; sy: 1; ms: 340; ease: Easing.OutBack; overshoot: 1.4 }
-            NumberAnimation { target: rx.c; property: "eyeHMul"; to: 1; duration: 320; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
-            NumberAnimation { target: rx.c; property: "rScale"; to: 1; duration: 440; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
-        }
-    }
     // ---------- risita: se aleja un poco, sonríe y se balancea ----------
     SequentialAnimation {
         id: giggle

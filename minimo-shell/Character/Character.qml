@@ -319,7 +319,7 @@ Item {
     // Salto hacia atrás juguetón cuando llega una notificación (si se ve y está despierto).
     Connections {
         target: Notifs
-        function onCurrentChanged() { if (Notifs.current !== null) c.react("hopBack") }
+        function onCurrentChanged() { if (Notifs.current !== null) c.react("curious") }
     }
 
     // Pose estática natural al pausar (animaciones apagadas, oculto): de frente, ojos

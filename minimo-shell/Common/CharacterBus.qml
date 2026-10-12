@@ -20,7 +20,7 @@ Singleton {
     signal typingStopped()
     signal squintFor(int ms)        // depuración: qs ipc call character squint 2000
     property int hearts: 0          // corazones vivos (tope de partículas)
-    readonly property var names: ["hop", "doubleHop", "giggle", "lookAround", "hopBack", "surprise",
+    readonly property var names: ["hop", "doubleHop", "giggle", "lookAround", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
 
     IpcHandler {

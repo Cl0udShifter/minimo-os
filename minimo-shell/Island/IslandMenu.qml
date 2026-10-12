@@ -55,7 +55,7 @@ Item {
                 spacing: 16
                 Character {
                     id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
-                    // Clic en el personaje: salto atrás, guiño, risita… (4+ clics rápidos: caricias)
+                    // Clic en el personaje: guiño, risita… (4+ clics rápidos: caricias)
                     MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) }
                 }
                 Column {
