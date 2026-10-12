@@ -46,20 +46,25 @@ def item_pid():
     return 0
 
 def family(pid):
-    """El PID y sus ancestros/descendientes cercanos (Steam y Electron usan procesos auxiliares)."""
-    fam = {pid}
+    """El PID y todos sus descendientes: la ventana de Steam la dibuja un nieto
+    (steamwebhelper) y las de Electron, procesos hijos."""
+    kids = {}
     try:
         for p in os.listdir("/proc"):
             if p.isdigit():
                 try:
                     with open(f"/proc/{p}/stat") as f:
                         ppid = int(f.read().rsplit(")", 1)[1].split()[1])
-                    if ppid == pid:
-                        fam.add(int(p))
-                except Exception:
+                    kids.setdefault(ppid, []).append(int(p))
+                except (OSError, ValueError, IndexError):
                     pass
-    except Exception:
+    except OSError:
         pass
+    fam, todo = {pid}, [pid]
+    while todo:
+        for k in kids.get(todo.pop(), []):
+            if k not in fam:
+                fam.add(k); todo.append(k)
     return fam
 
 def comm(pid):

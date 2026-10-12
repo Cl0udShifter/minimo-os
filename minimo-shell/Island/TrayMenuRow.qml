@@ -27,7 +27,7 @@ Item {
     Text {
         visible: !mr.entry.isSeparator
         x: 16; width: parent.width - 48; anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight
-        text: (mr.entry.text || "").replace(/_(?=\S)/g, "")
+        text: (mr.entry.text || "").replace(/_(.)/g, "$1")   // mnemónicos: "_Salir" → "Salir", "__" → "_"
         color: mr.entry.enabled ? Theme.textPrimary : Theme.textSecondary
         opacity: mr.entry.enabled ? 1 : 0.6
         font.family: Theme.font; font.pixelSize: 13
