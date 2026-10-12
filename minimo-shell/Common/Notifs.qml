@@ -37,12 +37,15 @@ Singleton {
         return e ? Quickshell.iconPath(e.icon, true) : ""
     }
 
-    function next() {
-        const q = queue.slice(1)
-        queue = q
-    }
+    // Saca una notificación concreta de la cola. Nunca "la primera a ciegas": invocar una
+    // acción puede cerrar la notificación (closed → filtro) antes de que volvamos acá, y
+    // quitar queue[0] después se llevaría la siguiente sin mostrarla.
+    function drop(n) { queue = queue.filter(x => x !== n) }
+    // Cerrarla solo si sigue viva: si la app ya la cerró (p. ej. al invocar una acción),
+    // dismiss() sobre un objeto destruido da "Cannot close destroyed notification".
+    function finish(n) { const live = queue.indexOf(n) >= 0; drop(n); if (live) n.dismiss() }
     // Cierra la actual (el usuario la descartó o se venció el tiempo).
-    function dismiss() { const n = current; next(); if (n) n.dismiss() }
+    function dismiss() { const n = current; if (n) finish(n) }
     // Clic en el aviso: acción "default" si existe; si no, trae la app (desminimiza y enfoca).
     function activate() {
         const n = current
@@ -51,9 +54,9 @@ Singleton {
         if (def) def.invoke()
         else Quickshell.execDetached([Qt.resolvedUrl("../scripts/focus-app.py").toString().replace("file://", ""),
                                       n.desktopEntry || "", n.appName || ""])
-        next(); n.dismiss()
+        finish(n)
     }
-    function invoke(action) { const n = current; action.invoke(); next(); if (n) n.dismiss() }
+    function invoke(action) { const n = current; action.invoke(); if (n) finish(n) }
 
     NotificationServer {
         keepOnReload: false
@@ -65,6 +68,7 @@ Singleton {
         onNotification: n => {
             const critical = n.urgency === NotificationUrgency.Critical
             if (root.dnd && !critical) { n.expire(); return }
+            if (root.queue.indexOf(n) >= 0) return          // reemplazo de una ya en cola: se actualiza sola
             n.tracked = true
             // Si la app cierra/reemplaza la notificación, sale de la cola.
             n.closed.connect(() => { root.queue = root.queue.filter(x => x !== n) })
@@ -79,7 +83,7 @@ Singleton {
         interval: root.current ? (root.current.urgency === NotificationUrgency.Critical ? 9000
                                   : root.fromFocused(root.current) ? 2500 : 5000) : 5000
         running: root.current !== null && !root.paused
-        onTriggered: { const n = root.current; root.next(); if (n) n.expire() }
+        onTriggered: { const n = root.current; if (n) { root.drop(n); n.expire() } }
     }
     onCurrentChanged: if (current) life.restart()
 
