@@ -14,12 +14,10 @@ Column {
     spacing: 4
 
     function focusField() { field.text = ""; field.forceActiveFocus() }
-    function reset() { field.text = ""; field.focus = false; pins.selected = -1; menu.close() }
+    function reset() { field.text = ""; field.focus = false }
 
     readonly property var results: Apps.search(query, 5)
     onResultsChanged: selected = 0
-    readonly property bool showPinned: query.trim() === "" && Apps.pinned.length > 0
-    onQueryChanged: { pins.selected = -1; menu.close() }
 
     function launch(entry) { if (entry) { entry.execute(); root.launched() } }
 
@@ -51,22 +49,10 @@ Column {
                 color: Theme.textDim
                 font: field.font
             }
-            Keys.onDownPressed: { if (root.showPinned) pins.move(0, pins.selected < 0 ? 0 : 1); else root.selected = Math.min(root.selected + 1, root.results.length - 1) }
-            Keys.onUpPressed: { if (root.showPinned) pins.move(0, -1); else root.selected = Math.max(root.selected - 1, 0) }
-            Keys.onLeftPressed: e => { if (root.showPinned) pins.move(-1, 0); else e.accepted = false }
-            Keys.onRightPressed: e => { if (root.showPinned) pins.move(1, 0); else e.accepted = false }
-            onAccepted: root.launch(root.showPinned ? pins.current() : root.results[root.selected])
+            Keys.onDownPressed: root.selected = Math.min(root.selected + 1, root.results.length - 1)
+            Keys.onUpPressed: root.selected = Math.max(root.selected - 1, 0)
+            onAccepted: root.launch(root.results[root.selected])
         }
-    }
-
-    // Ancladas (con el buscador vacío).
-    PinnedGrid {
-        id: pins
-        width: root.width
-        visible: root.showPinned
-        iconSize: 44; cellW: 70
-        onLaunched: e => root.launch(e)
-        onMenuRequested: (e, px, py) => { const p = pins.mapToItem(menuHolder, px, py); menu.openAt(e, p.x, p.y) }
     }
 
     Repeater {
@@ -95,20 +81,9 @@ Column {
                 id: hov
                 anchors.fill: parent; hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: m => {
-                    if (m.button === Qt.RightButton) { const p = mapToItem(menuHolder, m.x, m.y); menu.openAt(modelData, p.x, p.y) }
-                    else root.launch(modelData)
-                }
+                onClicked: root.launch(modelData)
                 onWheel: w => w.accepted = true   // no cambiar de workspace sobre la lista
             }
         }
-    }
-
-    // Menú contextual (no ocupa lugar en la columna).
-    Item {
-        id: menuHolder
-        width: root.width; height: 0
-        PinMenu { id: menu }
     }
 }
