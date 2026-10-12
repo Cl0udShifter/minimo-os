@@ -22,7 +22,7 @@ Singleton {
     readonly property bool online: connectivity === "full"
 
     property var res: null      // { cpu, memUsed, memTotal, diskUsed, diskTotal, temp }
-    property var net: null      // { type, name, device, ip, signal, connectivity }
+    property var net: null      // { type, name, device, signal, connectivity }
     property var dev: null      // { keyboards, mice, audio, bluetooth, usb }
     property var gpu: null      // { name, util, temp } | null
 

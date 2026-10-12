@@ -77,11 +77,6 @@ Item {
                 valueColor: SysStatus.known && !SysStatus.online ? Theme.danger : Theme.textSecondary
             }
             Row2 {
-                visible: !!(root.n && root.n.ip)
-                icon: "info"; label: "IP local"
-                value: root.n ? root.n.ip : ""
-            }
-            Row2 {
                 visible: !!(root.n && root.n.type === "wifi")
                 icon: "wifi"; label: "Señal"
                 value: root.n ? root.n.signal + "%" : ""

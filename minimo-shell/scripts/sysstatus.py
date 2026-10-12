@@ -58,7 +58,7 @@ def nm_fields(line):
     out.append(cur); return out
 
 def network():
-    net = {"type": "", "name": "", "device": "", "ip": "", "signal": 0, "connectivity": "unknown"}
+    net = {"type": "", "name": "", "device": "", "signal": 0, "connectivity": "unknown"}
     for l in run(["nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "dev"]).splitlines():
         d, ty, st, con = (nm_fields(l) + ["", "", "", ""])[:4]
         if st == "connected" and ty in ("ethernet", "wifi"):
@@ -68,9 +68,6 @@ def network():
         for l in run(["nmcli", "-t", "-f", "IN-USE,SSID,SIGNAL", "dev", "wifi", "list", "--rescan", "no"]).splitlines():
             f = nm_fields(l)
             if f[0] == "*": net["name"], net["signal"] = f[1], int(f[2] or 0)
-    if net["device"]:
-        for w in run(["ip", "-4", "-o", "addr", "show", "dev", net["device"]]).split():
-            if "/" in w and w[0].isdigit(): net["ip"] = w.split("/")[0]; break
     net["connectivity"] = run(["nmcli", "networking", "connectivity", "check"], 4).strip() or "unknown"
     return net
 
