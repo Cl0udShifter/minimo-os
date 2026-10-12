@@ -16,7 +16,8 @@ Column {
     property string qsVersion: ""
 
     // Al mostrar la página, el personaje saluda.
-    onShownChanged: if (shown) { greetLater.restart(); hv.running = true; qv.running = true }
+    // Las versiones se consultan una sola vez (no en cada apertura).
+    onShownChanged: if (shown) { greetLater.restart(); if (!root.hyprVersion) hv.running = true; if (!root.qsVersion) qv.running = true }
     Timer { id: greetLater; interval: 350; onTriggered: chr.react("greet") }
 
     FileView {
