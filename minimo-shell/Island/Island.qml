@@ -72,16 +72,38 @@ PanelWindow {
     }
 
     // Región única de hover/input. Nunca se reemplaza por otro item.
+    // También es el ÚNICO receptor de clics/arrastres de la isla compacta (cubre toda la
+    // píldora y el margen superior, con su tamaño final aunque la píldora esté animando):
+    // clic → abre el menú al soltar; arrastre horizontal (>8 px) → tira de escritorios.
     MouseArea {
         id: hoverZone
         hoverEnabled: true
+        preventStealing: true
         acceptedButtons: Qt.LeftButton
-        cursorShape: win.expanded ? Qt.ArrowCursor : Qt.PointingHandCursor
-        onPressed: mouse => { if (!win.expanded) win.expanded = true }
+        cursorShape: win.expanded ? Qt.ArrowCursor : (win.dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor)
         x: win.shown ? pill.x : 0
         y: 0
         width: win.shown ? pill.width : win.width
-        height: win.shown ? pill.y + pill.height : 3
+        height: win.shown ? Theme.topMargin + pill.height : 3
+
+        property real pressX: 0
+        property bool cancelled: false
+        onPressed: m => { pressX = m.x; cancelled = false }
+        onPositionChanged: m => {
+            if (!pressed || win.expanded || cancelled) return
+            if (!win.dragging && Math.abs(m.x - pressX) > 8) { win.dragging = true; strip.hovered = -1 }
+            if (win.dragging) strip.hoverAt(mapToItem(strip, m.x, m.y))
+        }
+        onReleased: m => {
+            if (win.dragging) {
+                const ws = strip.hoveredWs
+                win.dragging = false
+                if (ws && ws.id !== Workspaces.activeId) Workspaces.goTo(ws.id)
+            } else if (!cancelled && !win.expanded && containsMouse) win.expanded = true
+        }
+        onCanceled: win.dragging = false
+        // Rueda sobre la isla compacta: escritorio anterior/siguiente.
+        onWheel: w => { if (!win.expanded) Workspaces.wheel(w.angleDelta.y) }
     }
 
 
@@ -121,7 +143,7 @@ PanelWindow {
         Behavior on y { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutQuint } }
 
         focus: win.expanded || win.dragging
-        Keys.onEscapePressed: { if (win.dragging) { dragArea.cancelled = true; win.dragging = false } else win.collapse() }
+        Keys.onEscapePressed: { if (win.dragging) { hoverZone.cancelled = true; win.dragging = false } else win.collapse() }
 
         IslandCompact {
             id: compact
@@ -143,31 +165,6 @@ PanelWindow {
             Behavior on scale { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutBack } }
         }
 
-        // Clic: expandir. Arrastre horizontal (>12 px): elegir escritorio y soltar para ir.
-        MouseArea {
-            id: dragArea
-            anchors.fill: parent
-            preventStealing: true
-            property real pressX: 0
-            property bool cancelled: false
-            cursorShape: win.expanded ? Qt.ArrowCursor : (win.dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor)
-            onPressed: m => { pressX = m.x; cancelled = false }
-            onPositionChanged: m => {
-                if (win.expanded || cancelled) return
-                if (!win.dragging && Math.abs(m.x - pressX) > 12) { win.dragging = true; strip.hovered = -1 }
-                if (win.dragging) strip.hoverAt(mapToItem(strip, m.x, m.y))
-            }
-            onReleased: m => {
-                if (win.dragging) {
-                    const ws = strip.hoveredWs
-                    win.dragging = false
-                    if (ws && ws.id !== Workspaces.activeId) Workspaces.goTo(ws.id)
-                } else if (!cancelled && !win.expanded && containsMouse) win.expanded = true
-            }
-            onCanceled: win.dragging = false
-            // Rueda sobre la isla: workspace anterior/siguiente.
-            onWheel: w => Workspaces.wheel(w.angleDelta.y)
-        }
 
         IslandMenu {
             id: menu
