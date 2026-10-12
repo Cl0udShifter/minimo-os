@@ -25,9 +25,10 @@ PanelWindow {
     property var results: Apps.search(field.text, 7)
     property int selected: 0
     onResultsChanged: selected = 0
+    readonly property bool showPinned: field.text.trim() === "" && Apps.pinned.length > 0
 
     onOpenChanged: {
-        if (open) { field.text = ""; focusLater.restart() }
+        if (open) { field.text = ""; pins.selected = -1; menu.close(); focusLater.restart() }
     }
     Timer { id: focusLater; interval: 60; onTriggered: field.forceActiveFocus() }
 
@@ -69,7 +70,8 @@ PanelWindow {
         clip: true
         Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-        MouseArea { anchors.fill: parent }   // no cerrar al hacer clic dentro
+        MouseArea { anchors.fill: parent; onPressed: menu.close() }   // no cerrar al hacer clic dentro
+        PinMenu { id: menu }
 
         Column {
             id: col
@@ -94,14 +96,28 @@ PanelWindow {
                     clip: true
                     Text { visible: !field.text; text: "Buscar aplicaciones"; color: Theme.textDim; font: field.font }
                     Keys.onEscapePressed: LauncherState.hide()
-                    Keys.onDownPressed: win.selected = Math.min(win.selected + 1, win.results.length - 1)
-                    Keys.onUpPressed: win.selected = Math.max(win.selected - 1, 0)
-                    Keys.onTabPressed: win.selected = (win.selected + 1) % Math.max(1, win.results.length)
-                    onAccepted: win.launch(win.results[win.selected])
+                    Keys.onDownPressed: { if (win.showPinned) pins.move(0, pins.selected < 0 ? 0 : 1); else win.selected = Math.min(win.selected + 1, win.results.length - 1) }
+                    Keys.onUpPressed: { if (win.showPinned) pins.move(0, -1); else win.selected = Math.max(win.selected - 1, 0) }
+                    Keys.onLeftPressed: e => { if (win.showPinned) pins.move(-1, 0); else e.accepted = false }
+                    Keys.onRightPressed: e => { if (win.showPinned) pins.move(1, 0); else e.accepted = false }
+                    Keys.onTabPressed: { if (win.showPinned) pins.move(1, 0); else win.selected = (win.selected + 1) % Math.max(1, win.results.length) }
+                    onAccepted: win.launch(win.showPinned ? pins.current() : win.results[win.selected])
+                    onTextChanged: { pins.selected = -1; menu.close() }
                 }
             }
 
-            Item { width: 1; height: 4; visible: win.results.length > 0 }
+            Item { width: 1; height: 4; visible: win.results.length > 0 || win.showPinned }
+
+            // Ancladas (con el buscador vacío).
+            PinnedGrid {
+                id: pins
+                width: col.width
+                visible: win.showPinned
+                iconSize: 52; cellW: 82
+                onLaunched: e => win.launch(e)
+                onMenuRequested: (e, px, py) => { const p = mapToItem(card, px, py); menu.openAt(e, p.x, p.y) }
+            }
+            Item { width: 1; height: 6; visible: win.showPinned }
 
             Repeater {
                 model: win.results
@@ -132,7 +148,11 @@ PanelWindow {
                     MouseArea {
                         id: rm
                         anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: win.launch(modelData)
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        onClicked: m => {
+                            if (m.button === Qt.RightButton) { const p = mapToItem(card, m.x, m.y); menu.openAt(modelData, p.x, p.y) }
+                            else win.launch(modelData)
+                        }
                     }
                 }
             }
