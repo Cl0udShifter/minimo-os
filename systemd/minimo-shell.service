@@ -7,6 +7,8 @@ After=graphical-session.target
 Requisite=graphical-session.target
 
 [Service]
+# El driver NVIDIA (explicit sync) consume muchos descriptores: margen amplio.
+LimitNOFILE=65536
 ExecStart=/usr/bin/qs -p %h/Proyectos/minimo-os/minimo-shell
 Restart=on-failure
 RestartSec=2

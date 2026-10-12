@@ -62,7 +62,7 @@ Item {
             id: coverLayer
             anchors.fill: parent
             visible: false
-            layer.enabled: true
+            layer.enabled: art.hasArt && root.visible
             layer.smooth: true
             layer.mipmap: true
             layer.textureSize: Qt.size(width * 2, height * 2)

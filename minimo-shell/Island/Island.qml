@@ -75,9 +75,11 @@ PanelWindow {
         enabled: DisplayState.islandSmartHide
         function onRawEvent(ev) {
             const n = ev.name
-            if (n === "closewindow" || n === "movewindowv2" || n === "openwindow") Hyprland.refreshToplevels()
+            if (n === "closewindow" || n === "movewindowv2" || n === "openwindow") toplevelsLater.restart()
         }
     }
+    // Una sola actualización por ráfaga de eventos, fuera del manejador de eventos de Hyprland.
+    Timer { id: toplevelsLater; interval: 120; onTriggered: Hyprland.refreshToplevels() }
     function syncHide() {
         if (!hideWanted) { hideTimer.stop(); shown = true }
         else if (!hovered && !open) hideTimer.restart()
