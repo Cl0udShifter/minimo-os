@@ -24,7 +24,10 @@ PanelWindow {
         const next = useA ? imgB : imgA
         next.source = p ? "file://" + p : ""
         useA = !useA
+        freeOld.restart()
     }
+    // Tras el fundido, libera la imagen anterior (textura a pantalla completa).
+    Timer { id: freeOld; interval: 500; onTriggered: (win.useA ? imgB : imgA).source = "" }
     onPathChanged: show(path)
     Component.onCompleted: if (path) show(path)
 

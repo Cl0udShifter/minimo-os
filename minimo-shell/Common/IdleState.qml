@@ -12,6 +12,8 @@ Singleton {
     id: root
     property bool forced: false
     readonly property bool sleeping: monitor.isIdle || forced
+    // Nadie mira la pantalla (inactividad real, no sueño forzado): se pausan animaciones continuas.
+    readonly property bool unattended: monitor.isIdle
 
     function sleepNow() { forced = true }
     function wake() { forced = false }

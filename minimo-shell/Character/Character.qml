@@ -327,7 +327,7 @@ Item {
     }
     SequentialAnimation {
         // respiración (más lenta y profunda dormido)
-        running: c.active; loops: Animation.Infinite
+        running: c.active && !(c.asleep && IdleState.unattended); loops: Animation.Infinite
         NumberAnimation { target: c; property: "breath"; to: c.asleep ? 1.025 : 1.012; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }
         NumberAnimation { target: c; property: "breath"; to: 1.0; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }
     }

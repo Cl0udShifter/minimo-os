@@ -132,7 +132,7 @@ Column {
                     ListView {
                         id: modes
                         anchors.fill: parent; anchors.margins: 6
-                        model: mcard.m.availableModes
+                        model: mcard.listOpen ? mcard.m.availableModes : []   // sin delegados mientras está cerrada
                         boundsBehavior: Flickable.StopAtBounds
                         delegate: Rectangle {
                             required property string modelData
