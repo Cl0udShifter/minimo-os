@@ -24,7 +24,7 @@ Column {
     Rectangle {
         id: box
         width: Math.round(parent.width); height: 40
-        radius: Theme.radiusField
+        radius: height / 2               // píldora
         // Estilo Spotlight: hilo fino semitransparente; con foco, superficie elevada,
         // borde más marcado y un aro suave alrededor (sin blur ni transparencia del panel).
         readonly property bool on: field.activeFocus
@@ -48,14 +48,14 @@ Column {
         }
         Icon {
             id: lupa
-            x: 12; anchors.verticalCenter: parent.verticalCenter
+            x: 16; anchors.verticalCenter: parent.verticalCenter
             name: "search"; tone: "gray"; size: 16
         }
         TextInput {
             id: field
             cursorVisible: activeFocus
             anchors.left: lupa.right; anchors.leftMargin: 8
-            anchors.right: parent.right; anchors.rightMargin: 12
+            anchors.right: parent.right; anchors.rightMargin: 16
             anchors.verticalCenter: parent.verticalCenter
             color: Theme.textPrimary
             selectionColor: Theme.hover
