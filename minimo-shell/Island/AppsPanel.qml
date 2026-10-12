@@ -222,22 +222,8 @@ Item {
                 Repeater {
                     model: root.background
                     delegate: Item {
-                        id: bgRow
                         required property var modelData
                         width: bgCol.width; height: 40
-                        // Menú propio de la app (clic derecho), como la bandeja oculta de Windows 11.
-                        QsMenuAnchor {
-                            id: trayMenu
-                            menu: bgRow.isTray && bgRow.modelData.hasMenu ? bgRow.modelData.menu : null
-                            anchor.item: bgRow
-                            anchor.rect.x: bgMa.mouseX; anchor.rect.y: bgMa.mouseY
-                        }
-                        Rectangle {
-                            x: 6; width: parent.width - 12; height: 36; radius: 18
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: bgMa.containsMouse ? Theme.hover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                        }
                         readonly property bool isTray: modelData.onlyMenu !== undefined
                         Icon { visible: !parent.isTray; x: 16; anchors.verticalCenter: parent.verticalCenter; name: "music"; size: 18; tone: "dark" }
                         Image { visible: parent.isTray; x: 16; width: 18; height: 18; anchors.verticalCenter: parent.verticalCenter; source: parent.isTray ? modelData.icon : ""; sourceSize: Qt.size(36, 36) }
@@ -246,15 +232,7 @@ Item {
                             text: parent.isTray ? (root.appName(modelData.id) || modelData.title) : modelData.identity + (modelData.trackTitle ? "  ·  " + modelData.trackTitle : "")
                             color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                         }
-                        MouseArea {
-                            id: bgMa
-                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-                            onClicked: m => {
-                                if (!bgRow.isTray) { if (bgRow.modelData.canRaise) bgRow.modelData.raise(); return }
-                                if (m.button === Qt.RightButton) { if (bgRow.modelData.hasMenu) trayMenu.open() }
-                                else root.activateTray(bgRow.modelData)
-                            }
+                        MouseArea { anchors.fill: parent; enabled: parent.isTray || modelData.canRaise; cursorShape: Qt.PointingHandCursor; onClicked: parent.isTray ? root.activateTray(modelData) : modelData.raise() }
                         }
                     }
                 }
