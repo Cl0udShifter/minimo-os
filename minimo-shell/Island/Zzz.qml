@@ -7,6 +7,9 @@ import "../Common"
 Item {
     id: root
     property bool running: false
+    // Al despertar las z no desaparecen de golpe: se desvanecen.
+    opacity: running ? 1 : 0
+    Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
     width: 14; height: 30
     visible: running
 
@@ -32,8 +35,8 @@ Item {
                     NumberAnimation { target: z; property: "y"; from: root.height - 10; to: -4; duration: 2700; easing.type: Easing.OutSine }
                     NumberAnimation { target: z; property: "x"; from: 0; to: 8; duration: 2700; easing.type: Easing.InOutSine }
                     SequentialAnimation {
-                        NumberAnimation { target: z; property: "opacity"; from: 0; to: 0.9; duration: 600 }
-                        NumberAnimation { target: z; property: "opacity"; to: 0; duration: 2100 }
+                        NumberAnimation { target: z; property: "opacity"; from: 0; to: 0.85; duration: 700; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: z; property: "opacity"; to: 0; duration: 2000; easing.type: Easing.InOutSine }
                     }
                 }
                 PauseAnimation { duration: (2 - z.index) * 900 }

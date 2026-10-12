@@ -9,7 +9,8 @@ import "../Common"
 // superficie de la esfera hacia donde mira, con proyección esférica: cerca del borde
 // los ojos se acortan en la dirección radial y el par se inclina en las diagonales.
 // Además: parpadeo, respiración, trucos espontáneos, giro al abrir/cerrar, baile con
-// música (cava) y modo dormir tras un minuto sin mover el mouse.
+// música (cava) y modo dormir por inactividad. Ojos SIEMPRE pastilla.
+// Prioridad de estados: dormir > ánimo > baile > truco > reposo.
 Item {
     id: c
     property int size: 22
@@ -76,9 +77,10 @@ Item {
 
     Timer {
         // mirada distraída ocasional cuando el mouse está quieto (despierto)
-        running: c.active && !c.asleep; repeat: true; interval: 2600
+        running: c.active && !c.asleep; repeat: true; interval: 3000
         onTriggered: {
-            if (Math.random() < 0.5) { const t = Math.random() * Math.PI * 2, m = 0.3 + Math.random() * 0.5; c.idleX = Math.cos(t) * m; c.idleY = Math.sin(t) * m }
+            interval = 2500 + Math.random() * 2500
+            if (Math.random() < 0.5) { const t = Math.random() * Math.PI * 2, m = 0.25 + Math.random() * 0.4; c.idleX = Math.cos(t) * m; c.idleY = Math.sin(t) * m }
             else { c.idleX = 0; c.idleY = 0 }
             c.updateLook()
         }
@@ -98,8 +100,9 @@ Item {
     Behavior on gOn { NumberAnimation { duration: 250 } }
     readonly property real fX: bX * (1 - gOn) + gX * gOn
     readonly property real fY: bY * (1 - gOn) + gY * gOn
-    Behavior on eyeX { SpringAnimation { spring: c.asleep ? 0.6 : 3.2; damping: c.asleep ? 0.9 : 0.32; epsilon: 0.003 } }
-    Behavior on eyeY { SpringAnimation { spring: c.asleep ? 0.6 : 3.2; damping: c.asleep ? 0.9 : 0.32; epsilon: 0.003 } }
+    // Resorte casi crítico: sacada rápida con un overshoot mínimo, sin temblor.
+    Behavior on eyeX { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
+    Behavior on eyeY { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
 
     // ===== Geometría de la cara (proyección esférica) =====
     // Medidas tomadas de reference2 (esfera de diámetro D): ojo 0.149D x 0.3375D,
@@ -124,43 +127,54 @@ Item {
 
     // ===== Estados: parpadeo, dormir, baile =====
     property real blink: 1
+    // Parpadeo natural: ~140 ms (cierre rápido, apertura más lenta), cada 3–6 s,
+    // a veces doble.
+    property bool doubleBlink: false
     SequentialAnimation {
         id: blinkAnim
-        NumberAnimation { target: c; property: "blink"; to: 0.08; duration: 70 }
-        NumberAnimation { target: c; property: "blink"; to: 1; duration: 110 }
+        NumberAnimation { target: c; property: "blink"; to: 0.06; duration: 55; easing.type: Easing.InQuad }
+        PauseAnimation { duration: 25 }
+        NumberAnimation { target: c; property: "blink"; to: 1; duration: 80; easing.type: Easing.OutCubic }
+        PauseAnimation { duration: c.doubleBlink ? 90 : 0 }
+        NumberAnimation { target: c; property: "blink"; to: c.doubleBlink ? 0.06 : 1; duration: c.doubleBlink ? 55 : 0; easing.type: Easing.InQuad }
+        NumberAnimation { target: c; property: "blink"; to: 1; duration: c.doubleBlink ? 85 : 0; easing.type: Easing.OutCubic }
     }
+    function doBlink(twice) { doubleBlink = twice; blinkAnim.restart() }
     Timer {
         running: c.active && !c.asleep; repeat: true
-        interval: 3200
-        onTriggered: { interval = 2200 + Math.random() * 3200; blinkAnim.restart() }
+        interval: 3500
+        onTriggered: { interval = 3000 + Math.random() * 3000; c.doBlink(Math.random() < 0.15) }
     }
 
     // Dormir: cuando toda la PC está inactiva (IdleState, ext-idle-notify), salvo si
     // suena música (baila) o se está grabando. Al volver la actividad: estira y parpadea.
     readonly property bool asleep: IdleState.sleeping && !Media.playing && !Recorder.recording
     property real sleepy: asleep ? 1 : 0
-    Behavior on sleepy { NumberAnimation { duration: c.asleep ? 2200 : 250; easing.type: Easing.InOutSine } }
-    onAsleepChanged: { updateLook(); if (!asleep && active) wakeAnim.restart() }
+    // Se duerme despacio (2.4 s); al despertar abre los ojos con suavidad (0.7 s).
+    Behavior on sleepy { NumberAnimation { duration: c.asleep ? 2400 : 700; easing.type: c.asleep ? Easing.InOutSine : Easing.OutCubic } }
+    onAsleepChanged: { updateLook(); if (asleep) reactions.calm(); else if (active) wakeAnim.restart() }
     function wake() { IdleState.wake() }
     readonly property bool dancing: active && Media.playing
-    onDancingChanged: dancing ? Media.acquire() : Media.release()
+    onDancingChanged: { dancing ? Media.acquire() : Media.release(); if (dancing) reactions.calm() }
     readonly property real amp: Media.hasLevel ? 0.35 + Math.min(1, Media.level * 1.6) : 1
     property real beat: 0
     property real sway: 0
     NumberAnimation on beat { running: c.dancing; loops: Animation.Infinite; from: 0; to: 1; duration: 500 }
     NumberAnimation on sway { running: c.dancing; loops: Animation.Infinite; from: 0; to: 1; duration: 1000 }
-    property real danceOn: dancing ? 1 : 0
-    Behavior on danceOn { NumberAnimation { duration: 250 } }
+    // Baile contenido: un ánimo (preocupado/cansado) tiene prioridad sobre el baile.
+    property real danceOn: dancing && mood === "" ? 1 : 0
+    Behavior on danceOn { NumberAnimation { duration: 400; easing.type: Easing.InOutSine } }
     readonly property real hopT: Math.sin(Math.PI * beat)
-    readonly property real danceY: -hopT * s * 0.16 * amp * danceOn
-    readonly property real danceSy: 1 + danceOn * amp * (0.06 * hopT - 0.13 * Math.pow(1 - hopT, 3))
-    readonly property real danceSx: 1 + danceOn * amp * (0.11 * Math.pow(1 - hopT, 3) - 0.04 * hopT)
-    readonly property real danceRot: danceOn * amp * 7 * Math.sin(2 * Math.PI * sway)
-    property real happy: dancing ? 0.62 : 1
-    Behavior on happy { NumberAnimation { duration: 220 } }
+    readonly property real danceAmp: Math.min(1, amp) * danceOn
+    readonly property real danceY: -hopT * s * 0.08 * danceAmp
+    readonly property real danceSy: 1 + danceAmp * (0.03 * hopT - 0.05 * Math.pow(1 - hopT, 3))
+    readonly property real danceSx: 1 + danceAmp * (0.05 * Math.pow(1 - hopT, 3) - 0.02 * hopT)
+    readonly property real danceRot: danceAmp * 4 * Math.sin(2 * Math.PI * sway)
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: blink * happy * half * (1 - 0.9 * sleepy) * (1 - 0.45 * tired)
+    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired)
+    // Alegría con pastillas: más bajas y elevadas (mejillas que suben). Bailando, leve.
+    readonly property real joy: Math.max(smile, 0.45 * danceOn) * (1 - sleepy)
 
     // ===== Reacciones (ver Reactions.qml) =====
     function spin() { if (active) reactions.playOpen() }
@@ -186,7 +200,7 @@ Item {
     property real eyeWMul: 1
     property real openL: 1         // apertura por ojo (guiño)
     property real openR: 1
-    property real arc: 0           // ojos felices "^ ^" (0..1)
+    property real smile: 0         // alegría (0..1): pastillas algo más bajas y elevadas
     property real wobble: 0        // radio del bamboleo de la mirada (mareo)
     property real wobblePh: 0
     property real half: 1          // ojos entrecerrados (bostezo)
@@ -195,19 +209,20 @@ Item {
     // "" = normal/feliz · "worried" = preocupado (ojos más chicos e inclinados, sacudón)
     // · "tired" = cansado/exigido (ojos entrecerrados, inclinado).
     property string mood: ""
-    property real worry: active && mood === "worried" ? 1 : 0
-    property real tired: active && mood === "tired" ? 1 : 0
-    Behavior on worry { NumberAnimation { duration: 450; easing.type: Easing.InOutSine } }
+    property real worry: active && !asleep && mood === "worried" ? 1 : 0
+    property real tired: active && !asleep && mood === "tired" ? 1 : 0
+    Behavior on worry { NumberAnimation { duration: 500; easing.type: Easing.InOutSine } }
+    onMoodChanged: if (mood !== "") reactions.calm()
     Behavior on tired { NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
     property real moodShake: 0
     SequentialAnimation {
-        running: c.active && c.mood === "worried"
+        running: c.active && !c.asleep && c.mood === "worried"
         loops: Animation.Infinite
-        PauseAnimation { duration: 1800 }
-        NumberAnimation { target: c; property: "moodShake"; to: 5; duration: 70; easing.type: Easing.OutQuad }
-        NumberAnimation { target: c; property: "moodShake"; to: -5; duration: 90; easing.type: Easing.InOutSine }
-        NumberAnimation { target: c; property: "moodShake"; to: 3; duration: 80; easing.type: Easing.InOutSine }
-        NumberAnimation { target: c; property: "moodShake"; to: 0; duration: 100; easing.type: Easing.OutQuad }
+        PauseAnimation { duration: 2200 }
+        NumberAnimation { target: c; property: "moodShake"; to: 3; duration: 90; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "moodShake"; to: -2.5; duration: 120; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "moodShake"; to: 1.2; duration: 110; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "moodShake"; to: 0; duration: 140; easing.type: Easing.OutCubic }
         onStopped: c.moodShake = 0
     }
 
@@ -220,37 +235,35 @@ Item {
     }
 
     Timer {
-        // reacción espontánea cada 6–14 s (despierto, visible y sin música)
-        running: c.active && !c.asleep && !c.dancing; repeat: true
-        interval: 9000
+        // truco espontáneo cada 45–120 s (despierto, visible, sin música ni ánimo)
+        running: c.active && !c.asleep && !c.dancing && c.mood === ""; repeat: true
+        interval: 60000
         onTriggered: {
-            interval = 6000 + Math.random() * 8000
+            interval = 45000 + Math.random() * 75000
             if (!reactions.busy) reactions.playRandom(Date.now() - Cursor.lastMove)
         }
     }
     Timer { id: gazeHold; onTriggered: c.gOn = 0 }
     SequentialAnimation {
-        // al despertar: se estira, se aplasta un poco y parpadea
+        // al despertar: estiramiento leve mientras abre los ojos y un parpadeo doble suave
         id: wakeAnim
-        Squash { who: c; sx: 0.88; sy: 1.14; toY: -c.s * 0.06; ms: 260; ease: Easing.OutQuad }
-        Squash { who: c; sx: 1.08; sy: 0.92; toY: 0; ms: 180 }
-        Squash { who: c; sx: 1; sy: 1; toY: 0; ms: 240; ease: Easing.OutBack }
-        ScriptAction { script: blinkAnim.restart() }
-        PauseAnimation { duration: 260 }
-        ScriptAction { script: blinkAnim.restart() }
+        Squash { who: c; sx: 0.96; sy: 1.04; toY: -c.s * 0.02; ms: 420; ease: Easing.InOutSine }
+        Squash { who: c; sx: 1; sy: 1; toY: 0; ms: 380; ease: Easing.OutBack }
+        PauseAnimation { duration: 120 }
+        ScriptAction { script: c.doBlink(true) }
     }
     SequentialAnimation {
         // respiración (más lenta y profunda dormido)
         running: c.active; loops: Animation.Infinite
-        NumberAnimation { target: c; property: "breath"; to: c.asleep ? 1.05 : 1.035; duration: c.asleep ? 3000 : 1800; easing.type: Easing.InOutSine }
-        NumberAnimation { target: c; property: "breath"; to: 1.0; duration: c.asleep ? 3000 : 1800; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "breath"; to: c.asleep ? 1.025 : 1.012; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "breath"; to: 1.0; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }
     }
 
     // ===== Dibujo =====
     Item {
         id: body
         width: c.s; height: c.s
-        rotation: c.danceRot + c.rRot + c.moodShake - 5 * c.tired
+        rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired
         transform: [
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
@@ -310,32 +323,12 @@ Item {
                     // Ojo pastilla.
                     Rectangle {
                         width: eye.w
-                        height: Math.max(width * 0.35, c.eyeH * eye.kA * c.eyeHMul * c.openness * eye.own * (1 - 0.25 * c.worry))
+                        height: Math.max(width * 0.35, c.eyeH * eye.kA * c.eyeHMul * c.openness * eye.own * (1 - 0.25 * c.worry) * (1 - 0.28 * c.joy))
                         radius: Math.min(width, height) / 2
-                        x: -width / 2; y: -height / 2
+                        x: -width / 2; y: -height / 2 - c.eyeH * 0.12 * c.joy
                         color: Theme.eye
                         Behavior on color { ColorAnimation { duration: 250 } }
                         antialiasing: true
-                        opacity: 1 - c.arc
-                    }
-                    // Ojo feliz "^": dos pastillas cortas que se juntan arriba.
-                    Repeater {
-                        model: [-1, 1]
-                        delegate: Rectangle {
-                            required property int modelData
-                            visible: c.arc > 0.01
-                            opacity: c.arc
-                            width: eye.w * 0.85
-                            height: c.eyeH * 0.48
-                            radius: width / 2
-                            x: -width / 2 + modelData * c.eyeH * 0.13
-                            y: -height / 2 + c.eyeH * 0.02
-                            rotation: modelData * 38
-                            transformOrigin: Item.Center
-                            color: Theme.eye
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                            antialiasing: true
-                        }
                     }
                 }
             }
