@@ -117,11 +117,7 @@ Item {
     // si pasa la silueta, queda recortado por la máscara circular de la cara.
     readonly property real lookLen: Math.sqrt(fX * fX + fY * fY)
     readonly property real gk: lookLen > 1 ? 1 / lookLen : 1          // limitar al disco unidad
-    readonly property real yaw: fX * gk * 0.80 + turn                 // rad (máx ≈ 46°) + vuelta
-    // Vuelta sobre el eje vertical (0..2π): los ojos cruzan y desaparecen por detrás;
-    // el cuerpo se angosta de perfil (simulación 2D) y vuelve al dar la cara.
-    property real turn: 0
-    readonly property real turnSx: Math.max(0.1, Math.abs(Math.cos(turn / 2)))
+    readonly property real yaw: fX * gk * 0.80                        // rad (máx ≈ 46°)
     readonly property real pitch: fY * gk * (fY > 0 ? 0.66 : 0.6)     // arriba hay menos lugar (isla)
     readonly property real eyeAng: Math.asin(Math.min(0.9, eyeSep / r))   // separación angular de cada ojo
     readonly property real sinP: Math.sin(pitch)
@@ -181,8 +177,7 @@ Item {
     readonly property real joy: Math.max(smile, 0.45 * danceOn, 0.8 * petK) * (1 - sleepy)
 
     // ===== Reacciones (ver Reactions.qml) =====
-    function spin() { if (active) reactions.playOpen() }
-    function spinBack() { if (active) reactions.play("spinBack") }
+    function opened() { if (active) { reactions.resetClicks(); reactions.playOpen() } }
     function hop() { if (active && !asleep && !reactions.busy) reactions.play("hop") }
     function react(name) { if (active && !asleep) reactions.play(name) }
     // Clics: dormido → despierta suave. 1 clic → reacción. ≥4 clics en 1,5 s → caricias.
@@ -323,11 +318,11 @@ Item {
 
     // Pose estática natural al pausar (animaciones apagadas, oculto): de frente, ojos
     // abiertos y centrados, sin quedar a mitad de parpadeo, mirada o reacción.
-    onActiveChanged: if (!active) toRest()
+    onActiveChanged: { if (!active) toRest(); else reactions.resetClicks() }
     function toRest() {
         blinkAnim.stop(); petHop.stop(); puffAnim.stop(); petEnd.stop()
         petting = false; clickTimes = []
-        squint = 0; turn = 0
+        squint = 0
         idleX = 0; idleY = 0; lookX = 0; lookY = asleep ? 0.75 : 0; gOn = 0
         reactions.rest()
         restAnim.restart()
@@ -381,7 +376,7 @@ Item {
         width: c.s; height: c.s
         rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired + c.petSide * c.petLean * c.petK
         transform: [
-            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx * c.turnSx; yScale: c.squashY * c.breath * c.danceSy },
+            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.petPuff * (1 + 0.02 * c.petK); yScale: c.petPuff * (1 - 0.02 * c.petK) },
             Translate { x: c.rX + c.petSide * c.s * 0.045 * c.petK * (c.petLean - 5) / 4; y: c.bounceY + c.danceY + c.rY + c.petHopY }

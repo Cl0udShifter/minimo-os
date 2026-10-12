@@ -20,7 +20,7 @@ Item {
 
     // Repertorio espontáneo (raro: cada 45–120 s, ver Character). "yawn" sube si lleva rato quieto.
     function idleWeights(idleMs) {
-        return { hop: 2, doubleHop: 0.8, spin: 0.8, giggle: 1.2, lookAround: 1.6, hopBack: 0.7,
+        return { hop: 2, doubleHop: 0.8, giggle: 1.2, lookAround: 1.6, hopBack: 0.7,
                  surprise: 0.6, wink: 1.0, dizzy: 0.3, curious: 1.4, yawn: idleMs > 25000 ? 2.5 : 0.4 }
     }
     function pick(weights) {
@@ -31,17 +31,21 @@ Item {
         return ks[ks.length - 1]
     }
     function playRandom(idleMs) { play(pick(idleWeights(idleMs))) }
-    function playOpen() { play(pick({ spin: 1, greet: 1.3, happyBounce: 1.1 })) }
-    function playClick() { play(pick({ giggle: 1.4, spin: 1, hopBack: 0.6, wink: 0.9 })) }
+    function playOpen() { play(pick({ greet: 1.3, happyBounce: 1.1 })) }
+    // Clic: ciclo fijo (siempre se ve algo distinto); el primero tras mostrarse es el salto atrás.
+    readonly property var clickCycle: ["hopBack", "giggle", "wink", "hopBack", "happyBounce", "curious"]
+    property int clickIdx: 0
+    function resetClicks() { clickIdx = 0 }
+    function playClick() { const n = clickCycle[clickIdx % clickCycle.length]; clickIdx++; play(n, true) }
 
-    readonly property var anims: ({ hop: hop, doubleHop: doubleHop, spin: spin, giggle: giggle, lookAround: lookAround,
+    readonly property var anims: ({ hop: hop, doubleHop: doubleHop, giggle: giggle, lookAround: lookAround,
         hopBack: hopBack, surprise: surprise, wink: wink, dizzy: dizzy, yawn: yawn, curious: curious,
-        greet: greet, happyBounce: happyBounce, startled: startled, spinBack: spinBack })
+        greet: greet, happyBounce: happyBounce, startled: startled })
 
-    function play(name) {
+    function play(name, fromClick) {
         const a = anims[name]
         if (!a) return
-        history = [name].concat(history).slice(0, 2)
+        if (!fromClick) history = [name].concat(history).slice(0, 2)
         if (busy) { stopAll(); pending = a; settle.restart() }
         else { reset(); current = a; a.start() }
     }
@@ -54,10 +58,9 @@ Item {
         // giros a su equivalente más cercano a 0 para volver por el camino corto
         c.roll = ((c.roll % 360) + 540) % 360 - 180
         c.rRot = ((c.rRot % 360) + 540) % 360 - 180
-        const tp = Math.PI * 2; c.turn = ((c.turn % tp) + tp * 1.5) % tp - Math.PI
     }
     function reset() {
-        c.rScale = 1; c.rX = 0; c.rY = 0; c.rRot = 0; c.roll = 0; c.turn = 0
+        c.rScale = 1; c.rX = 0; c.rY = 0; c.rRot = 0; c.roll = 0
         c.bounceY = 0; c.squashX = 1; c.squashY = 1
         c.lookOverride = 0; c.oX = 0; c.oY = 0
         c.eyeHMul = 1; c.eyeWMul = 1; c.openL = 1; c.openR = 1; c.smile = 0; c.wobble = 0; c.half = 1
@@ -66,7 +69,7 @@ Item {
         id: settle
         ParallelAnimation {
             NumberAnimation { target: rx.c; properties: "rScale,squashX,squashY,eyeHMul,eyeWMul,openL,openR,half"; to: 1; duration: 160; easing.type: Easing.OutCubic }
-            NumberAnimation { target: rx.c; properties: "rX,rY,rRot,roll,turn,bounceY,lookOverride,oX,oY,smile,wobble"; to: 0; duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { target: rx.c; properties: "rX,rY,rRot,roll,bounceY,lookOverride,oX,oY,smile,wobble"; to: 0; duration: 160; easing.type: Easing.OutCubic }
         }
         ScriptAction { script: { rx.reset(); if (rx.pending) { rx.current = rx.pending; rx.pending = null; rx.current.start() } } }
     }
@@ -93,35 +96,6 @@ Item {
         Squash { who: rx.c; sx: 1; sy: 1; ms: 280; ease: Easing.OutBack }
     }
 
-    // ---------- vuelta feliz (reemplaza los giros de cara/cuerpo; nunca boca abajo) ----------
-    // Como una persona que gira contenta: anticipación, saltito, vuelta completa sobre el
-    // eje vertical (ojos cruzan y desaparecen por detrás), aterrizaje suave y sonrisa.
-    SequentialAnimation {
-        id: spin
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 1.05; sy: 0.95; ms: 120; ease: Easing.OutCubic }
-            NumberAnimation { target: rx.c; property: "smile"; to: 0.8; duration: 200; easing.type: Easing.OutCubic }
-        }
-        ParallelAnimation {
-            NumberAnimation { target: rx.c; property: "turn"; from: 0; to: Math.PI * 2; duration: 640; easing.type: Easing.InOutCubic }
-            SequentialAnimation {
-                Squash { who: rx.c; sx: 0.97; sy: 1.04; toY: -rx.s * 0.12; ms: 300; ease: Easing.OutCubic }
-                Squash { who: rx.c; sx: 1; sy: 1; toY: 0; ms: 340; ease: Easing.InOutSine }
-            }
-        }
-        PropertyAction { target: rx.c; property: "turn"; value: 0 }
-        Squash { who: rx.c; sx: 1.04; sy: 0.96; ms: 80; ease: Easing.OutQuad }
-        ParallelAnimation {
-            Squash { who: rx.c; sx: 1; sy: 1; ms: 260; ease: Easing.OutBack }
-            NumberAnimation { target: rx.c; property: "smile"; to: 0; duration: 360; easing.type: Easing.InOutSine }
-        }
-    }
-    // Al cerrar el menú: media vuelta rápida de ida y vuelta, sin salto.
-    SequentialAnimation {
-        id: spinBack
-        NumberAnimation { target: rx.c; property: "turn"; from: 0; to: Math.PI * 2; duration: 460; easing.type: Easing.InOutCubic }
-        PropertyAction { target: rx.c; property: "turn"; value: 0 }
-    }
     // ---------- salto hacia atrás (juguetón) ----------
     // Anticipación → sube y "se aleja" (escala menor = profundidad) con ojos algo abiertos →
     // cae con squash suave → vuelve adelante con overshoot mínimo.

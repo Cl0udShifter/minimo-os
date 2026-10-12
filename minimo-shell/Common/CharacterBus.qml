@@ -19,7 +19,7 @@ Singleton {
     signal typed()
     signal typingStopped()
     property int hearts: 0          // corazones vivos (tope de partículas)
-    readonly property var names: ["hop", "doubleHop", "spin", "giggle", "lookAround", "hopBack", "surprise",
+    readonly property var names: ["hop", "doubleHop", "giggle", "lookAround", "hopBack", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
 
     IpcHandler {

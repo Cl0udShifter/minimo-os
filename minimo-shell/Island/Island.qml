@@ -254,8 +254,7 @@ PanelWindow {
     Connections {
         target: win
         function onExpandedChanged() {
-            if (win.expanded) menu.character.spin()
-            else compact.character.spinBack()
+            if (win.expanded) menu.character.opened()
         }
     }
 }
