@@ -98,6 +98,7 @@ PanelWindow {
         x: pill.x; y: pill.y; width: pill.width; height: pill.height
         radius: pill.radius
         color: Theme.card
+        Behavior on color { ColorAnimation { duration: 250 } }
         opacity: win.shown ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
         layer.enabled: true
@@ -120,6 +121,7 @@ PanelWindow {
         y: win.shown ? Theme.topMargin : -height - 64
         radius: Math.min(height / 2, Theme.radiusCard)
         color: Theme.card
+        Behavior on color { ColorAnimation { duration: 250 } }
         clip: true
 
         Behavior on width { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutBack; easing.overshoot: 0.9 } }

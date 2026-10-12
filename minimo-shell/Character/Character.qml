@@ -239,6 +239,7 @@ Item {
             anchors.fill: parent
             radius: width / 2
             color: Theme.sphere
+            Behavior on color { ColorAnimation { duration: 250 } }
             antialiasing: true
         }
         // Máscara circular: los ojos que pasan la silueta quedan recortados.
@@ -291,6 +292,7 @@ Item {
                         radius: Math.min(width, height) / 2
                         x: -width / 2; y: -height / 2
                         color: Theme.eye
+                        Behavior on color { ColorAnimation { duration: 250 } }
                         antialiasing: true
                         opacity: 1 - c.arc
                     }
@@ -309,6 +311,7 @@ Item {
                             rotation: modelData * 38
                             transformOrigin: Item.Center
                             color: Theme.eye
+                            Behavior on color { ColorAnimation { duration: 250 } }
                             antialiasing: true
                         }
                     }

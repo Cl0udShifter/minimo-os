@@ -18,6 +18,7 @@ Item {
             required property int index
             text: "z"
             color: Theme.textDim
+            Behavior on color { ColorAnimation { duration: 250 } }
             font.family: Theme.font
             font.pixelSize: 9 + index * 1.5
             font.weight: Font.Normal

@@ -6,11 +6,12 @@ import Quickshell
 
 // Tokens visuales de Minimo OS. Claro (blanco, estilo iOS) u oscuro (casi negro, estilo
 // Apple), con transparencia de superficies. Todo color de la shell sale de acá; los
-// cambios de tema se animan (~250 ms).
+// cambios de tema los animan los consumidores (~250 ms).
+// Sin dependencias a otros singletons: DisplayState empuja dark/surfaceOpacity acá.
 Singleton {
     id: t
-    readonly property bool dark: DisplayState.theme === "dark"
-    readonly property real surfaceOpacity: Math.max(0.5, Math.min(1, DisplayState.surfaceOpacity))
+    property bool dark: false              // lo fija DisplayState al cargar/cambiar
+    property real surfaceOpacity: 1.0      // lo fija DisplayState (0.5..1)
 
     function pick(light, darkc) { return t.dark ? darkc : light }
     function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
@@ -38,20 +39,6 @@ Singleton {
     property color eye: pick("#FFFFFF", "#0B0B0C")
     readonly property color shadow: Qt.rgba(0, 0, 0, dark ? 0.45 : 0.16)
 
-    Behavior on cardSolid { ColorAnimation { duration: 250 } }
-    Behavior on field { ColorAnimation { duration: 250 } }
-    Behavior on raised { ColorAnimation { duration: 250 } }
-    Behavior on subtle { ColorAnimation { duration: 250 } }
-    Behavior on hover { ColorAnimation { duration: 250 } }
-    Behavior on track { ColorAnimation { duration: 250 } }
-    Behavior on dot { ColorAnimation { duration: 250 } }
-    Behavior on wallFallback { ColorAnimation { duration: 250 } }
-    Behavior on text { ColorAnimation { duration: 250 } }
-    Behavior on textDim { ColorAnimation { duration: 250 } }
-    Behavior on fill { ColorAnimation { duration: 250 } }
-    Behavior on onFill { ColorAnimation { duration: 250 } }
-    Behavior on sphere { ColorAnimation { duration: 250 } }
-    Behavior on eye { ColorAnimation { duration: 250 } }
 
     readonly property int radiusCard: 28
     readonly property int radiusField: 12

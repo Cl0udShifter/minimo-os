@@ -25,6 +25,9 @@ Singleton {
     function setSleepMinutes(v) { sleepMinutes = v; save() }
     function setTheme(v) { theme = v; save() }
     function setSurfaceOpacity(v) { surfaceOpacity = v; saveLater.restart() }
+    // Empuja el tema al singleton Theme (sin dependencia inversa: evita init cíclico).
+    onThemeChanged: Theme.dark = theme === "dark"
+    onSurfaceOpacityChanged: Theme.surfaceOpacity = Math.max(0.5, Math.min(1, surfaceOpacity))
     Timer { id: saveLater; interval: 300; onTriggered: root.save() }
     function save() {
         file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper,
