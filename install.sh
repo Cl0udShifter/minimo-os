@@ -169,6 +169,11 @@ for d in mako dunst swaync; do
     if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: cerralo y quitalo del autoarranque (la isla muestra las notificaciones)."; fi
 done
 ok "Las notificaciones las muestra la isla"
+# La isla también es la bandeja del sistema (StatusNotifierWatcher): otra barra con bandeja
+# se quedaría con el nombre y las apps en segundo plano no aparecerían en la isla.
+for d in waybar snixembed; do
+    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: puede quedarse con la bandeja del sistema (apps en segundo plano)."; fi
+done
 
 step "Servicio de la shell (systemd --user)"
 UNITS="$HOME/.config/systemd/user"
