@@ -13,13 +13,19 @@ Singleton {
     property real brightness: 1.0
     property bool loaded: false
     property string wallpaper: ""
+    property var wallpaperHistory: []       // fondos elegidos (más reciente primero)
     property bool islandAutoHide: true      // ocultar la isla automáticamente
     property bool islandSmartHide: false    // ocultar solo si hay ventanas en el escritorio
     property bool characterAnimated: true   // personaje animado (si no, quieto)
     property string theme: "light"          // "light" | "dark"
     property int sleepMinutes: 1            // dormir tras inactividad (1, 2 o 5 min)
 
-    function setWallpaper(path) { wallpaper = path; save() }
+    function setWallpaper(path) {
+        wallpaper = path
+        if (path !== "") wallpaperHistory = [path].concat(wallpaperHistory.filter(p => p !== path)).slice(0, 24)
+        save()
+    }
+    function forgetWallpapers(missing) { wallpaperHistory = wallpaperHistory.filter(p => missing.indexOf(p) < 0); save() }
     function setIslandAutoHide(v) { islandAutoHide = v; if (v) islandSmartHide = false; save() }
     // Excluyentes: activar uno apaga el otro.
     function setIslandSmartHide(v) { islandSmartHide = v; if (v) islandAutoHide = false; save() }
@@ -29,7 +35,7 @@ Singleton {
     // Empuja el tema al singleton Theme (sin dependencia inversa: evita init cíclico).
     onThemeChanged: Theme.dark = theme === "dark"
     function save() {
-        file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper,
+        file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper, wallpaperHistory: root.wallpaperHistory,
                                      islandAutoHide: root.islandAutoHide, islandSmartHide: root.islandSmartHide, characterAnimated: root.characterAnimated,
                                      sleepMinutes: root.sleepMinutes, theme: root.theme }, null, 2))
     }
@@ -66,6 +72,7 @@ Singleton {
             try {
                 const s = JSON.parse(text())
                 root.wallpaper = s.wallpaper ?? ""
+                root.wallpaperHistory = s.wallpaperHistory ?? (root.wallpaper ? [root.wallpaper] : [])
                 root.islandAutoHide = s.islandAutoHide ?? true
                 root.islandSmartHide = (s.islandSmartHide ?? false) && !root.islandAutoHide
                 root.characterAnimated = s.characterAnimated ?? true

@@ -18,16 +18,23 @@ Column {
     function refresh() { scan.running = false; scan.running = true }
     Component.onCompleted: refresh()
 
+    // Solo fondos reales: el actual, los elegidos antes y los que el usuario agregó a
+    // ~/Imágenes/Fondos (sin los de ejemplo "minimo-*"). Se descartan archivos inexistentes.
     Process {
         id: scan
         property var found: []
         command: ["sh", "-c",
-            'mkdir -p "$HOME/Imágenes/Fondos"; for d in "$HOME/Imágenes/Fondos" "$HOME/Pictures/Wallpapers" "$HOME/Imágenes"; do ' +
-            '[ -d "$d" ] && find "$d" -maxdepth 1 -type f \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done | awk "!seen[\\$0]++"']
+            'mkdir -p "$HOME/Imágenes/Fondos"; for f in "$@"; do [ -f "$f" ] && echo "$f" || echo "!$f"; done; ' +
+            'for d in "$HOME/Imágenes/Fondos" "$HOME/Pictures/Wallpapers"; do [ -d "$d" ] && find "$d" -maxdepth 1 -type f ! -name "minimo-*" \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done',
+            "sh"].concat(DisplayState.wallpaper ? [DisplayState.wallpaper] : []).concat(DisplayState.wallpaperHistory)
         stdout: SplitParser { onRead: line => scan.found.push(line) }
         onStarted: found = []
-        // El fondo actual siempre aparece (aunque esté en otra carpeta).
-        onExited: root.images = (DisplayState.wallpaper && found.indexOf(DisplayState.wallpaper) < 0) ? [DisplayState.wallpaper].concat(found) : found
+        onExited: {
+            const missing = found.filter(l => l.startsWith("!")).map(l => l.slice(1))
+            const ok = found.filter(l => l !== "" && !l.startsWith("!"))
+            root.images = ok.filter((p, i) => ok.indexOf(p) === i)
+            if (missing.some(p => DisplayState.wallpaperHistory.indexOf(p) >= 0)) DisplayState.forgetWallpapers(missing)
+        }
     }
     Process {
         id: picker
