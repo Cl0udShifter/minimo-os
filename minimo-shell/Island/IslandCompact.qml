@@ -121,6 +121,7 @@ Item {
     Zzz {
         x: row.x + chr.x + chr.width - 1
         y: row.y + chr.y - 14
-        running: chr.asleep && root.active && !IdleState.unattended
+        running: chr.asleep && root.active
+        frozen: IdleState.unattended
     }
 }
