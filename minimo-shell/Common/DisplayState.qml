@@ -15,16 +15,21 @@ Singleton {
     property string wallpaper: ""
     property bool islandAutoHide: true      // ocultar la isla automáticamente
     property bool characterAnimated: true   // personaje animado (si no, quieto)
+    property string theme: "light"          // "light" | "dark"
+    property real surfaceOpacity: 1.0       // transparencia de superficies (0.5..1)
     property int sleepMinutes: 1            // dormir tras inactividad (1, 2 o 5 min)
 
     function setWallpaper(path) { wallpaper = path; save() }
     function setIslandAutoHide(v) { islandAutoHide = v; save() }
     function setCharacterAnimated(v) { characterAnimated = v; save() }
     function setSleepMinutes(v) { sleepMinutes = v; save() }
+    function setTheme(v) { theme = v; save() }
+    function setSurfaceOpacity(v) { surfaceOpacity = v; saveLater.restart() }
+    Timer { id: saveLater; interval: 300; onTriggered: root.save() }
     function save() {
         file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper,
                                      islandAutoHide: root.islandAutoHide, characterAnimated: root.characterAnimated,
-                                     sleepMinutes: root.sleepMinutes }, null, 2))
+                                     sleepMinutes: root.sleepMinutes, theme: root.theme, surfaceOpacity: root.surfaceOpacity }, null, 2))
     }
 
     readonly property string stateDir: Quickshell.env("HOME") + "/.config/minimo-os"
@@ -62,6 +67,8 @@ Singleton {
                 root.islandAutoHide = s.islandAutoHide ?? true
                 root.characterAnimated = s.characterAnimated ?? true
                 root.sleepMinutes = s.sleepMinutes ?? 1
+                root.theme = s.theme === "dark" ? "dark" : "light"
+                root.surfaceOpacity = s.surfaceOpacity ?? 1.0
                 root.set(s.saturation ?? 1.0, s.brightness ?? 1.0)
             } catch (e) {}
             root.loaded = true

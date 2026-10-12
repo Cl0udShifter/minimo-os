@@ -38,7 +38,7 @@ Item {
             Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 8; height: 8; radius: 4
-                color: "#FF3B30"
+                color: Theme.danger
                 SequentialAnimation on opacity {
                     running: Recorder.recording && root.active
                     loops: Animation.Infinite

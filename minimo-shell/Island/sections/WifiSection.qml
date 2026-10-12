@@ -24,7 +24,7 @@ Column {
             id: badge
             x: 8; anchors.verticalCenter: parent.verticalCenter
             width: 36; height: 36; radius: 18
-            color: Network.wifiEnabled ? Theme.fill : "white"
+            color: Network.wifiEnabled ? Theme.fill : Theme.raised
             Icon { anchors.centerIn: parent; name: "wifi"; size: 18; tone: Network.wifiEnabled ? "white" : "gray" }
         }
         Column {
@@ -77,7 +77,7 @@ Column {
                         width: listCol.width
                         Rectangle {
                             width: parent.width; height: 38; radius: 19
-                            color: nm.containsMouse ? "white" : "transparent"
+                            color: nm.containsMouse ? Theme.raised : "transparent"
                             Text {
                                 x: 14; anchors.verticalCenter: parent.verticalCenter
                                 width: parent.width - 100; elide: Text.ElideRight
@@ -107,7 +107,7 @@ Column {
                         Rectangle {
                             visible: root.askFor === net.modelData.ssid
                             width: parent.width; height: visible ? 40 : 0; radius: 20
-                            color: "white"
+                            color: Theme.raised
                             border.width: 1; border.color: Theme.track
                             TextInput {
                                 id: pass
@@ -127,7 +127,7 @@ Column {
                                 anchors.right: parent.right; anchors.rightMargin: 4; anchors.verticalCenter: parent.verticalCenter
                                 width: 76; height: 32; radius: 16
                                 color: pass.text.length > 0 ? Theme.fill : Theme.track
-                                Text { anchors.centerIn: parent; text: "Unirse"; color: "white"; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold }
+                                Text { anchors.centerIn: parent; text: "Unirse"; color: Theme.onFill; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: go.submit() }
                             }
                         }
@@ -140,6 +140,6 @@ Column {
         visible: Network.error !== "" && root.expanded
         x: 14
         text: Network.error
-        color: "#FF3B30"; font.family: Theme.font; font.pixelSize: 12
+        color: Theme.danger; font.family: Theme.font; font.pixelSize: 12
     }
 }

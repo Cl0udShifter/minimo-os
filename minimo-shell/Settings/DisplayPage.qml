@@ -103,7 +103,7 @@ Column {
                 Row {
                     spacing: 12
                     Rectangle {
-                        width: 40; height: 40; radius: 12; color: "white"
+                        width: 40; height: 40; radius: 12; color: Theme.raised
                         Icon { anchors.centerIn: parent; name: "display"; size: 22 }
                     }
                     Column {
@@ -116,7 +116,7 @@ Column {
                 // Resolución y frecuencia (desplegable).
                 Text { text: "Resolución"; color: Theme.text; font.family: Theme.font; font.pixelSize: 13 }
                 Rectangle {
-                    width: parent.width; height: 40; radius: 20; color: "white"
+                    width: parent.width; height: 40; radius: 20; color: Theme.raised
                     Text {
                         x: 18; anchors.verticalCenter: parent.verticalCenter
                         text: mcard.m.width + " × " + mcard.m.height + "  ·  " + mcard.m.refreshRate.toFixed(2) + " Hz"
@@ -127,7 +127,7 @@ Column {
                 }
                 Rectangle {
                     visible: mcard.listOpen
-                    width: parent.width; height: Math.min(240, modes.contentHeight + 12); radius: 20; color: "white"
+                    width: parent.width; height: Math.min(240, modes.contentHeight + 12); radius: 20; color: Theme.raised
                     clip: true
                     ListView {
                         id: modes
@@ -156,7 +156,7 @@ Column {
                 // Escala (segmentado).
                 Text { text: "Escala"; color: Theme.text; font.family: Theme.font; font.pixelSize: 13 }
                 Rectangle {
-                    width: parent.width; height: 40; radius: 20; color: "white"
+                    width: parent.width; height: 40; radius: 20; color: Theme.raised
                     Row {
                         anchors.fill: parent; anchors.margins: 4
                         Repeater {
@@ -166,7 +166,7 @@ Column {
                                 readonly property bool cur: Math.abs(modelData - mcard.m.scale) < 0.01
                                 width: (parent.width) / root.scales.length; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (sm.containsMouse ? Theme.field : "transparent")
-                                Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? "white" : Theme.text; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
+                                Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
                                 MouseArea { id: sm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                     onClicked: root.request(mcard.m, root.modeOf(mcard.m), modelData) }
                             }

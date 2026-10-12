@@ -23,3 +23,6 @@ hl.window_rule({ match = { class = "^(steam)$", title = "^(notificationtoasts)" 
 -- Capas de la shell de Minimo: sin animación de Hyprland (la shell anima sola).
 hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^minimo-.*" }, no_anim = true })
+
+-- Desenfoque detrás de la isla, el lanzador y Ajustes: con transparencia se ven esmerilados.
+hl.layer_rule({ match = { namespace = "^minimo-(island|launcher|settings)$" }, blur = true, ignore_alpha = 0.2 })

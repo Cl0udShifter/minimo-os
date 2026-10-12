@@ -9,6 +9,8 @@ Image {
     property int size: 20
     width: size; height: size
     sourceSize: Qt.size(size * 2, size * 2)
-    source: name ? Qt.resolvedUrl("../assets/icons/" + tone + "/" + name + ".svg") : ""
+    // En modo oscuro se invierten: "dark" (principal) → blanco, "white" (sobre relleno) → oscuro.
+    readonly property string resolvedTone: !Theme.dark ? tone : (tone === "dark" ? "white" : tone === "white" ? "dark" : "gray")
+    source: name ? Qt.resolvedUrl("../assets/icons/" + resolvedTone + "/" + name + ".svg") : ""
     smooth: true
 }

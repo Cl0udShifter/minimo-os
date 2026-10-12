@@ -51,7 +51,7 @@ PanelWindow {
         opacity: win.t; scale: card.scale
         layer.enabled: true
         layer.effect: MultiEffect {
-            shadowEnabled: true; shadowColor: Qt.rgba(0, 0, 0, 0.18)
+            shadowEnabled: true; shadowColor: Theme.shadow
             shadowBlur: 1.0; blurMax: 48; shadowVerticalOffset: 12; autoPaddingEnabled: true
         }
     }
@@ -109,13 +109,13 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     width: col.width; height: 52; radius: height / 2
-                    color: index === win.selected ? Theme.field : (rm.containsMouse ? "#F7F7FA" : "transparent")
+                    color: index === win.selected ? Theme.field : (rm.containsMouse ? Theme.subtle : "transparent")
                     // Icono dentro de un "squircle" gris claro.
                     Rectangle {
                         id: ic
                         x: 8; anchors.verticalCenter: parent.verticalCenter
                         width: 38; height: 38; radius: 12
-                        color: index === win.selected ? "#FFFFFF" : Theme.field
+                        color: index === win.selected ? Theme.raised : Theme.field
                         Image {
                             anchors.centerIn: parent
                             width: 26; height: 26; sourceSize: Qt.size(52, 52)

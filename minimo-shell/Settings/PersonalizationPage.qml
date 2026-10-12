@@ -103,6 +103,57 @@ Column {
     }
     Text { text: "Carpeta: ~/Imágenes/Fondos"; color: Theme.textDim; font.family: Theme.font; font.pixelSize: 11 }
 
+    SectionTitle { text: "Apariencia" }
+    Rectangle {
+        width: parent.width
+        height: ap.implicitHeight
+        radius: 20
+        color: Theme.field
+        Column {
+            id: ap
+            width: parent.width
+            Item {
+                width: parent.width; height: 56
+                Text { anchors.left: parent.left; anchors.leftMargin: 18; anchors.verticalCenter: parent.verticalCenter; text: "Apariencia"; color: Theme.text; font.family: Theme.font; font.pixelSize: 14 }
+                Rectangle {
+                    anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
+                    width: 184; height: 32; radius: 16; color: Theme.raised
+                    Row {
+                        anchors.fill: parent; anchors.margins: 3
+                        Repeater {
+                            model: [{ id: "light", label: "Claro" }, { id: "dark", label: "Oscuro" }]
+                            delegate: Rectangle {
+                                required property var modelData
+                                readonly property bool cur: DisplayState.theme === modelData.id
+                                width: parent.width / 2; height: parent.height; radius: height / 2
+                                color: cur ? Theme.fill : (tm.containsMouse ? Theme.field : "transparent")
+                                Text { anchors.centerIn: parent; text: modelData.label; color: parent.cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 12; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
+                                MouseArea { id: tm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: DisplayState.setTheme(modelData.id) }
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+            Item {
+                width: parent.width; height: 92
+                Column {
+                    x: 18; width: parent.width - 36
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 10
+                    Text { text: "Transparencia"; color: Theme.text; font.family: Theme.font; font.pixelSize: 14 }
+                    // 0 % = opaco (1.0) … 100 % = máxima transparencia (0.5). Vista previa en vivo.
+                    MSlider {
+                        width: parent.width
+                        from: 0; to: 1
+                        value: (1 - DisplayState.surfaceOpacity) / 0.5
+                        onMoved: v => DisplayState.setSurfaceOpacity(Math.round((1 - v * 0.5) * 100) / 100)
+                    }
+                }
+            }
+        }
+    }
+
     SectionTitle { text: "Isla dinámica" }
     Rectangle {
         width: parent.width
@@ -140,7 +191,7 @@ Column {
                 }
                 Rectangle {
                     anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
-                    width: 168; height: 32; radius: 16; color: "white"
+                    width: 168; height: 32; radius: 16; color: Theme.raised
                     Row {
                         anchors.fill: parent; anchors.margins: 3
                         Repeater {
@@ -150,7 +201,7 @@ Column {
                                 readonly property bool cur: DisplayState.sleepMinutes === modelData
                                 width: parent.width / 3; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (zm.containsMouse ? Theme.field : "transparent")
-                                Text { anchors.centerIn: parent; text: modelData + " min"; color: parent.cur ? "white" : Theme.text; font.family: Theme.font; font.pixelSize: 12; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
+                                Text { anchors.centerIn: parent; text: modelData + " min"; color: parent.cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 12; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
                                 MouseArea { id: zm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: DisplayState.setSleepMinutes(modelData) }
                             }
                         }

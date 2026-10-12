@@ -16,7 +16,7 @@ Item {
         Rectangle {
             width: 22; height: 22; radius: 11
             y: 3; x: sw.checked ? parent.width - width - 3 : 3
-            color: "white"
+            color: sw.checked ? Theme.onFill : "#FFFFFF"
             Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
     }

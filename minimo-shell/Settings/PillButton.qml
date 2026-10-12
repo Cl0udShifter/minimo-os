@@ -12,13 +12,13 @@ Rectangle {
     property bool primary: false
     signal clicked()
     width: r.implicitWidth + 32; height: 36; radius: 18
-    color: primary ? (m.containsMouse ? "#2A2A2E" : Theme.fill) : (m.containsMouse ? Theme.hover : (outlined ? "transparent" : Theme.field))
+    color: primary ? (m.containsMouse ? Theme.fillHover : Theme.fill) : (m.containsMouse ? Theme.hover : (outlined ? "transparent" : Theme.field))
     border.width: outlined ? 1 : 0; border.color: Theme.track
     Row {
         id: r
         anchors.centerIn: parent; spacing: 8
         Icon { name: b.icon; visible: b.icon !== ""; size: 16; tone: b.primary ? "white" : "dark"; anchors.verticalCenter: parent.verticalCenter }
-        Text { text: b.text; color: b.primary ? "white" : (b.outlined ? Theme.textDim : Theme.text); font.family: Theme.font; font.pixelSize: 13; font.weight: b.primary ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
+        Text { text: b.text; color: b.primary ? Theme.onFill : (b.outlined ? Theme.textDim : Theme.text); font.family: Theme.font; font.pixelSize: 13; font.weight: b.primary ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
     }
     MouseArea { id: m; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: b.clicked() }
 }

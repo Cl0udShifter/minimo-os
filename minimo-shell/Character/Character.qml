@@ -290,7 +290,7 @@ Item {
                         height: Math.max(width * 0.35, c.eyeH * eye.kA * c.eyeHMul * c.openness * eye.own)
                         radius: Math.min(width, height) / 2
                         x: -width / 2; y: -height / 2
-                        color: "#FFFFFF"
+                        color: Theme.eye
                         antialiasing: true
                         opacity: 1 - c.arc
                     }
@@ -308,7 +308,7 @@ Item {
                             y: -height / 2 + c.eyeH * 0.02
                             rotation: modelData * 38
                             transformOrigin: Item.Center
-                            color: "#FFFFFF"
+                            color: Theme.eye
                             antialiasing: true
                         }
                     }

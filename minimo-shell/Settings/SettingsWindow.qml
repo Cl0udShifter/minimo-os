@@ -43,7 +43,7 @@ PanelWindow {
         opacity: win.t; scale: card.scale
         layer.enabled: true
         layer.effect: MultiEffect {
-            shadowEnabled: true; shadowColor: Qt.rgba(0, 0, 0, 0.2)
+            shadowEnabled: true; shadowColor: Theme.shadow
             shadowBlur: 1.0; blurMax: 64; shadowVerticalOffset: 16; autoPaddingEnabled: true
         }
     }
@@ -67,7 +67,7 @@ PanelWindow {
         Rectangle {
             id: sidebar
             width: 232; height: parent.height
-            color: "#F7F7FA"
+            color: Theme.alpha(Theme.subtle, Theme.surfaceOpacity)
             radius: card.radius           // esquinas izquierdas redondeadas como la tarjeta
             Rectangle { anchors.right: parent.right; width: parent.radius; height: parent.height; color: parent.color }
             Column {
@@ -86,7 +86,7 @@ PanelWindow {
                         Row {
                             x: 14; anchors.verticalCenter: parent.verticalCenter; spacing: 12
                             Icon { name: modelData.icon; size: 20; tone: cur ? "white" : "dark"; anchors.verticalCenter: parent.verticalCenter }
-                            Text { text: modelData.label; color: cur ? "white" : Theme.text; font.family: Theme.font; font.pixelSize: 14; font.weight: cur ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: modelData.label; color: cur ? Theme.onFill : Theme.text; font.family: Theme.font; font.pixelSize: 14; font.weight: cur ? Font.DemiBold : Font.Normal; anchors.verticalCenter: parent.verticalCenter }
                         }
                         MouseArea { id: sbm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: SettingsState.section = modelData.id }
                     }
@@ -139,13 +139,13 @@ PanelWindow {
         // Confirmación de cambio de pantalla (estilo macOS).
         Rectangle {
             anchors.fill: parent
-            color: Qt.rgba(1, 1, 1, 0.6)
+            color: Theme.scrim
             visible: display.pending !== null
             MouseArea { anchors.fill: parent }
             Rectangle {
                 anchors.centerIn: parent
                 width: 380; height: cc.implicitHeight + 48; radius: 28
-                color: "white"
+                color: Theme.cardSolid
                 border.width: 1; border.color: Theme.track
                 Column {
                     id: cc

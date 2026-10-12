@@ -17,7 +17,7 @@ Item {
             id: z
             required property int index
             text: "z"
-            color: "#8A8A90"
+            color: Theme.textDim
             font.family: Theme.font
             font.pixelSize: 9 + index * 1.5
             font.weight: Font.Normal

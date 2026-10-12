@@ -27,7 +27,7 @@ Row {
             readonly property bool active: modelData.id === Workspaces.activeId
             anchors.verticalCenter: parent.verticalCenter
             width: active ? 12 : 5; height: 5; radius: 2.5
-            color: active ? Theme.text : "#C7C7CC"
+            color: active ? Theme.text : Theme.dot
             Behavior on width { NumberAnimation { duration: 180 } }
         }
     }

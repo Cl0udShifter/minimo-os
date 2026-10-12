@@ -82,7 +82,7 @@ Item {
             radius: width / 2
             color: "transparent"
             border.width: 1
-            border.color: Qt.rgba(0, 0, 0, 0.12)
+            border.color: Theme.track
             antialiasing: true
             visible: art.hasArt
         }
@@ -90,8 +90,8 @@ Item {
         Rectangle {
             anchors.centerIn: parent
             width: 7; height: 7; radius: 3.5
-            color: "white"; opacity: 0.85
-            border.width: 1; border.color: Qt.rgba(0, 0, 0, 0.1)
+            color: Theme.raised; opacity: 0.85
+            border.width: 1; border.color: Theme.track
             visible: art.hasArt
         }
     }

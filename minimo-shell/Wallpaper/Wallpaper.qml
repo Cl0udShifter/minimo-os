@@ -11,7 +11,7 @@ PanelWindow {
     id: win
     anchors { top: true; bottom: true; left: true; right: true }
     exclusiveZone: -1
-    color: "#E9E9EC"
+    color: Theme.wallFallback
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "minimo-wallpaper"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
