@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+# Estado del sistema para el panel de la isla. Imprime un JSON y termina.
+#   sysstatus.py res   → recursos (CPU %, RAM, disco, temperatura)  [cada 2 s con el panel abierto]
+#   sysstatus.py full  → recursos + red + dispositivos + GPU         [al abrir y cada ~8 s]
+import json, os, shutil, subprocess, sys, time
+
+def run(cmd, t=1.5):
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=t).stdout
+    except Exception:
+        return ""
+
+def cpu_times():
+    with open("/proc/stat") as f:
+        v = list(map(int, f.readline().split()[1:]))
+    idle = v[3] + v[4]
+    return sum(v), idle
+
+def resources():
+    t0, i0 = cpu_times(); time.sleep(0.25); t1, i1 = cpu_times()
+    cpu = 0 if t1 == t0 else round(100 * (1 - (i1 - i0) / (t1 - t0)))
+    mem = {}
+    with open("/proc/meminfo") as f:
+        for l in f:
+            k, v = l.split(":"); mem[k] = int(v.split()[0])
+    total, avail = mem["MemTotal"], mem["MemAvailable"]
+    du = shutil.disk_usage("/")
+    temp = None
+    base = "/sys/class/hwmon"
+    for h in sorted(os.listdir(base)):
+        try:
+            name = open(f"{base}/{h}/name").read().strip()
+        except OSError:
+            continue
+        if name in ("coretemp", "k10temp", "zenpower"):
+            for fn in sorted(os.listdir(f"{base}/{h}")):
+                if fn.endswith("_label"):
+                    lab = open(f"{base}/{h}/{fn}").read().strip()
+                    if lab.startswith(("Package", "Tctl", "Tdie")):
+                        temp = round(int(open(f"{base}/{h}/{fn[:-6]}_input").read()) / 1000)
+                        break
+            if temp is None and os.path.exists(f"{base}/{h}/temp1_input"):
+                temp = round(int(open(f"{base}/{h}/temp1_input").read()) / 1000)
+            break
+    return {"cpu": cpu, "memUsed": (total - avail) * 1024, "memTotal": total * 1024,
+            "diskUsed": du.used, "diskTotal": du.total, "temp": temp}
+
+def nm_fields(line):
+    out, cur, i = [], "", 0
+    while i < len(line):
+        c = line[i]
+        if c == "\\" and i + 1 < len(line): cur += line[i + 1]; i += 2; continue
+        if c == ":": out.append(cur); cur = ""
+        else: cur += c
+        i += 1
+    out.append(cur); return out
+
+def network():
+    net = {"type": "", "name": "", "device": "", "ip": "", "signal": 0, "connectivity": "unknown"}
+    for l in run(["nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "dev"]).splitlines():
+        d, ty, st, con = (nm_fields(l) + ["", "", "", ""])[:4]
+        if st == "connected" and ty in ("ethernet", "wifi"):
+            if not net["type"] or ty == "ethernet":
+                net.update(type=ty, name=con, device=d)
+    if net["type"] == "wifi":
+        for l in run(["nmcli", "-t", "-f", "IN-USE,SSID,SIGNAL", "dev", "wifi", "list", "--rescan", "no"]).splitlines():
+            f = nm_fields(l)
+            if f[0] == "*": net["name"], net["signal"] = f[1], int(f[2] or 0)
+    if net["device"]:
+        for w in run(["ip", "-4", "-o", "addr", "show", "dev", net["device"]]).split():
+            if "/" in w and w[0].isdigit(): net["ip"] = w.split("/")[0]; break
+    net["connectivity"] = run(["nmcli", "networking", "connectivity", "check"], 4).strip() or "unknown"
+    return net
+
+SKIP = ("virtual", "power-button", "sleep-button", "video-bus", "ydotool", "hotkeys", "wmi", "consumer-control",
+        "system-control", "avrcp", "pc-speaker", "lid-switch")
+
+def devices():
+    out = {"keyboards": [], "mice": [], "audio": "", "bluetooth": [], "usb": []}
+    try:
+        d = json.loads(run(["hyprctl", "devices", "-j"]) or "{}")
+    except ValueError:
+        d = {}
+    def clean(lst, drop):
+        # Un mismo aparato expone varias interfaces ("… keyboard 1", "… keyboard mouse"):
+        # se quitan sufijos numéricos y las interfaces del otro tipo.
+        seen = []
+        for x in lst:
+            n = x.get("name", "").lower()
+            if any(s in n for s in SKIP) or drop in n: continue
+            pretty = " ".join(w for w in n.replace("-", " ").split() if not w.isdigit()).capitalize()
+            if pretty and pretty not in seen: seen.append(pretty)
+        return seen
+    out["keyboards"] = clean(d.get("keyboards", []), "mouse")
+    out["mice"] = clean(d.get("mice", []), "keyboard")
+    sink = run(["pactl", "get-default-sink"]).strip()
+    if sink:
+        cur, desc, nick = None, "", ""
+        for l in run(["pactl", "list", "sinks"]).splitlines():
+            l = l.strip()
+            if l.startswith("Name:"): cur = l[5:].strip()
+            elif cur == sink and l.startswith("Description:"): desc = l[12:].strip()
+            elif cur == sink and l.startswith("node.nick = "): nick = l[12:].strip().strip('"')
+        out["audio"] = nick or desc or sink
+    if shutil.which("bluetoothctl"):
+        for l in run(["bluetoothctl", "devices", "Connected"], 2).splitlines():
+            p = l.split(" ", 2)
+            if len(p) == 3: out["bluetooth"].append(p[2])
+    try:
+        for b in json.loads(run(["lsblk", "-J", "-d", "-o", "NAME,TRAN,MODEL,SIZE"]) or "{}").get("blockdevices", []):
+            if b.get("tran") == "usb": out["usb"].append(((b.get("model") or b["name"]).strip() + " · " + (b.get("size") or "")).strip(" ·"))
+    except ValueError:
+        pass
+    return out
+
+def gpu():
+    if not shutil.which("nvidia-smi"): return None
+    l = run(["nvidia-smi", "--query-gpu=name,utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"]).strip()
+    p = [x.strip() for x in l.split(",")]
+    if len(p) < 3: return None
+    return {"name": p[0].replace("NVIDIA ", "").replace("GeForce ", ""), "util": int(p[1] or 0), "temp": int(p[2] or 0)}
+
+mode = sys.argv[1] if len(sys.argv) > 1 else "full"
+res = {"res": resources()}
+if mode == "full":
+    res["net"] = network(); res["dev"] = devices(); res["gpu"] = gpu()
+print(json.dumps(res))

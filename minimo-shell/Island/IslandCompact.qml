@@ -64,6 +64,13 @@ Item {
             elide: Text.ElideMiddle
             width: Math.min(implicitWidth, 230)
         }
+        // Sin internet: punto rojo fijo (desliz sobre la isla para ver el detalle).
+        Rectangle {
+            visible: SysStatus.known && !SysStatus.online
+            anchors.verticalCenter: parent.verticalCenter
+            width: 7; height: 7; radius: 3.5
+            color: Theme.recording
+        }
         WorkspaceDots { anchors.verticalCenter: parent.verticalCenter }
     }
 

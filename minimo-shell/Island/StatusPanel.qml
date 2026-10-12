@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+import QtQuick
+import "../Common"
+
+// Panel de estado del sistema (se abre deslizando sobre la isla): Internet, Recursos, Dispositivos.
+// Consulta datos solo mientras está abierto.
+Item {
+    id: root
+    property bool open: false
+    implicitHeight: col.implicitHeight + 32
+
+    onOpenChanged: open ? SysStatus.acquire() : SysStatus.release()
+    Component.onDestruction: if (open) SysStatus.release()
+
+    readonly property var r: SysStatus.res
+    readonly property var n: SysStatus.net
+    readonly property var d: SysStatus.dev
+
+    component Title: Text {
+        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold
+        leftPadding: 4
+    }
+    component Row2: Item {
+        id: rw
+        property string icon
+        property string label
+        property string value
+        property color valueColor: Theme.textSecondary
+        width: parent ? parent.width : 0; height: 40
+        Icon { x: 14; anchors.verticalCenter: parent.verticalCenter; name: rw.icon; size: 18; tone: "dark" }
+        Text {
+            x: 44; anchors.verticalCenter: parent.verticalCenter; width: parent.width * 0.5 - 44
+            text: rw.label; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; elide: Text.ElideRight
+        }
+        Text {
+            anchors.right: parent.right; anchors.rightMargin: 14; anchors.verticalCenter: parent.verticalCenter
+            width: parent.width * 0.5 - 14; horizontalAlignment: Text.AlignRight; elide: Text.ElideRight
+            text: rw.value; color: rw.valueColor; font.family: Theme.font; font.pixelSize: 13; font.features: { "tnum": 1 }
+        }
+    }
+    component Card: Rectangle {
+        default property alias content: inner.children
+        width: parent ? parent.width : 0; height: inner.implicitHeight + 8
+        radius: 18; color: Theme.field
+        Column { id: inner; y: 4; width: parent.width }
+    }
+    component Bar: Item {
+        id: br
+        property real frac: 0
+        width: parent ? parent.width - 28 : 0; x: 14; height: 10
+        Rectangle {
+            anchors.top: parent.top; width: parent.width; height: 4; radius: 2; color: Theme.track
+            Rectangle {
+                height: parent.height; radius: 2; color: br.frac > 0.9 ? Theme.danger : Theme.fill
+                width: parent.width * Math.max(0, Math.min(1, br.frac))
+                Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+            }
+        }
+    }
+
+    Column {
+        id: col
+        x: 16; y: 16; width: parent.width - 32
+        spacing: 8
+
+        // Internet
+        Title { text: "Internet" }
+        Card {
+            Row2 {
+                icon: root.n && root.n.type === "wifi" ? "wifi" : "ethernet"
+                label: !root.n || !root.n.type ? "Sin conexión" : (root.n.type === "wifi" ? (root.n.name || "Wi-Fi") : "Ethernet")
+                value: !SysStatus.known ? "Comprobando…"
+                     : SysStatus.online ? "Conectado"
+                     : SysStatus.connectivity === "portal" ? "Requiere inicio de sesión"
+                     : SysStatus.connectivity === "limited" ? "Sin internet (red limitada)" : "Sin internet"
+                valueColor: SysStatus.known && !SysStatus.online ? Theme.danger : Theme.textSecondary
+            }
+            Row2 {
+                visible: !!(root.n && root.n.ip)
+                icon: "info"; label: "IP local"
+                value: root.n ? root.n.ip : ""
+            }
+            Row2 {
+                visible: !!(root.n && root.n.type === "wifi")
+                icon: "wifi"; label: "Señal"
+                value: root.n ? root.n.signal + "%" : ""
+            }
+        }
+
+        // Recursos
+        Title { text: "Recursos"; topPadding: 4 }
+        Card {
+            Row2 { icon: "chip"; label: "CPU"; value: root.r ? root.r.cpu + "%" + (root.r.temp !== null && root.r.temp !== undefined ? " · " + root.r.temp + " °C" : "") : "…" }
+            Bar { frac: root.r ? root.r.cpu / 100 : 0 }
+            Row2 { icon: "apps"; label: "Memoria"; value: root.r ? SysStatus.gib(root.r.memUsed) + " / " + SysStatus.gib(root.r.memTotal) + " GB" : "…" }
+            Bar { frac: root.r ? root.r.memUsed / root.r.memTotal : 0 }
+            Row2 { icon: "folder"; label: "Disco"; value: root.r ? Math.round(100 * root.r.diskUsed / root.r.diskTotal) + "% · " + SysStatus.gib(root.r.diskTotal - root.r.diskUsed) + " GB libres" : "…" }
+            Bar { frac: root.r ? root.r.diskUsed / root.r.diskTotal : 0 }
+            Row2 {
+                visible: !!SysStatus.gpu
+                icon: "display"; label: SysStatus.gpu ? SysStatus.gpu.name : "GPU"
+                value: SysStatus.gpu ? SysStatus.gpu.util + "% · " + SysStatus.gpu.temp + " °C" : ""
+            }
+        }
+
+        // Dispositivos
+        Title { text: "Dispositivos"; topPadding: 4 }
+        Card {
+            Repeater { model: root.d ? root.d.keyboards : []; Row2 { required property var modelData; icon: "keyboard"; label: "Teclado"; value: modelData } }
+            Repeater { model: root.d ? root.d.mice : []; Row2 { required property var modelData; icon: "mouse"; label: "Mouse"; value: modelData } }
+            Row2 { visible: !!(root.d && root.d.audio); icon: "volume"; label: "Audio"; value: root.d ? root.d.audio : "" }
+            Repeater { model: root.d ? root.d.bluetooth : []; Row2 { required property var modelData; icon: "bluetooth"; label: "Bluetooth"; value: modelData } }
+            Repeater { model: root.d ? root.d.usb : []; Row2 { required property var modelData; icon: "usb"; label: "USB"; value: modelData } }
+            Row2 { visible: !root.d; icon: "info"; label: "Buscando…"; value: "" }
+        }
+    }
+}

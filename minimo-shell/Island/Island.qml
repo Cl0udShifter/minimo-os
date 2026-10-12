@@ -13,30 +13,37 @@ PanelWindow {
     id: win
 
     property bool expanded: false
+    property bool panel: false            // panel de estado del sistema (deslizar)
+    readonly property bool open: expanded || panel
     readonly property bool hovered: hoverZone.containsMouse
     property bool shown: true
 
-    anchors { top: true; left: true; right: true; bottom: win.expanded }
+    anchors { top: true; left: true; right: true; bottom: win.open }
     implicitHeight: Theme.maxExpandedH + Theme.topMargin + 8
     exclusiveZone: 0
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "minimo-island"
-    WlrLayershell.keyboardFocus: expanded ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    mask: Region { x: win.expanded ? 0 : hoverZone.x; y: 0; width: win.expanded ? win.width : hoverZone.width; height: win.expanded ? win.height : hoverZone.height }
+    mask: Region { x: win.open ? 0 : hoverZone.x; y: 0; width: win.open ? win.width : hoverZone.width; height: win.open ? win.height : hoverZone.height }
 
-    function collapse() { expanded = false }
+    function collapse() { expanded = false; panel = false }
 
     // Auto-ocultar
     Timer {
         id: hideTimer
         interval: Theme.hideDelay
-        onTriggered: if (DisplayState.islandAutoHide && !win.hovered && !win.expanded && !menu.searchFocused && Recorder.notice === "") win.shown = false
+        onTriggered: if (DisplayState.islandAutoHide && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "") win.shown = false
     }
     onHoveredChanged: {
         if (hovered) { hideTimer.stop(); shown = true }
-        else if (!expanded) hideTimer.restart()
+        else if (!open) hideTimer.restart()
+    }
+    onPanelChanged: {
+        pill.forceActiveFocus()
+        if (panel) { hideTimer.stop(); shown = true }
+        else if (!hovered) hideTimer.restart()
     }
     onExpandedChanged: {
         // Al abrir y al cerrar, el foco va a la píldora (no al buscador), así no
@@ -58,14 +65,14 @@ PanelWindow {
         target: Recorder
         function onNoticeChanged() {
             if (Recorder.notice !== "") { win.shown = true; hideTimer.stop() }
-            else if (!win.hovered && !win.expanded) hideTimer.restart()
+            else if (!win.hovered && !win.open) hideTimer.restart()
         }
     }
 
     // Clic afuera de la isla mientras está expandida: colapsa.
     MouseArea {
         anchors.fill: parent
-        enabled: win.expanded
+        enabled: win.open
         acceptedButtons: Qt.AllButtons
         onPressed: win.collapse()
     }
@@ -86,9 +93,29 @@ PanelWindow {
         width: win.shown ? pill.width + pad * 2 : win.width
         height: win.shown ? Theme.topMargin + pill.height + pad : 3
 
-        onPressed: if (!win.expanded) win.expanded = true
+        preventStealing: true
+        // Clic → menú (al soltar). Arrastre horizontal (>8 px) → panel de estado del sistema;
+        // con el panel abierto, deslizar de nuevo lo cierra. La píldora sigue al dedo (elástico).
+        property real pressX: 0
+        property bool dragging: false
+        property real drag: 0
+        // Coordenadas de ventana: la zona se mueve con la píldora mientras se arrastra.
+        onPressed: m => { pressX = mapToItem(null, m.x, m.y).x; dragging = false; drag = 0 }
+        onPositionChanged: m => {
+            if (!pressed || win.expanded) return
+            const dx = mapToItem(null, m.x, m.y).x - pressX
+            if (!dragging && Math.abs(dx) > 8) dragging = true
+            if (dragging) drag = dx
+        }
+        onReleased: {
+            if (dragging) {
+                if (Math.abs(drag) > 40) win.panel = !win.panel
+            } else if (!win.open) win.expanded = true
+            dragging = false; drag = 0
+        }
+        onCanceled: { dragging = false; drag = 0 }
         // Rueda sobre la isla compacta: escritorio anterior/siguiente.
-        onWheel: w => { if (!win.expanded) Workspaces.wheel(w.angleDelta.y) }
+        onWheel: w => { if (!win.open) Workspaces.wheel(w.angleDelta.y) }
     }
 
 
@@ -114,10 +141,14 @@ PanelWindow {
 
     Rectangle {
         id: pill
+        // Elástico: mientras se arrastra, la píldora se estira y se corre un poco con el dedo.
+        readonly property real rubber: hoverZone.dragging ? hoverZone.drag / (1 + Math.abs(hoverZone.drag) / 60) : 0
         width: win.expanded ? Theme.expandedW
-             : Math.max(Theme.compactW, compact.implicitWidth + 32)
-        height: win.expanded ? Math.min(menu.implicitHeight, Theme.maxExpandedH) : Theme.compactH
-        x: (win.width - width) / 2
+             : win.panel ? Theme.expandedW
+             : Math.max(Theme.compactW, compact.implicitWidth + 32) + Math.abs(rubber) * 1.2
+        height: win.expanded ? Math.min(menu.implicitHeight, Theme.maxExpandedH)
+              : win.panel ? Math.min(status.implicitHeight, Theme.maxExpandedH) : Theme.compactH
+        x: (win.width - width) / 2 + rubber * 0.5
         y: win.shown ? Theme.topMargin : -height - 64
         radius: Math.min(height / 2, Theme.radiusCard)
         color: Theme.card
@@ -128,14 +159,14 @@ PanelWindow {
         Behavior on height { NumberAnimation { duration: Theme.durNormal + 40; easing.type: Easing.OutBack; easing.overshoot: 0.7 } }
         Behavior on y { NumberAnimation { duration: Theme.durNormal; easing.type: Easing.OutQuint } }
 
-        focus: win.expanded
+        focus: win.open
         Keys.onEscapePressed: win.collapse()
 
         IslandCompact {
             id: compact
             anchors.centerIn: parent
-            active: win.shown && !win.expanded
-            opacity: win.expanded ? 0 : 1
+            active: win.shown && !win.open
+            opacity: win.open ? 0 : 1
             visible: opacity > 0
             Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
         }
@@ -152,6 +183,17 @@ PanelWindow {
             Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
             onDone: win.collapse()
         }
+
+        StatusPanel {
+            id: status
+            width: Theme.expandedW
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            open: win.panel
+            opacity: win.panel ? 1 : 0
+            visible: opacity > 0
+            Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
+        }
     }
 
     // Control externo (ipc "island"): show/hide/open/close.
@@ -161,7 +203,8 @@ PanelWindow {
             if (cmd === "show") { win.shown = true; hideTimer.stop() }
             else if (cmd === "hide") { win.expanded = false; win.shown = false }
             else if (cmd === "open") win.expanded = true
-            else if (cmd === "close") win.expanded = false
+            else if (cmd === "close") win.collapse()
+            else if (cmd === "status") win.panel = !win.panel
         }
     }
 
