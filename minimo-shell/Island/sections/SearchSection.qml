@@ -23,14 +23,14 @@ Column {
 
     Rectangle {
         id: box
-        width: parent.width; height: 40
+        width: Math.round(parent.width); height: 40
         radius: Theme.radiusField
         // Estilo Spotlight: hilo fino semitransparente; con foco, superficie elevada,
         // borde más marcado y un aro suave alrededor (sin blur ni transparencia del panel).
         readonly property bool on: field.activeFocus
         color: on ? Theme.raised : Theme.field
         border.width: 1
-        border.color: Qt.rgba(Theme.textPrimary.r, Theme.textPrimary.g, Theme.textPrimary.b, on ? 0.28 : 0.08)
+        border.color: Qt.rgba(Theme.textPrimary.r, Theme.textPrimary.g, Theme.textPrimary.b, on ? 0.40 : 0.20)
         Behavior on color { ColorAnimation { duration: 180; easing.type: Easing.OutCubic } }
         Behavior on border.color { ColorAnimation { duration: 180; easing.type: Easing.OutCubic } }
         antialiasing: true
