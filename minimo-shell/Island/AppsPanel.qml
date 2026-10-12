@@ -8,7 +8,7 @@ import "../Character"
 
 // Panel "En segundo plano" (deslizar la isla de derecha a izquierda): las apps de la
 // bandeja del sistema (Steam, Discord…), como los iconos ocultos de Windows 11.
-// Clic = volver a mostrar la app; si solo ofrece menú, se relanza su desktop entry.
+// Clic = pedir Activate y, si la app lo ignora, enfocar su ventana o relanzarla (ver scripts/tray-open.py).
 Item {
     id: root
     property bool open: false
@@ -22,11 +22,32 @@ Item {
     readonly property var trayItems: SystemTray.items.values
     readonly property var items: open ? trayItems.filter(i => !!i) : []
 
-    function entryOf(id) { return id ? DesktopEntries.heuristicLookup(id) : null }
-    function nameOf(i) { const e = entryOf(i.id); return e && e.name ? e.name : (i.title || i.id) }
+    // Ids SNI crudos ("Grok Bot_status_icon_1", "chrome_status_icon_1", "steam-2") → nombre limpio.
+    function cleanId(s) {
+        return (s || "").replace(/_status_icon_\d+$/i, "").replace(/[-_ ]\d+$/, "").replace(/[_-]+/g, " ").trim()
+    }
+    function entryOf(i) {
+        for (const k of [cleanId(i.id), i.id, i.title, i.tooltipTitle]) {
+            if (!k) continue
+            const e = DesktopEntries.heuristicLookup(k) || DesktopEntries.byId(k.toLowerCase().replace(/ /g, "-"))
+            if (e) return e
+        }
+        return null
+    }
+    function nameOf(i) {
+        const e = entryOf(i)
+        if (e && e.name) return e.name
+        const n = i.title || i.tooltipTitle || cleanId(i.id)
+        return n.replace(/\b\w/g, c => c.toUpperCase())
+    }
+    function entryIcon(i) { const e = entryOf(i); return e ? Quickshell.iconPath(e.icon, true) : "" }
+    function iconOf(i) { return i.icon ? i.icon : entryIcon(i) }
+    // Pedir Activate (algunas apps lo atienden) y dejar que el script complete:
+    // enfocar la ventana si apareció/existe, o relanzar la app si no hay ninguna.
     function activate(i) {
         if (!i.onlyMenu) i.activate()
-        else { const e = entryOf(i.id); Quickshell.execDetached(["gtk-launch", e ? e.id : i.id]) }
+        const e = entryOf(i)
+        Quickshell.execDetached([Qt.resolvedUrl("../scripts/tray-open.py").toString().replace("file://", ""), i.id, e ? e.id : ""])
         CharacterBus.islandCommand("close")
     }
 
@@ -81,7 +102,10 @@ Item {
                         }
                         Image {
                             x: 16; width: 20; height: 20; anchors.verticalCenter: parent.verticalCenter
-                            source: row.modelData.icon; sourceSize: Qt.size(40, 40); asynchronous: true
+                            property bool failed: false
+                            source: failed ? root.entryIcon(row.modelData) : root.iconOf(row.modelData)
+                            onStatusChanged: if (status === Image.Error && !failed) failed = true
+                            sourceSize: Qt.size(40, 40); asynchronous: true
                         }
                         Text {
                             x: 46; width: parent.width - 60; anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight
