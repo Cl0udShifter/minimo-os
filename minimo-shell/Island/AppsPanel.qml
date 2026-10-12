@@ -233,7 +233,6 @@ Item {
                             color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                         }
                         MouseArea { anchors.fill: parent; enabled: parent.isTray || modelData.canRaise; cursorShape: Qt.PointingHandCursor; onClicked: parent.isTray ? root.activateTray(modelData) : modelData.raise() }
-                        }
                     }
                 }
             }
