@@ -13,6 +13,7 @@ Item {
     Repeater {
         model: 3
         delegate: Text {
+            enabled: false              // texto decorativo: sin interacción ni selección
             id: z
             required property int index
             text: "z"

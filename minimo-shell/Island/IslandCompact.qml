@@ -21,6 +21,7 @@ Item {
         spacing: 10
         Character { id: chr; size: 22; active: root.active && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter }
         Text {
+            enabled: false              // texto decorativo: sin interacción ni selección
             anchors.verticalCenter: parent.verticalCenter
             text: Qt.formatDateTime(clock.date, "HH:mm")
             color: Theme.text
@@ -46,6 +47,7 @@ Item {
                 }
             }
             Text {
+                enabled: false              // texto decorativo: sin interacción ni selección
                 anchors.verticalCenter: parent.verticalCenter
                 text: Recorder.elapsedText
                 color: Theme.text; font.family: Theme.font; font.pixelSize: 13
@@ -54,6 +56,7 @@ Item {
         }
         // Mensaje breve (Guardado / Instalá wf-recorder).
         Text {
+            enabled: false              // texto decorativo: sin interacción ni selección
             visible: Recorder.notice !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: Recorder.notice

@@ -60,6 +60,7 @@ Row {
                 anchors.centerIn: parent
                 spacing: 5
                 Text {
+                    enabled: false              // texto decorativo: sin interacción ni selección
                     anchors.verticalCenter: parent.verticalCenter
                     text: chip.modelData.name || chip.modelData.id
                     color: chip.active ? "white" : Theme.text

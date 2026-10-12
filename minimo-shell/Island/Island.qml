@@ -81,10 +81,13 @@ PanelWindow {
         preventStealing: true
         acceptedButtons: Qt.LeftButton
         cursorShape: win.expanded ? Qt.ArrowCursor : (win.dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor)
-        x: win.shown ? pill.x : 0
+        // Margen extra alrededor de la píldora: un clic/arrastre que empieza justo en el
+        // borde no "se escapa" a la ventana de abajo (que seleccionaría su texto).
+        readonly property int pad: 8
+        x: win.shown ? pill.x - pad : 0
         y: 0
-        width: win.shown ? pill.width : win.width
-        height: win.shown ? Theme.topMargin + pill.height : 3
+        width: win.shown ? pill.width + pad * 2 : win.width
+        height: win.shown ? Theme.topMargin + pill.height + pad : 3
 
         property real pressX: 0
         property bool cancelled: false
