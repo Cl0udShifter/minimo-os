@@ -29,20 +29,26 @@ def resources():
     du = shutil.disk_usage("/")
     temp = None
     base = "/sys/class/hwmon"
-    for h in sorted(os.listdir(base)):
+    for h in (sorted(os.listdir(base)) if os.path.isdir(base) else []):
         try:
-            name = open(f"{base}/{h}/name").read().strip()
+            with open(f"{base}/{h}/name") as fh: name = fh.read().strip()
         except OSError:
             continue
         if name in ("coretemp", "k10temp", "zenpower"):
             for fn in sorted(os.listdir(f"{base}/{h}")):
                 if fn.endswith("_label"):
-                    lab = open(f"{base}/{h}/{fn}").read().strip()
-                    if lab.startswith(("Package", "Tctl", "Tdie")):
-                        temp = round(int(open(f"{base}/{h}/{fn[:-6]}_input").read()) / 1000)
-                        break
+                    try:
+                        with open(f"{base}/{h}/{fn}") as fh: lab = fh.read().strip()
+                        if lab.startswith(("Package", "Tctl", "Tdie")):
+                            with open(f"{base}/{h}/{fn[:-6]}_input") as fh: temp = round(int(fh.read()) / 1000)
+                            break
+                    except (OSError, ValueError):
+                        continue
             if temp is None and os.path.exists(f"{base}/{h}/temp1_input"):
-                temp = round(int(open(f"{base}/{h}/temp1_input").read()) / 1000)
+                try:
+                    with open(f"{base}/{h}/temp1_input") as fh: temp = round(int(fh.read()) / 1000)
+                except (OSError, ValueError):
+                    pass
             break
     return {"cpu": cpu, "memUsed": (total - avail) * 1024, "memTotal": total * 1024,
             "diskUsed": du.used, "diskTotal": du.total, "temp": temp}
@@ -117,10 +123,19 @@ def gpu():
     l = run(["nvidia-smi", "--query-gpu=name,utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"]).strip()
     p = [x.strip() for x in l.split(",")]
     if len(p) < 3: return None
-    return {"name": p[0].replace("NVIDIA ", "").replace("GeForce ", ""), "util": int(p[1] or 0), "temp": int(p[2] or 0)}
+    return {"name": p[0].replace("NVIDIA ", "").replace("GeForce ", ""), "util": num(p[1]), "temp": num(p[2])}
 
+def safe(fn, fallback):
+    # Un sensor raro (p. ej. nvidia-smi "[N/A]") no debe dejar al panel sin datos.
+    try:
+        return fn()
+    except Exception:
+        return fallback
+def num(x):
+    try: return int(float(x))
+    except (TypeError, ValueError): return 0
 mode = sys.argv[1] if len(sys.argv) > 1 else "full"
-res = {"res": resources()}
+res = {"res": safe(resources, None)}
 if mode == "full":
-    res["net"] = network(); res["dev"] = devices(); res["gpu"] = gpu()
+    res["net"] = safe(network, None); res["dev"] = safe(devices, None); res["gpu"] = safe(gpu, None)
 print(json.dumps(res))

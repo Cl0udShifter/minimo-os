@@ -133,9 +133,9 @@ Column {
                                 required property var modelData
                                 readonly property bool cur: DisplayState.theme === modelData.id
                                 width: parent.width / 2; height: parent.height; radius: height / 2
-                                color: cur ? Theme.fill : (tm.containsMouse ? Theme.field : "transparent")
+                                color: cur ? Theme.fill : (thm.containsMouse ? Theme.field : "transparent")
                                 Text { anchors.centerIn: parent; text: modelData.label; color: parent.cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
-                                MouseArea { id: tm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: DisplayState.setTheme(modelData.id) }
+                                MouseArea { id: thm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: DisplayState.setTheme(modelData.id) }
                             }
                         }
                     }

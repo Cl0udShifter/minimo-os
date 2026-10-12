@@ -12,7 +12,7 @@ Column {
     property string askFor: ""             // SSID que pide contraseña
     spacing: 6
     visible: Network.showWifi
-    onActiveChanged: { active ? Network.acquire() : Network.release(); if (!active) { expanded = false; askFor = "" } }
+    onActiveChanged: { active ? Network.acquire() : Network.release(); if (!active) { expanded = false; askFor = ""; Network.error = "" } }
     Component.onDestruction: if (active) Network.release()
 
     // Fila principal.
@@ -125,7 +125,7 @@ Column {
                             }
                             Rectangle {
                                 id: go
-                                function submit() { if (pass.text.length > 0) { Network.connect(net.modelData.ssid, pass.text); root.askFor = "" } }
+                                function submit() { if (pass.text.length > 0) { Network.connect(net.modelData.ssid, pass.text); pass.text = ""; root.askFor = "" } }
                                 anchors.right: parent.right; anchors.rightMargin: 4; anchors.verticalCenter: parent.verticalCenter
                                 width: 76; height: 32; radius: 16
                                 color: pass.text.length > 0 ? Theme.fill : Theme.track

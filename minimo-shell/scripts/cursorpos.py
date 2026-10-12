@@ -10,6 +10,8 @@ def sock_path():
     rt = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
     sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
     if not sig:
+        if not os.path.isdir(os.path.join(rt, "hypr")):
+            sys.exit(1)                         # sin Hyprland: la shell reintenta
         ds = sorted(os.listdir(os.path.join(rt, "hypr")), key=lambda d: os.path.getmtime(os.path.join(rt, "hypr", d)))
         sig = ds[-1]
     return os.path.join(rt, "hypr", sig, ".socket.sock")

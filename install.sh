@@ -93,6 +93,7 @@ PKGS=(
     ghostty grim slurp wf-recorder zenity                      # terminal, capturas, grabación, selector de fondo
     adwaita-fonts                                              # tipografía Adwaita Sans
     networkmanager                                             # Wi-Fi en la isla (nmcli)
+    python                                                     # scripts de la shell (cursor, estado, escritorios)
     git
 )
 OPTIONAL=(fuzzel wl-clipboard github-cli)
@@ -161,6 +162,13 @@ for f in "$REPO"/assets/wallpapers/*; do
     [ -e "$WALL/$(basename "$f")" ] && { ok "$WALL/$(basename "$f")"; continue; }
     run cp "$f" "$WALL/"
 done
+
+step "Notificaciones"
+# La isla es el servidor de notificaciones: otro daemon activo se quedaría con el nombre en D-Bus.
+for d in mako dunst swaync; do
+    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: cerralo y quitalo del autoarranque (la isla muestra las notificaciones)."; fi
+done
+ok "Las notificaciones las muestra la isla"
 
 step "Servicio de la shell (systemd --user)"
 UNITS="$HOME/.config/systemd/user"

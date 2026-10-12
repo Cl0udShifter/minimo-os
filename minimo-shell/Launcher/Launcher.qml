@@ -92,7 +92,7 @@ PanelWindow {
                     color: Theme.textPrimary
                     font.family: Theme.font; font.pixelSize: 21
                     selectionColor: Theme.track; selectedTextColor: Theme.textPrimary
-                    cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary }
+                    cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary; visible: field.activeFocus }
                     clip: true
                     Text { visible: !field.text; text: "Buscar aplicaciones"; color: Theme.textSecondary; font: field.font }
                     Keys.onEscapePressed: LauncherState.hide()

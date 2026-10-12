@@ -133,28 +133,28 @@ PanelWindow {
         // con el panel abierto, deslizar de nuevo lo cierra. La píldora sigue al dedo (elástico).
         property real pressX: 0
         property bool dragging: false
-        property real drag: 0
+        property real dragDx: 0
         // Coordenadas de ventana: la zona se mueve con la píldora mientras se arrastra.
-        onPressed: m => { pressX = mapToItem(null, m.x, m.y).x; dragging = false; drag = 0 }
+        onPressed: m => { pressX = mapToItem(null, m.x, m.y).x; dragging = false; dragDx = 0 }
         onPositionChanged: m => {
             if (!pressed || win.expanded) return
             const dx = mapToItem(null, m.x, m.y).x - pressX
             if (!dragging && Math.abs(dx) > 8) dragging = true
-            if (dragging) drag = dx
+            if (dragging) dragDx = dx
         }
         onReleased: m => {
             // Con una notificación: clic = abrir la app, clic derecho = descartar.
             if (!dragging && !win.open && Notifs.current !== null) {
                 if (m.button === Qt.RightButton) Notifs.dismiss(); else Notifs.activate()
-                dragging = false; drag = 0; return
+                dragging = false; dragDx = 0; return
             }
             if (m.button === Qt.RightButton) return
             if (dragging) {
-                if (Math.abs(drag) > 40) win.panel = !win.panel
+                if (Math.abs(dragDx) > 40) win.panel = !win.panel
             } else if (!win.open) win.expanded = true
-            dragging = false; drag = 0
+            dragging = false; dragDx = 0
         }
-        onCanceled: { dragging = false; drag = 0 }
+        onCanceled: { dragging = false; dragDx = 0 }
         // Rueda sobre la isla compacta: escritorio anterior/siguiente.
         onWheel: w => { if (!win.open) Workspaces.wheel(w.angleDelta.y) }
     }
@@ -183,7 +183,7 @@ PanelWindow {
     Rectangle {
         id: pill
         // Elástico: mientras se arrastra, la píldora se estira y se corre un poco con el dedo.
-        readonly property real rubber: hoverZone.dragging ? hoverZone.drag / (1 + Math.abs(hoverZone.drag) / 60) : 0
+        readonly property real rubber: hoverZone.dragging ? hoverZone.dragDx / (1 + Math.abs(hoverZone.dragDx) / 60) : 0
         width: win.expanded ? Theme.expandedW
              : win.panel ? Theme.expandedW
              : Math.max(Theme.compactW, compact.implicitWidth + 32) + Math.abs(rubber) * 1.2

@@ -114,7 +114,8 @@ PanelWindow {
                 contentHeight: (SettingsState.section === "pantalla" ? display.implicitHeight : SettingsState.section === "minimo" ? about.implicitHeight : personal.implicitHeight) + 32
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                onContentHeightChanged: contentY = 0
+                // Volver arriba solo al cambiar de sección (no cuando la página crece al cargar).
+                Connections { target: SettingsState; function onSectionChanged() { flick.contentY = 0 } }
 
                 PersonalizationPage {
                     id: personal
