@@ -92,6 +92,7 @@ PKGS=(
     cava                                                       # niveles de audio (baile del personaje)
     ghostty grim slurp wf-recorder zenity                      # terminal, capturas, grabación, selector de fondo
     adwaita-fonts                                              # tipografía Adwaita Sans
+    networkmanager                                             # Wi-Fi en la isla (nmcli)
     git
 )
 OPTIONAL=(fuzzel playerctl wl-clipboard github-cli)

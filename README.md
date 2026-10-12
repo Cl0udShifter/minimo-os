@@ -22,6 +22,7 @@ parte superior de la pantalla, acompañada por un pequeño personaje que reaccio
 - **Lanzador.** `Super + B` abre un buscador de aplicaciones centrado, navegable con el teclado.
 - **Grabación de pantalla.** Botón "Grabar" en la isla (wf-recorder, con audio del sistema). Los videos se guardan en `~/Vídeos/Grabaciones`.
 - **Reproductor.** Carátula circular que gira como un vinilo mientras suena la música.
+- **Wi-Fi.** En equipos sin cable, la isla muestra la red actual, la señal y las redes cercanas para conectarse.
 - **Ajustes.** Ventana propia con fondo de pantalla, opciones de la isla y del personaje, monitores (resolución, frecuencia y escala con confirmación) y brillo/saturación.
 
 ## Capturas
@@ -34,7 +35,7 @@ parte superior de la pantalla, acompañada por un pequeño personaje que reaccio
 
 - Arch Linux (usuario normal con `sudo`).
 - Hyprland 0.56 o superior (configuración en Lua).
-- Paquetes (el instalador los instala): `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts git`.
+- Paquetes (el instalador los instala): `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts networkmanager git`.
 - Opcionales: `fuzzel playerctl wl-clipboard github-cli`.
 
 ## Instalación

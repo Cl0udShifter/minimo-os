@@ -14,3 +14,4 @@ singleton SettingsState 1.0 SettingsState.qml
 MSwitch 1.0 MSwitch.qml
 singleton CharacterBus 1.0 CharacterBus.qml
 singleton IdleState 1.0 IdleState.qml
+singleton Network 1.0 Network.qml
