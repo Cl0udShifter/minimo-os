@@ -62,46 +62,6 @@ actualiza), copia `minimo/monitores.lua` una sola vez (es propio de cada PC), co
 
 Desactiva la shell y restaura el último respaldo de `~/.config/hypr`. No borra paquetes ni fondos.
 
-## Atajos
-
-| Atajo | Acción |
-|---|---|
-| `Super + B` | Lanzador de aplicaciones |
-| `Super + Espacio` | fuzzel |
-| `Super + T` | Terminal (ghostty) |
-| `Super + ,` | Ajustes |
-| `Super + X` | Abrir la isla |
-| `Super + Shift + R` | Grabar / detener grabación |
-| `Imprimir` | Captura de un área |
-| `Ctrl + Imprimir` | Captura de pantalla completa |
-| `Super + Q` | Cerrar ventana |
-| `Super + F` | Maximizar |
-| `Super + Shift + F` | Pantalla completa |
-| `Super + Ctrl + F` | Maximizar (fijar) |
-| `Super + Shift + T` | Flotante / mosaico |
-| `Super + W` | Agrupar ventanas |
-| `Super + R` | Cambiar división |
-| `Super + [` / `]` | Preseleccionar a izquierda / derecha |
-| `Super + Inicio` / `Fin` | Primera / última ventana |
-| `Super + flechas` o `H J K L` | Mover el foco |
-| `Super + Shift + flechas` o `H J K L` | Mover la ventana |
-| `Super + Ctrl + ←/→` o `H J K L` | Foco a otro monitor |
-| `Super + Shift + Ctrl + flechas` o `H J K L` | Mover ventana a otro monitor |
-| `Super + 1…9` | Ir al escritorio |
-| `Super + Shift + 1…9` | Mover ventana al escritorio |
-| `Super + U` / `I`, `Super + AvPág` / `RePág` | Escritorio siguiente / anterior |
-| `Super + Shift + U` / `I`, `Super + Shift + AvPág` / `RePág` | Mover ventana al escritorio siguiente / anterior |
-| `Super + Ctrl + ↓/↑` o `U` / `I` | Mover ventana al escritorio siguiente / anterior |
-| `Super + rueda` | Cambiar de escritorio |
-| `Super + Ctrl + rueda` | Mover ventana de escritorio |
-| `Super + clic izquierdo / derecho` | Mover / redimensionar ventana |
-| `Super + -` / `=` | Achicar / agrandar en horizontal |
-| `Super + Shift + -` / `=` | Achicar / agrandar en vertical |
-| `Super + Shift + E` | Cerrar sesión de Hyprland |
-| `Super + Shift + P` | Apagar / encender pantallas |
-| Teclas de volumen, micrófono y multimedia | Volumen (wpctl) y reproducción (playerctl) |
-| Tres dedos en horizontal | Cambiar de escritorio (touchpad) |
-
 ## Configuración
 
 Todo lo habitual se cambia desde **Ajustes** (botón en la isla o `Super + ,`):
