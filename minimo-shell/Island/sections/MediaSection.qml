@@ -9,9 +9,18 @@ import "../../Common"
 Item {
     id: root
     readonly property var players: Mpris.players.values
+    // Reproductor activo, reactivo a Mpris.players: primero el que suena; si no, uno en
+    // pausa con título. Se ignoran entradas "fantasma" (apps Chromium/Electron que dejan un
+    // MPRIS detenido y sin metadatos al cerrar la pestaña/medio) y el proxy playerctld.
+    function usable(p) {
+        if (!p || (p.dbusName || "").indexOf("playerctld") >= 0) return false
+        if (p.isPlaying) return true
+        return p.playbackState === MprisPlaybackState.Paused && (p.trackTitle || "") !== ""
+    }
     readonly property MprisPlayer player: {
-        for (const p of players) if (p.isPlaying) return p
-        return players.length > 0 ? players[0] : null
+        for (const p of players) if (p.isPlaying && usable(p)) return p
+        for (const p of players) if (usable(p)) return p
+        return null
     }
     visible: player !== null
     implicitHeight: visible ? 64 : 0
