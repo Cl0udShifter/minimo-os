@@ -46,6 +46,7 @@ Item {
         else { reset(); current = a; a.start() }
     }
     // Detiene todo y vuelve a neutro suavemente (dormir, baile, ánimo tienen prioridad).
+    function rest() { stopAll(); pending = null; settle.restart() }   // a pose neutra, siempre
     function calm() { if (busy) { stopAll(); pending = null; settle.restart() } }
     function stopAll() {
         if (current && current.running) current.stop()

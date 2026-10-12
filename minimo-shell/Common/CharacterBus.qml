@@ -15,6 +15,7 @@ Singleton {
     signal islandCommand(string cmd)
     signal gaze(real x, real y, int ms)
     signal pet()
+    property int hearts: 0          // corazones vivos (tope de partículas)
     readonly property var names: ["hop", "doubleHop", "spin", "giggle", "lookAround", "barrelRoll", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
 

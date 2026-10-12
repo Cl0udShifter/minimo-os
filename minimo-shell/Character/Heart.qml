@@ -17,6 +17,12 @@ Item {
     scale: 0.3
     opacity: 0
     transformOrigin: Item.Center
+    Component.onCompleted: CharacterBus.hearts++
+    Component.onDestruction: CharacterBus.hearts--
+    // Física aleatoria: duración, vaivén y escala final varían por partícula.
+    readonly property int life: 1150 + Math.round(Math.random() * 350)
+    readonly property real sway: 6 + Math.random() * 6
+    readonly property real peak: 0.9 + Math.random() * 0.2
 
     Shape {
         anchors.fill: parent
@@ -33,17 +39,17 @@ Item {
         running: true
         PauseAnimation { duration: h.delay }
         ParallelAnimation {
-            NumberAnimation { target: h; property: "y"; to: h.y - h.rise; duration: 1300; easing.type: Easing.OutCubic }
-            NumberAnimation { target: h; property: "x"; to: h.x + h.drift; duration: 1300; easing.type: Easing.InOutSine }
-            NumberAnimation { target: h; property: "scale"; to: 1; duration: 320; easing.type: Easing.OutBack; easing.overshoot: 2.2 }
+            NumberAnimation { target: h; property: "y"; to: h.y - h.rise; duration: h.life; easing.type: Easing.OutCubic }
+            NumberAnimation { target: h; property: "x"; to: h.x + h.drift; duration: h.life; easing.type: Easing.InOutSine }
+            NumberAnimation { target: h; property: "scale"; to: h.peak; duration: 320; easing.type: Easing.OutBack; easing.overshoot: 2.2 }
             SequentialAnimation {   // vaivén
-                NumberAnimation { target: h; property: "rotation"; to: 10; duration: 320; easing.type: Easing.InOutSine }
-                NumberAnimation { target: h; property: "rotation"; to: -8; duration: 420; easing.type: Easing.InOutSine }
-                NumberAnimation { target: h; property: "rotation"; to: 4; duration: 560; easing.type: Easing.InOutSine }
+                NumberAnimation { target: h; property: "rotation"; to: h.sway; duration: 320; easing.type: Easing.InOutSine }
+                NumberAnimation { target: h; property: "rotation"; to: -h.sway * 0.8; duration: 420; easing.type: Easing.InOutSine }
+                NumberAnimation { target: h; property: "rotation"; to: h.sway * 0.4; duration: 560; easing.type: Easing.InOutSine }
             }
             SequentialAnimation {
                 NumberAnimation { target: h; property: "opacity"; to: 1; duration: 160; easing.type: Easing.OutCubic }
-                PauseAnimation { duration: 560 }
+                PauseAnimation { duration: h.life - 740 }
                 NumberAnimation { target: h; property: "opacity"; to: 0; duration: 580; easing.type: Easing.InOutSine }
             }
         }

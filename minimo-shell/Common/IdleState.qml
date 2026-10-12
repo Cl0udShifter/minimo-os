@@ -13,7 +13,9 @@ Singleton {
     property bool forced: false
     readonly property bool sleeping: monitor.isIdle || forced
     // Nadie mira la pantalla (inactividad real, no sueño forzado): se pausan animaciones continuas.
-    readonly property bool unattended: monitor.isIdle
+    // Tras 10 min dormido pasa a "sueño profundo": recién ahí se congelan respiración y z.
+    readonly property bool unattended: monitor.isIdle && deep.fired
+    Timer { id: deep; property bool fired: false; interval: 600000; running: monitor.isIdle; onRunningChanged: if (!running) fired = false; onTriggered: fired = true }
 
     function sleepNow() { forced = true }
     function wake() { forced = false }

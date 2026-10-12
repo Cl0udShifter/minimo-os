@@ -244,6 +244,7 @@ Item {
     }
     Component { id: heartComp; Heart {} }
     function spawnHeart(delay) {
+        if (CharacterBus.hearts >= 24) return      // tope global de partículas
         // Los corazones van a la raíz de la ventana: no los recorta la tarjeta (clip).
         const win = c.Window.window
         const host = win && win.contentItem ? win.contentItem : c
@@ -300,6 +301,26 @@ Item {
 
     Reactions { id: reactions; c: c }
 
+    // Pose estática natural al pausar (animaciones apagadas, oculto): de frente, ojos
+    // abiertos y centrados, sin quedar a mitad de parpadeo, mirada o reacción.
+    onActiveChanged: if (!active) toRest()
+    function toRest() {
+        blinkAnim.stop(); petHop.stop(); puffAnim.stop(); petEnd.stop()
+        petting = false; clickTimes = []
+        idleX = 0; idleY = 0; lookX = 0; lookY = asleep ? 0.75 : 0; gOn = 0
+        reactions.rest()
+        restAnim.restart()
+    }
+    ParallelAnimation {
+        id: restAnim
+        NumberAnimation { target: c; property: "blink"; to: 1; duration: 220; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petHopY"; to: 0; duration: 260; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petPuff"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "petLean"; to: 6; duration: 260; easing.type: Easing.OutCubic }
+        NumberAnimation { target: c; property: "moodShake"; to: 0; duration: 200; easing.type: Easing.OutCubic }
+    }
+    NumberAnimation { id: breathRest; target: c; property: "breath"; to: 1; duration: 600; easing.type: Easing.InOutSine }
+
     Connections {
         target: CharacterBus
         function onReact(name) { c.react(name) }
@@ -326,7 +347,8 @@ Item {
         ScriptAction { script: c.doBlink(true) }
     }
     SequentialAnimation {
-        // respiración (más lenta y profunda dormido)
+        // respiración (más lenta y profunda dormido); al detenerse vuelve suave a 1
+        onStopped: breathRest.restart()
         running: c.active && !(c.asleep && IdleState.unattended); loops: Animation.Infinite
         NumberAnimation { target: c; property: "breath"; to: c.asleep ? 1.025 : 1.012; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }
         NumberAnimation { target: c; property: "breath"; to: 1.0; duration: c.asleep ? 3200 : 2400; easing.type: Easing.InOutSine }

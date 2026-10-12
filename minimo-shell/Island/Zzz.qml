@@ -11,8 +11,14 @@ Item {
     opacity: running ? 1 : 0
     Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
     width: 14; height: 30
-    visible: running
+    visible: opacity > 0
 
+    Loader {
+        anchors.fill: parent
+        active: root.visible          // despierto: sin objetos ni animaciones
+        sourceComponent: zs
+    }
+    Component { id: zs; Item { anchors.fill: parent
     Repeater {
         model: 3
         delegate: Text {
@@ -43,4 +49,5 @@ Item {
             }
         }
     }
+    } }
 }

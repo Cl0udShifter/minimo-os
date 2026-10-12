@@ -22,9 +22,30 @@ Column {
     function launch(entry) { if (entry) { entry.execute(); root.launched() } }
 
     Rectangle {
+        id: box
         width: parent.width; height: 40
         radius: Theme.radiusField
-        color: Theme.field
+        // Estilo Spotlight: hilo fino semitransparente; con foco, superficie elevada,
+        // borde más marcado y un aro suave alrededor (sin blur ni transparencia del panel).
+        readonly property bool on: field.activeFocus
+        color: on ? Theme.raised : Theme.field
+        border.width: 1
+        border.color: Qt.rgba(Theme.textPrimary.r, Theme.textPrimary.g, Theme.textPrimary.b, on ? 0.28 : 0.08)
+        Behavior on color { ColorAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on border.color { ColorAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        antialiasing: true
+        Rectangle {
+            anchors.fill: parent; anchors.margins: -3
+            radius: parent.radius + 3
+            color: "transparent"
+            border.width: 3
+            border.color: Qt.rgba(Theme.textPrimary.r, Theme.textPrimary.g, Theme.textPrimary.b, 0.08)
+            opacity: box.on ? 1 : 0
+            scale: box.on ? 1 : 0.985
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            Behavior on scale { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+            antialiasing: true
+        }
         Icon {
             id: lupa
             x: 12; anchors.verticalCenter: parent.verticalCenter
@@ -37,7 +58,7 @@ Column {
             anchors.right: parent.right; anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             color: Theme.textPrimary
-            selectionColor: Theme.track
+            selectionColor: Theme.hover
             selectedTextColor: Theme.textPrimary
             // El cursor "|" solo se dibuja cuando el buscador tiene el foco.
             cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary; visible: field.activeFocus && field.cursorVisible }
