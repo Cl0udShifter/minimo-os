@@ -160,7 +160,7 @@ Item {
     Behavior on happy { NumberAnimation { duration: 220 } }
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: blink * happy * half * (1 - 0.9 * sleepy)
+    readonly property real openness: blink * happy * half * (1 - 0.9 * sleepy) * (1 - 0.45 * tired)
 
     // ===== Reacciones (ver Reactions.qml) =====
     function spin() { if (active) reactions.playOpen() }
@@ -190,6 +190,26 @@ Item {
     property real wobble: 0        // radio del bamboleo de la mirada (mareo)
     property real wobblePh: 0
     property real half: 1          // ojos entrecerrados (bostezo)
+
+    // ===== Ánimo (lo fija quien usa el personaje, p. ej. el panel de estado) =====
+    // "" = normal/feliz · "worried" = preocupado (ojos más chicos e inclinados, sacudón)
+    // · "tired" = cansado/exigido (ojos entrecerrados, inclinado).
+    property string mood: ""
+    property real worry: active && mood === "worried" ? 1 : 0
+    property real tired: active && mood === "tired" ? 1 : 0
+    Behavior on worry { NumberAnimation { duration: 450; easing.type: Easing.InOutSine } }
+    Behavior on tired { NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
+    property real moodShake: 0
+    SequentialAnimation {
+        running: c.active && c.mood === "worried"
+        loops: Animation.Infinite
+        PauseAnimation { duration: 1800 }
+        NumberAnimation { target: c; property: "moodShake"; to: 5; duration: 70; easing.type: Easing.OutQuad }
+        NumberAnimation { target: c; property: "moodShake"; to: -5; duration: 90; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "moodShake"; to: 3; duration: 80; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "moodShake"; to: 0; duration: 100; easing.type: Easing.OutQuad }
+        onStopped: c.moodShake = 0
+    }
 
     Reactions { id: reactions; c: c }
 
@@ -230,7 +250,7 @@ Item {
     Item {
         id: body
         width: c.s; height: c.s
-        rotation: c.danceRot + c.rRot
+        rotation: c.danceRot + c.rRot + c.moodShake - 5 * c.tired
         transform: [
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
@@ -282,15 +302,15 @@ Item {
                     readonly property real kB: Math.max(0.12, cosY)
                     readonly property real kA: Math.max(0.2, c.cosP)
                     readonly property real own: modelData < 0 ? c.openL : c.openR
-                    readonly property real w: c.eyeW * kB * c.eyeWMul
+                    readonly property real w: c.eyeW * kB * c.eyeWMul * (1 - 0.12 * c.worry)
                     opacity: cosY > 0 ? 1 : 0
                     x: cx; y: cy
-                    rotation: c.tilt
+                    rotation: c.tilt - modelData * 14 * c.worry
 
                     // Ojo pastilla.
                     Rectangle {
                         width: eye.w
-                        height: Math.max(width * 0.35, c.eyeH * eye.kA * c.eyeHMul * c.openness * eye.own)
+                        height: Math.max(width * 0.35, c.eyeH * eye.kA * c.eyeHMul * c.openness * eye.own * (1 - 0.25 * c.worry))
                         radius: Math.min(width, height) / 2
                         x: -width / 2; y: -height / 2
                         color: Theme.eye

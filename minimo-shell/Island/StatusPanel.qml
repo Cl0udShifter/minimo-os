@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import QtQuick
 import "../Common"
+import "../Character"
 
 // Panel de estado del sistema (se abre deslizando sobre la isla): Internet, Recursos, Dispositivos.
 // Consulta datos solo mientras está abierto.
@@ -10,7 +11,17 @@ Item {
     property bool open: false
     implicitHeight: col.implicitHeight + 32
 
-    onOpenChanged: open ? SysStatus.acquire() : SysStatus.release()
+    onOpenChanged: {
+        open ? SysStatus.acquire() : SysStatus.release()
+        if (open) greetLater.restart()
+    }
+    Timer { id: greetLater; interval: 280; onTriggered: chr.react("greet") }
+
+    // Ánimo del personaje según el estado: sin internet → preocupado; CPU >85 % o
+    // temperatura alta (≥85 °C CPU / ≥85 °C GPU) → cansado; si no, feliz.
+    readonly property string mood: SysStatus.known && !SysStatus.online ? "worried"
+        : (r && (r.cpu > 85 || (r.temp !== null && r.temp !== undefined && r.temp >= 85)))
+          || (SysStatus.gpu && SysStatus.gpu.temp >= 85) ? "tired" : ""
     Component.onDestruction: if (open) SysStatus.release()
 
     readonly property var r: SysStatus.res
@@ -63,6 +74,18 @@ Item {
         id: col
         x: 16; y: 16; width: parent.width - 32
         spacing: 8
+
+        // Personaje: sigue el mouse solo con el panel abierto (activo = visible).
+        Item {
+            width: parent.width; height: 76
+            Character {
+                id: chr
+                size: 60
+                anchors.centerIn: parent
+                active: root.open && DisplayState.characterAnimated
+                mood: root.mood
+            }
+        }
 
         // Internet
         Title { text: "Internet" }
