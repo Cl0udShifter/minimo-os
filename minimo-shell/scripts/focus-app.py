@@ -14,6 +14,11 @@ if len(sys.argv) > 2 and sys.argv[1] == "--address":
     want = sys.argv[2]
     keys = []
     cands = [c for c in clients if c.get("address") == want]
+    # La ventana ya no existe (p. ej. la app se fue a la bandeja): relanzarla la vuelve a mostrar.
+    if not cands and len(sys.argv) > 4 and sys.argv[3] == "--launch":
+        subprocess.Popen(["gtk-launch", sys.argv[4]], start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        sys.exit(0)
 else:
     keys = [k.lower().removesuffix(".desktop") for k in sys.argv[1:] if k]
     cands = None

@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Mpris
+import Quickshell.Services.SystemTray
 import "../Common"
 import "../Character"
 
@@ -19,7 +20,7 @@ Item {
     Timer { id: greetLater; interval: 280; onTriggered: chr.react("greet") }
 
     // ---- datos (vacíos con el panel cerrado: sin trabajo de fondo) ----
-    readonly property var wins: open ? Hyprland.toplevels.values.filter(t => t && t.address) : []
+    readonly property var wins: open ? Hyprland.toplevels.values.filter(t => t && t.address && root.userWindow(t)) : []
     onWinsChanged: syncLater.restart()
     Timer { id: syncLater; interval: 40; onTriggered: root.sync() }   // una vez por ráfaga de cambios
 
@@ -27,6 +28,14 @@ Item {
         if (t.wayland && t.wayland.appId) return t.wayland.appId
         const o = t.lastIpcObject
         return o && o["class"] ? o["class"] : "?"
+    }
+    // Fuera ventanas auxiliares: sin mapear, ocultas, diminutas o popups sin título.
+    function userWindow(t) {
+        const o = t.lastIpcObject
+        if (!o || o.mapped === undefined) return true          // aún sin datos: mostrar
+        if (!o.mapped || o.hidden) return false
+        if (o.size && (o.size[0] < 40 || o.size[1] < 40)) return false
+        return (t.title || o.title || "") !== "" || !!(o["class"])
     }
     function entryOf(cls) { return cls && cls !== "?" ? DesktopEntries.heuristicLookup(cls) : null }
     function appName(cls) { const e = entryOf(cls); return e && e.name ? e.name : cls }
@@ -67,14 +76,29 @@ Item {
     }
 
     // MPRIS sin ventana propia: "En segundo plano".
-    readonly property var background: !open ? [] : Mpris.players.values.filter(p => {
+    // Tocar SystemTray siempre: registra el StatusNotifierWatcher para que Steam/Discord
+    // publiquen su icono de bandeja aunque el panel esté cerrado (es barato).
+    readonly property var trayItems: SystemTray.items.values
+    function hasWindow(id) {
+        id = (id || "").toLowerCase()
+        return id !== "" && wins.some(t => { const c = clsOf(t).toLowerCase(); return c.includes(id) || id.includes(c) })
+    }
+    readonly property var trayBg: !open ? [] : trayItems.filter(i => i && !hasWindow(i.id) && !hasWindow(i.title))
+    function activateTray(i) {
+        if (!i.onlyMenu) i.activate()
+        else { const e = entryOf(i.id); Quickshell.execDetached(["gtk-launch", e ? e.id : i.id]) }
+        CharacterBus.islandCommand("close")
+    }
+    readonly property var background: trayBg.concat(players)
+    readonly property var players: !open ? [] : Mpris.players.values.filter(p => {
         if ((p.dbusName || "").indexOf("playerctld") >= 0) return false
         const id = ((p.desktopEntry || p.identity || "") + "").toLowerCase()
         return id !== "" && !wins.some(t => { const c = clsOf(t).toLowerCase(); return c.includes(id) || id.includes(c) })
     })
 
-    function focusWin(addr) {
-        Quickshell.execDetached([Qt.resolvedUrl("../scripts/focus-app.py").toString().replace("file://", ""), "--address", addr])
+    function focusWin(addr, cls) {
+        const e = entryOf(cls)
+        Quickshell.execDetached([Qt.resolvedUrl("../scripts/focus-app.py").toString().replace("file://", ""), "--address", addr, "--launch", e ? e.id : cls])
         CharacterBus.islandCommand("close")
     }
     function closeWin(addr) {
@@ -171,7 +195,7 @@ Item {
                         MouseArea {
                             id: wm
                             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                            onClicked: root.focusWin(row.address)
+                            onClicked: root.focusWin(row.address, row.cls)
                         }
                         // × de cerrar (sutil, aparece con el hover).
                         Rectangle {
@@ -198,15 +222,40 @@ Item {
                 Repeater {
                     model: root.background
                     delegate: Item {
+                        id: bgRow
                         required property var modelData
                         width: bgCol.width; height: 40
-                        Icon { x: 16; anchors.verticalCenter: parent.verticalCenter; name: "music"; size: 18; tone: "dark" }
+                        // Menú propio de la app (clic derecho), como la bandeja oculta de Windows 11.
+                        QsMenuAnchor {
+                            id: trayMenu
+                            menu: bgRow.isTray && bgRow.modelData.hasMenu ? bgRow.modelData.menu : null
+                            anchor.item: bgRow
+                            anchor.rect.x: bgMa.mouseX; anchor.rect.y: bgMa.mouseY
+                        }
+                        Rectangle {
+                            x: 6; width: parent.width - 12; height: 36; radius: 18
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: bgMa.containsMouse ? Theme.hover : "transparent"
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                        }
+                        readonly property bool isTray: modelData.onlyMenu !== undefined
+                        Icon { visible: !parent.isTray; x: 16; anchors.verticalCenter: parent.verticalCenter; name: "music"; size: 18; tone: "dark" }
+                        Image { visible: parent.isTray; x: 16; width: 18; height: 18; anchors.verticalCenter: parent.verticalCenter; source: parent.isTray ? modelData.icon : ""; sourceSize: Qt.size(36, 36) }
                         Text {
                             x: 46; width: parent.width - 60; anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight
-                            text: modelData.identity + (modelData.trackTitle ? "  ·  " + modelData.trackTitle : "")
+                            text: parent.isTray ? (root.appName(modelData.id) || modelData.title) : modelData.identity + (modelData.trackTitle ? "  ·  " + modelData.trackTitle : "")
                             color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                         }
-                        MouseArea { anchors.fill: parent; enabled: modelData.canRaise; cursorShape: Qt.PointingHandCursor; onClicked: modelData.raise() }
+                        MouseArea {
+                            id: bgMa
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onClicked: m => {
+                                if (!bgRow.isTray) { if (bgRow.modelData.canRaise) bgRow.modelData.raise(); return }
+                                if (m.button === Qt.RightButton) { if (bgRow.modelData.hasMenu) trayMenu.open() }
+                                else root.activateTray(bgRow.modelData)
+                            }
+                        }
                     }
                 }
             }
