@@ -18,9 +18,11 @@ PanelWindow {
     readonly property bool open: expanded || panel
     readonly property bool hovered: hoverZone.containsMouse
     property bool shown: true
-    // Ocultamiento inteligente: hay ventanas (no especiales) en el escritorio enfocado.
-    readonly property var focusedWs: Hyprland.focusedWorkspace
-    readonly property bool occupied: focusedWs !== null && focusedWs.id > 0 && focusedWs.toplevels.values.length > 0
+    // Ocultamiento inteligente: hay ventanas en el escritorio activo del monitor de ESTA isla.
+    // Solo se evalúa con la opción activa; los escritorios especiales (id < 0) no cuentan.
+    readonly property var monitorWs: DisplayState.islandSmartHide ? (Hyprland.monitorFor(win.screen)?.activeWorkspace ?? null) : null
+    readonly property int wsWindows: monitorWs && monitorWs.id > 0 ? monitorWs.toplevels.values.length : 0
+    readonly property bool occupied: wsWindows > 0
     readonly property bool hideWanted: DisplayState.islandAutoHide || (DisplayState.islandSmartHide && occupied)
 
     anchors { top: true; left: true; right: true; bottom: win.open }
@@ -67,6 +69,15 @@ PanelWindow {
     }
     // Reactivo a abrir/cerrar/mover ventanas y cambiar de escritorio (eventos de Hyprland).
     onHideWantedChanged: syncHide()
+    // Tras cerrar/mover ventanas se refresca la lista de toplevels (un evento, sin sondeo).
+    Connections {
+        target: Hyprland
+        enabled: DisplayState.islandSmartHide
+        function onRawEvent(ev) {
+            const n = ev.name
+            if (n === "closewindow" || n === "movewindowv2" || n === "openwindow") Hyprland.refreshToplevels()
+        }
+    }
     function syncHide() {
         if (!hideWanted) { hideTimer.stop(); shown = true }
         else if (!hovered && !open) hideTimer.restart()

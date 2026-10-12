@@ -20,8 +20,9 @@ Singleton {
     property int sleepMinutes: 1            // dormir tras inactividad (1, 2 o 5 min)
 
     function setWallpaper(path) { wallpaper = path; save() }
-    function setIslandAutoHide(v) { islandAutoHide = v; save() }
-    function setIslandSmartHide(v) { islandSmartHide = v; save() }
+    function setIslandAutoHide(v) { islandAutoHide = v; if (v) islandSmartHide = false; save() }
+    // Excluyentes: activar uno apaga el otro.
+    function setIslandSmartHide(v) { islandSmartHide = v; if (v) islandAutoHide = false; save() }
     function setCharacterAnimated(v) { characterAnimated = v; save() }
     function setSleepMinutes(v) { sleepMinutes = v; save() }
     function setTheme(v) { theme = v; save() }
@@ -66,7 +67,7 @@ Singleton {
                 const s = JSON.parse(text())
                 root.wallpaper = s.wallpaper ?? ""
                 root.islandAutoHide = s.islandAutoHide ?? true
-                root.islandSmartHide = s.islandSmartHide ?? false
+                root.islandSmartHide = (s.islandSmartHide ?? false) && !root.islandAutoHide
                 root.characterAnimated = s.characterAnimated ?? true
                 root.sleepMinutes = s.sleepMinutes ?? 1
                 root.theme = s.theme === "dark" ? "dark" : "light"
