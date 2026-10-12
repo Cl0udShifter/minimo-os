@@ -3,6 +3,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import QtQuick.Effects
 import "../Common"
 
@@ -17,6 +18,10 @@ PanelWindow {
     readonly property bool open: expanded || panel
     readonly property bool hovered: hoverZone.containsMouse
     property bool shown: true
+    // Ocultamiento inteligente: hay ventanas (no especiales) en el escritorio enfocado.
+    readonly property var focusedWs: Hyprland.focusedWorkspace
+    readonly property bool occupied: focusedWs !== null && focusedWs.id > 0 && focusedWs.toplevels.values.length > 0
+    readonly property bool hideWanted: DisplayState.islandAutoHide || (DisplayState.islandSmartHide && occupied)
 
     anchors { top: true; left: true; right: true; bottom: win.open }
     implicitHeight: Theme.maxExpandedH + Theme.topMargin + 8
@@ -34,7 +39,7 @@ PanelWindow {
     Timer {
         id: hideTimer
         interval: Theme.hideDelay
-        onTriggered: if (DisplayState.islandAutoHide && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "") win.shown = false
+        onTriggered: if (win.hideWanted && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "") win.shown = false
     }
     onHoveredChanged: {
         if (hovered) { hideTimer.stop(); shown = true }
@@ -57,7 +62,14 @@ PanelWindow {
     // Si se desactiva el auto-ocultar, la isla queda siempre visible.
     Connections {
         target: DisplayState
-        function onIslandAutoHideChanged() { if (!DisplayState.islandAutoHide) win.shown = true; else hideTimer.restart() }
+        function onIslandAutoHideChanged() { win.syncHide() }
+        function onIslandSmartHideChanged() { win.syncHide() }
+    }
+    // Reactivo a abrir/cerrar/mover ventanas y cambiar de escritorio (eventos de Hyprland).
+    onHideWantedChanged: syncHide()
+    function syncHide() {
+        if (!hideWanted) { hideTimer.stop(); shown = true }
+        else if (!hovered && !open) hideTimer.restart()
     }
 
     // Mensajes de la grabadora: mostrar la isla mientras dure el aviso.

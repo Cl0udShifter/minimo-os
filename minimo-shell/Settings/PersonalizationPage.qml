@@ -156,6 +156,14 @@ Column {
             Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
             SwitchRow {
                 width: parent.width
+                text: "Ocultamiento inteligente"
+                detail: "Oculta la isla cuando hay una app abierta en el escritorio."
+                checked: DisplayState.islandSmartHide
+                onToggled: v => DisplayState.setIslandSmartHide(v)
+            }
+            Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+            SwitchRow {
+                width: parent.width
                 text: "Personaje animado"
                 detail: "Sigue el mouse, parpadea, baila y se duerme."
                 checked: DisplayState.characterAnimated

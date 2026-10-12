@@ -14,12 +14,14 @@ Singleton {
     property bool loaded: false
     property string wallpaper: ""
     property bool islandAutoHide: true      // ocultar la isla automáticamente
+    property bool islandSmartHide: false    // ocultar solo si hay ventanas en el escritorio
     property bool characterAnimated: true   // personaje animado (si no, quieto)
     property string theme: "light"          // "light" | "dark"
     property int sleepMinutes: 1            // dormir tras inactividad (1, 2 o 5 min)
 
     function setWallpaper(path) { wallpaper = path; save() }
     function setIslandAutoHide(v) { islandAutoHide = v; save() }
+    function setIslandSmartHide(v) { islandSmartHide = v; save() }
     function setCharacterAnimated(v) { characterAnimated = v; save() }
     function setSleepMinutes(v) { sleepMinutes = v; save() }
     function setTheme(v) { theme = v; save() }
@@ -27,7 +29,7 @@ Singleton {
     onThemeChanged: Theme.dark = theme === "dark"
     function save() {
         file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper,
-                                     islandAutoHide: root.islandAutoHide, characterAnimated: root.characterAnimated,
+                                     islandAutoHide: root.islandAutoHide, islandSmartHide: root.islandSmartHide, characterAnimated: root.characterAnimated,
                                      sleepMinutes: root.sleepMinutes, theme: root.theme }, null, 2))
     }
 
@@ -64,6 +66,7 @@ Singleton {
                 const s = JSON.parse(text())
                 root.wallpaper = s.wallpaper ?? ""
                 root.islandAutoHide = s.islandAutoHide ?? true
+                root.islandSmartHide = s.islandSmartHide ?? false
                 root.characterAnimated = s.characterAnimated ?? true
                 root.sleepMinutes = s.sleepMinutes ?? 1
                 root.theme = s.theme === "dark" ? "dark" : "light"
