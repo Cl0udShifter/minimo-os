@@ -53,6 +53,8 @@ Column {
         }
         TextInput {
             id: field
+            onTextChanged: if (activeFocus) CharacterBus.typed()
+            onActiveFocusChanged: if (!activeFocus) CharacterBus.typingStopped()
             cursorVisible: activeFocus
             anchors.left: lupa.right; anchors.leftMargin: 8
             anchors.right: parent.right; anchors.rightMargin: 16

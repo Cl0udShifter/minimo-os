@@ -99,7 +99,7 @@ Item {
     property real gOn: 0
     Behavior on gOn { NumberAnimation { duration: 250 } }
     readonly property real fX: bX * (1 - gOn) + gX * gOn
-    readonly property real fY: bY * (1 - gOn) + gY * gOn
+    readonly property real fY: bY * (1 - gOn) + gY * gOn + 0.3 * squint
     // Resorte casi crítico: sacada rápida con un overshoot mínimo, sin temblor.
     Behavior on eyeX { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
     Behavior on eyeY { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
@@ -117,7 +117,11 @@ Item {
     // si pasa la silueta, queda recortado por la máscara circular de la cara.
     readonly property real lookLen: Math.sqrt(fX * fX + fY * fY)
     readonly property real gk: lookLen > 1 ? 1 / lookLen : 1          // limitar al disco unidad
-    readonly property real yaw: fX * gk * 0.80                        // rad (máx ≈ 46°)
+    readonly property real yaw: fX * gk * 0.80 + turn                 // rad (máx ≈ 46°) + vuelta
+    // Vuelta sobre el eje vertical (0..2π): los ojos cruzan y desaparecen por detrás;
+    // el cuerpo se angosta de perfil (simulación 2D) y vuelve al dar la cara.
+    property real turn: 0
+    readonly property real turnSx: Math.max(0.1, Math.abs(Math.cos(turn / 2)))
     readonly property real pitch: fY * gk * (fY > 0 ? 0.66 : 0.6)     // arriba hay menos lugar (isla)
     readonly property real eyeAng: Math.asin(Math.min(0.9, eyeSep / r))   // separación angular de cada ojo
     readonly property real sinP: Math.sin(pitch)
@@ -172,7 +176,7 @@ Item {
     readonly property real danceRot: danceAmp * 4 * Math.sin(2 * Math.PI * sway)
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.62 * petK)
+    readonly property real openness: (1 - 0.5 * squint) * blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.62 * petK)
     // Alegría con pastillas: más bajas y elevadas (mejillas que suben). Bailando, leve.
     readonly property real joy: Math.max(smile, 0.45 * danceOn, 0.8 * petK) * (1 - sleepy)
 
@@ -301,12 +305,29 @@ Item {
 
     Reactions { id: reactions; c: c }
 
+    // ===== Entrecerrar al escribir (campos del shell) =====
+    // Ojos ~50 % más bajos, algo más anchos, mirada apenas hacia abajo (al campo).
+    property real squint: 0
+    Behavior on squint { NumberAnimation { duration: c.squint < 0.5 ? 180 : 420; easing.type: Easing.InOutSine } }
+    Timer { id: squintRelax; interval: 600; onTriggered: c.squint = 0 }
+    Connections {
+        target: CharacterBus
+        function onTyped() { if (c.active && !c.asleep) { c.squint = 1; squintRelax.restart() } }
+        function onTypingStopped() { squintRelax.stop(); c.squint = 0 }
+    }
+    // Salto hacia atrás juguetón cuando llega una notificación (si se ve y está despierto).
+    Connections {
+        target: Notifs
+        function onCurrentChanged() { if (Notifs.current !== null) c.react("hopBack") }
+    }
+
     // Pose estática natural al pausar (animaciones apagadas, oculto): de frente, ojos
     // abiertos y centrados, sin quedar a mitad de parpadeo, mirada o reacción.
     onActiveChanged: if (!active) toRest()
     function toRest() {
         blinkAnim.stop(); petHop.stop(); puffAnim.stop(); petEnd.stop()
         petting = false; clickTimes = []
+        squint = 0; turn = 0
         idleX = 0; idleY = 0; lookX = 0; lookY = asleep ? 0.75 : 0; gOn = 0
         reactions.rest()
         restAnim.restart()
@@ -360,7 +381,7 @@ Item {
         width: c.s; height: c.s
         rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired + c.petSide * c.petLean * c.petK
         transform: [
-            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
+            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx * c.turnSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.petPuff * (1 + 0.02 * c.petK); yScale: c.petPuff * (1 - 0.02 * c.petK) },
             Translate { x: c.rX + c.petSide * c.s * 0.045 * c.petK * (c.petLean - 5) / 4; y: c.bounceY + c.danceY + c.rY + c.petHopY }
@@ -411,7 +432,7 @@ Item {
                     readonly property real kB: Math.max(0.12, cosY)
                     readonly property real kA: Math.max(0.2, c.cosP)
                     readonly property real own: modelData < 0 ? c.openL : c.openR
-                    readonly property real w: c.eyeW * kB * c.eyeWMul * (1 - 0.12 * c.worry)
+                    readonly property real w: c.eyeW * kB * c.eyeWMul * (1 - 0.12 * c.worry) * (1 + 0.1 * c.squint)
                     opacity: cosY > 0 ? 1 : 0
                     x: cx; y: cy
                     rotation: c.tilt - modelData * 14 * c.worry

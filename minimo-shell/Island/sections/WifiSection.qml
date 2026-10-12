@@ -111,6 +111,8 @@ Column {
                             border.width: 1; border.color: Theme.track
                             TextInput {
                                 id: pass
+                                onTextChanged: if (activeFocus) CharacterBus.typed()
+                                onActiveFocusChanged: if (!activeFocus) CharacterBus.typingStopped()
                                 anchors.left: parent.left; anchors.leftMargin: 14
                                 anchors.right: go.left; anchors.rightMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter

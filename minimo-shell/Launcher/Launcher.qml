@@ -84,6 +84,8 @@ PanelWindow {
                 Icon { id: lupa; x: 20; anchors.verticalCenter: parent.verticalCenter; name: "search"; tone: "gray"; size: 22 }
                 TextInput {
                     id: field
+                    onTextChanged: if (activeFocus) CharacterBus.typed()
+                    onActiveFocusChanged: if (!activeFocus) CharacterBus.typingStopped()
                     anchors.left: lupa.right; anchors.leftMargin: 12
                     anchors.right: parent.right; anchors.rightMargin: 24
                     anchors.verticalCenter: parent.verticalCenter

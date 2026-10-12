@@ -15,8 +15,11 @@ Singleton {
     signal islandCommand(string cmd)
     signal gaze(real x, real y, int ms)
     signal pet()
+    // Escritura en campos de texto del shell (el personaje entrecierra los ojos para leer).
+    signal typed()
+    signal typingStopped()
     property int hearts: 0          // corazones vivos (tope de partículas)
-    readonly property var names: ["hop", "doubleHop", "spin", "giggle", "lookAround", "barrelRoll", "surprise",
+    readonly property var names: ["hop", "doubleHop", "spin", "giggle", "lookAround", "hopBack", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
 
     IpcHandler {
