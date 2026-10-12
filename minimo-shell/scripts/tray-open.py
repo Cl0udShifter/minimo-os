@@ -17,8 +17,11 @@ def run(*a, timeout=4):
 def log(msg):
     print("tray-open:", msg, file=sys.stderr, flush=True)
 
-item_id = sys.argv[1] if len(sys.argv) > 1 else ""
-entry = sys.argv[2] if len(sys.argv) > 2 else ""
+# Modo "--quit <id>": cerrar la app con amabilidad (SIGTERM), para items sin menú propio.
+quit_mode = len(sys.argv) > 1 and sys.argv[1] == "--quit"
+args = sys.argv[2:] if quit_mode else sys.argv[1:]
+item_id = args[0] if len(args) > 0 else ""
+entry = args[1] if len(args) > 1 else ""
 
 def item_pid():
     """PID dueño del item SNI con ese Id (vía el watcher y el bus)."""
@@ -81,6 +84,16 @@ def find_window(pid):
     return min(hit, key=lambda c: c.get("focusHistoryID", 999)) if hit else None
 
 if not item_id:
+    sys.exit(0)
+if quit_mode:
+    import signal
+    pid = item_pid()
+    me = {os.getpid(), os.getppid()}
+    if pid <= 1 or pid in me or comm(pid) in ("qs", "quickshell", "systemd", "hyprland"):
+        log(f"{item_id}: no se cierra (pid {pid})")
+        sys.exit(1)
+    os.kill(pid, signal.SIGTERM)
+    log(f"{item_id}: SIGTERM a {pid} ({comm(pid)})")
     sys.exit(0)
 time.sleep(0.6)   # darle tiempo al Activate que ya mandó QML
 pid = item_pid()

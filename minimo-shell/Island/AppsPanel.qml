@@ -14,7 +14,23 @@ Item {
     property bool open: false
     implicitHeight: col.implicitHeight + 32
 
-    onOpenChanged: if (open) greetLater.restart()
+    onOpenChanged: { menuFor = null; if (open) greetLater.restart() }
+
+    // Menú contextual (clic derecho): el de la propia app, dentro del panel. Uno a la vez.
+    property var menuFor: null
+    focus: menuFor !== null
+    Keys.onEscapePressed: menuFor = null
+    // Clic en cualquier otro lugar del panel cierra el menú.
+    MouseArea { anchors.fill: parent; enabled: root.menuFor !== null; onClicked: root.menuFor = null }
+    function quit(i) {
+        Quickshell.execDetached([Qt.resolvedUrl("../scripts/tray-open.py").toString().replace("file://", ""), "--quit", i.id])
+        menuFor = null
+    }
+    function trigger(e) {
+        e.triggered()
+        menuFor = null
+        CharacterBus.islandCommand("close")
+    }
     Timer { id: greetLater; interval: 280; onTriggered: chr.react("greet") }
 
     // Tocar SystemTray siempre registra el StatusNotifierWatcher, así las apps publican
@@ -93,29 +109,85 @@ Item {
                     delegate: Item {
                         id: row
                         required property var modelData
-                        width: list.width; height: 40
+                        readonly property bool menuOpen: root.menuFor === modelData
+                        width: list.width; height: 40 + menuBox.height
                         Rectangle {
-                            x: 6; width: parent.width - 12; height: 36; radius: 18
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: ma.containsMouse ? Theme.hover : "transparent"
+                            x: 6; y: 2; width: parent.width - 12; height: 36; radius: 18
+                            color: ma.containsMouse || row.menuOpen ? Theme.hover : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
                         Image {
-                            x: 16; width: 20; height: 20; anchors.verticalCenter: parent.verticalCenter
+                            x: 16; y: 10; width: 20; height: 20
                             property bool failed: false
                             source: failed ? root.entryIcon(row.modelData) : root.iconOf(row.modelData)
                             onStatusChanged: if (status === Image.Error && !failed) failed = true
                             sourceSize: Qt.size(40, 40); asynchronous: true
                         }
                         Text {
-                            x: 46; width: parent.width - 60; anchors.verticalCenter: parent.verticalCenter; elide: Text.ElideRight
+                            x: 46; y: 0; height: 40; width: parent.width - 60; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight
                             text: root.nameOf(row.modelData)
                             color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                         }
                         MouseArea {
                             id: ma
-                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                            onClicked: root.activate(row.modelData)
+                            width: parent.width; height: 40
+                            hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onClicked: m => {
+                                if (m.button === Qt.RightButton) root.menuFor = row.menuOpen ? null : row.modelData
+                                else { root.menuFor = null; root.activate(row.modelData) }
+                            }
+                        }
+
+                        // Menú de la app, desplegado bajo la fila.
+                        Rectangle {
+                            id: menuBox
+                            x: 12; y: 40; width: parent.width - 24; radius: 16
+                            color: Theme.raised
+                            height: row.menuOpen ? menuCol.implicitHeight + 8 : 0
+                            opacity: row.menuOpen ? 1 : 0
+                            visible: height > 0
+                            clip: true
+                            Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                            Behavior on opacity { NumberAnimation { duration: 160 } }
+                            QsMenuOpener { id: opener; menu: row.menuOpen && row.modelData.hasMenu ? row.modelData.menu : null }
+                            Column {
+                                id: menuCol
+                                y: 4; width: parent.width
+                                Repeater {
+                                    model: opener.children
+                                    delegate: Column {
+                                        id: top
+                                        required property var modelData
+                                        width: menuCol.width
+                                        TrayMenuRow { id: topRow; entry: top.modelData; onToggle: expanded = !expanded; onActivated: root.trigger(top.modelData) }
+                                        // Submenú en línea (un nivel), con sangría.
+                                        Column {
+                                            x: 12; width: parent.width - 12
+                                            visible: topRow.expanded
+                                            QsMenuOpener { id: sub; menu: topRow.expanded ? top.modelData : null }
+                                            Repeater {
+                                                model: sub.children
+                                                delegate: TrayMenuRow { required property var modelData; entry: modelData; onActivated: root.trigger(modelData) }
+                                            }
+                                        }
+                                    }
+                                }
+                                // Sin menú propio: cerrar la app con amabilidad (SIGTERM).
+                                Item {
+                                    visible: !row.modelData.hasMenu
+                                    width: parent.width; height: visible ? 32 : 0
+                                    Rectangle {
+                                        x: 4; width: parent.width - 8; height: 28; radius: 14; anchors.verticalCenter: parent.verticalCenter
+                                        color: qMa.containsMouse ? Theme.hover : "transparent"
+                                    }
+                                    Text {
+                                        x: 16; anchors.verticalCenter: parent.verticalCenter
+                                        text: "Cerrar"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
+                                    }
+                                    MouseArea { id: qMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.quit(row.modelData) }
+                                }
+                            }
                         }
                     }
                 }
