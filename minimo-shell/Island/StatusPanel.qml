@@ -84,6 +84,8 @@ Item {
                 anchors.centerIn: parent
                 active: root.open && DisplayState.characterAnimated
                 mood: root.mood
+                // Clic → reacción; varios clics seguidos → caricias.
+                MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: chr.clicked() }
             }
         }
 

@@ -38,7 +38,8 @@ Column {
     Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: 96; height: 104
-        Character { id: chr; size: 88; anchors.centerIn: parent; active: root.shown && DisplayState.characterAnimated }
+        Character { id: chr; size: 88; anchors.centerIn: parent; active: root.shown && DisplayState.characterAnimated
+            MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: chr.clicked() } }
     }
     Column {
         anchors.horizontalCenter: parent.horizontalCenter

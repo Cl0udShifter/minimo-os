@@ -14,6 +14,7 @@ Singleton {
     signal react(string name)
     signal islandCommand(string cmd)
     signal gaze(real x, real y, int ms)
+    signal pet()
     readonly property var names: ["hop", "doubleHop", "spin", "giggle", "lookAround", "barrelRoll", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
 
@@ -26,6 +27,8 @@ Singleton {
         function list(): string { return root.names.join(" ") }
         // Forzar la mirada (x, y en -1..1) durante unos segundos.
         function look(x: real, y: real): void { root.gaze(x, y, 4000) }
+        // Caricia (como varios clics seguidos sobre el personaje).
+        function pet(): void { root.pet() }
         function sleep(): void { IdleState.sleepNow() }
         function wake(): void { IdleState.wake() }
     }

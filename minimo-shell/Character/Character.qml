@@ -152,7 +152,7 @@ Item {
     property real sleepy: asleep ? 1 : 0
     // Se duerme despacio (2.4 s); al despertar abre los ojos con suavidad (0.7 s).
     Behavior on sleepy { NumberAnimation { duration: c.asleep ? 2400 : 700; easing.type: c.asleep ? Easing.InOutSine : Easing.OutCubic } }
-    onAsleepChanged: { updateLook(); if (asleep) reactions.calm(); else if (active) wakeAnim.restart() }
+    onAsleepChanged: { updateLook(); if (asleep) { reactions.calm(); petting = false } else if (active) wakeAnim.restart() }
     function wake() { IdleState.wake() }
     readonly property bool dancing: active && Media.playing
     onDancingChanged: { dancing ? Media.acquire() : Media.release(); if (dancing) reactions.calm() }
@@ -172,16 +172,59 @@ Item {
     readonly property real danceRot: danceAmp * 4 * Math.sin(2 * Math.PI * sway)
 
     // Apertura final de los ojos (1 = abiertos; dormido = pastilla fina).
-    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired)
+    readonly property real openness: blink * half * (1 - 0.9 * sleepy) * (1 - 0.4 * tired) * (1 - 0.3 * petK)
     // Alegría con pastillas: más bajas y elevadas (mejillas que suben). Bailando, leve.
-    readonly property real joy: Math.max(smile, 0.45 * danceOn) * (1 - sleepy)
+    readonly property real joy: Math.max(smile, 0.45 * danceOn, 0.8 * petK) * (1 - sleepy)
 
     // ===== Reacciones (ver Reactions.qml) =====
     function spin() { if (active) reactions.playOpen() }
     function spinBack() { if (active) reactions.play("spinBack") }
     function hop() { if (active && !asleep && !reactions.busy) reactions.play("hop") }
     function react(name) { if (active && !asleep) reactions.play(name) }
-    function clicked() { if (!active) return; if (asleep) wake(); else reactions.playClick() }
+    // Clics: dormido → despierta suave. 1 clic → reacción. ≥4 clics en 1,5 s → caricias.
+    property var clickTimes: []
+    function clicked() {
+        if (!active) return
+        if (asleep) { wake(); clickTimes = []; return }
+        const now = Date.now()
+        clickTimes = clickTimes.filter(t => now - t < 1500).concat([now])
+        if (petting || clickTimes.length >= 4) pet()
+        else if (clickTimes.length === 1) reactions.playClick()
+    }
+
+    // ===== Caricias =====
+    // Ojos relajados (pastillas entrecerradas y "sonrientes"), balanceo lento de lado a
+    // lado, leve aplastamiento y corazones planos que suben. Dura mientras sigan los clics.
+    // Prioridad: debajo de dormir, encima de los trucos.
+    property bool petting: false
+    property real petK: petting ? 1 : 0
+    Behavior on petK { NumberAnimation { duration: c.petting ? 320 : 520; easing.type: c.petting ? Easing.OutCubic : Easing.InOutSine } }
+    property real petLean: 0
+    function pet() {
+        if (!active || asleep) return
+        if (!petting) { reactions.calm(); petting = true }
+        petEnd.restart()
+        spawnHeart()
+    }
+    Timer { id: petEnd; interval: 1700; onTriggered: c.petting = false }
+    SequentialAnimation {
+        running: c.petK > 0.01 && c.active
+        loops: Animation.Infinite
+        NumberAnimation { target: c; property: "petLean"; to: 5; duration: 760; easing.type: Easing.InOutSine }
+        NumberAnimation { target: c; property: "petLean"; to: -5; duration: 760; easing.type: Easing.InOutSine }
+        onStopped: c.petLean = 0
+    }
+    Component { id: heartComp; Heart {} }
+    function spawnHeart() {
+        // Los corazones van a la raíz de la ventana: no los recorta la tarjeta (clip).
+        const win = c.Window.window
+        const host = win && win.contentItem ? win.contentItem : c
+        const p = c.mapToItem(host, c.width / 2, c.height * 0.2)
+        const hs = Math.max(8, c.s * 0.26)
+        heartComp.createObject(host, {
+            size: hs, x: p.x - hs / 2 + (Math.random() - 0.5) * c.s * 0.4, y: p.y - hs / 2,
+            rise: c.s * (0.7 + Math.random() * 0.4), drift: (Math.random() - 0.5) * c.s * 0.6, z: 1000 })
+    }
 
     // Propiedades que animan las reacciones (valores neutros).
     property real roll: 0          // giro de la cara
@@ -231,12 +274,13 @@ Item {
     Connections {
         target: CharacterBus
         function onReact(name) { c.react(name) }
+        function onPet() { c.pet() }
         function onGaze(x, y, ms) { if (!c.active) return; c.gX = x; c.gY = y; c.gOn = 1; gazeHold.interval = ms; gazeHold.restart() }
     }
 
     Timer {
         // truco espontáneo cada 45–120 s (despierto, visible, sin música ni ánimo)
-        running: c.active && !c.asleep && !c.dancing && c.mood === ""; repeat: true
+        running: c.active && !c.asleep && !c.dancing && !c.petting && c.mood === ""; repeat: true
         interval: 60000
         onTriggered: {
             interval = 45000 + Math.random() * 75000
@@ -263,10 +307,11 @@ Item {
     Item {
         id: body
         width: c.s; height: c.s
-        rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired
+        rotation: c.danceRot + c.rRot + c.moodShake - 4 * c.tired + c.petLean * c.petK
         transform: [
             Scale { origin.x: c.s / 2; origin.y: c.s; xScale: c.squashX * c.breath * c.danceSx; yScale: c.squashY * c.breath * c.danceSy },
             Scale { origin.x: c.s / 2; origin.y: c.s / 2; xScale: c.rScale; yScale: c.rScale },
+            Scale { origin.x: c.s / 2; origin.y: c.s; xScale: 1 + 0.03 * c.petK; yScale: 1 - 0.03 * c.petK },
             Translate { x: c.rX; y: c.bounceY + c.danceY + c.rY }
         ]
 
