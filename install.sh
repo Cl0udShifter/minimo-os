@@ -3,7 +3,10 @@
 # Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 # Instalador de Minimo OS (Hyprland + minimo-shell) para Arch Linux.
 # Uso:  ./install.sh [--dry-run] [--yes]
-#   o:  bash <(curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh)
+#   o:  curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh | bash
+#       (con opciones: ... | bash -s -- --dry-run)
+# Si no se ejecuta desde una copia del repo, lo clona en ~/Proyectos/minimo-os y se
+# vuelve a ejecutar desde ahí. Las preguntas se leen de /dev/tty (funciona con tubería).
 # Es idempotente: se puede volver a correr sin romper nada.
 set -euo pipefail
 
@@ -68,6 +71,15 @@ else
         else
             run git clone "$REPO_URL" "$REPO"
         fi
+    fi
+    # Continuar con el instalador del repo clonado (la copia por tubería puede ser vieja).
+    if [ -f "$REPO/install.sh" ] && [ -z "${MINIMO_REEXEC:-}" ]; then
+        ok "Continuando desde $REPO/install.sh"
+        MINIMO_REEXEC=1 exec bash "$REPO/install.sh" "$@"
+    fi
+    if [ ! -d "$REPO/minimo-shell" ]; then
+        [ "$DRY" = 1 ] && { warn "En --dry-run no se clona: el resto se mostraría después de clonar."; exit 0; }
+        die "No se pudo obtener el repositorio en $REPO (si es privado: gh auth login)."
     fi
 fi
 ok "Repo: $REPO"

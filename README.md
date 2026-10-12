@@ -39,6 +39,20 @@ parte superior de la pantalla, acompañada por un pequeño personaje que reaccio
 
 ## Instalación
 
+En una sola línea:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh | bash
+```
+
+Con opciones: `curl -fsSL …/install.sh | bash -s -- --dry-run`. Clona el proyecto en
+`~/Proyectos/minimo-os` y continúa desde ahí; las preguntas se responden en la terminal.
+
+> La instalación en una línea requiere que el repositorio sea público. Mientras sea privado,
+> usá el método manual después de `gh auth login`.
+
+Manual:
+
 ```bash
 git clone https://github.com/Diegolede/minimo-os.git ~/Proyectos/minimo-os
 ~/Proyectos/minimo-os/install.sh
@@ -52,7 +66,6 @@ El instalador es idempotente. Instala los paquetes, respalda `~/.config/hypr` en
 actualiza), copia `minimo/monitores.lua` una sola vez (es propio de cada PC), copia los fondos a
 `~/Imágenes/Fondos` y habilita el servicio `minimo-shell.service`.
 
-> Mientras el repositorio sea privado, iniciá sesión antes con `gh auth login`.
 
 ## Desinstalación
 
