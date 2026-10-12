@@ -18,6 +18,7 @@ Singleton {
     // Escritura en campos de texto del shell (el personaje entrecierra los ojos para leer).
     signal typed()
     signal typingStopped()
+    signal squintFor(int ms)        // depuración: qs ipc call character squint 2000
     property int hearts: 0          // corazones vivos (tope de partículas)
     readonly property var names: ["hop", "doubleHop", "giggle", "lookAround", "hopBack", "surprise",
                                   "wink", "dizzy", "yawn", "curious", "greet", "happyBounce", "startled"]
@@ -33,6 +34,7 @@ Singleton {
         function look(x: real, y: real): void { root.gaze(x, y, 4000) }
         // Caricia (como varios clics seguidos sobre el personaje).
         function pet(): void { root.pet() }
+        function squint(ms: int): void { root.squintFor(ms > 0 ? ms : 2000) }
         function sleep(): void { IdleState.sleepNow() }
         function wake(): void { IdleState.wake() }
     }

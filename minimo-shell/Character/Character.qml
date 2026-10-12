@@ -308,8 +308,13 @@ Item {
     Timer { id: squintRelax; interval: 600; onTriggered: c.squint = 0 }
     Connections {
         target: CharacterBus
-        function onTyped() { if (c.active && !c.asleep) { c.squint = 1; squintRelax.restart() } }
+        function onTyped() { if (c.active && !c.asleep) { c.squint = 1; squintRelax.interval = 600; squintRelax.restart() } }
         function onTypingStopped() { squintRelax.stop(); c.squint = 0 }
+        function onSquintFor(ms) {
+            if (!c.active || c.asleep) return
+            console.info("minimo: squint", ms, "ms (personaje de", c.size, "px)")
+            c.squint = 1; squintRelax.interval = ms; squintRelax.restart()
+        }
     }
     // Salto hacia atrás juguetón cuando llega una notificación (si se ve y está despierto).
     Connections {
