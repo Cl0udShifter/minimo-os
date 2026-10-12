@@ -56,15 +56,29 @@ Item {
             Icon { anchors.centerIn: parent; name: "music"; tone: "gray"; size: 20 }
         }
 
-        Image {
-            id: cover
+        // La carátula gira DENTRO de una capa (a 2x); la máscara circular no gira.
+        // Así el borde lo define solo la máscara suavizada: sin aro, sin dientes, sin halo.
+        Item {
+            id: coverLayer
             anchors.fill: parent
-            source: root.player ? root.player.trackArtUrl : ""
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            smooth: true
-            sourceSize: Qt.size(144, 144)
             visible: false
+            layer.enabled: true
+            layer.smooth: true
+            layer.mipmap: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
+            Image {
+                id: cover
+                anchors.centerIn: parent
+                width: parent.width; height: parent.height
+                rotation: art.angle
+                source: root.player ? root.player.trackArtUrl : ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                smooth: true
+                mipmap: true
+                antialiasing: true
+                sourceSize: Qt.size(art.width * 2, art.height * 2)
+            }
         }
         Item {
             id: circleMask
@@ -72,35 +86,24 @@ Item {
             visible: false
             layer.enabled: true
             layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
             Rectangle { anchors.fill: parent; radius: width / 2; antialiasing: true }
         }
         MultiEffect {
             anchors.fill: parent
             visible: art.hasArt
-            source: cover
-            rotation: art.angle
+            source: coverLayer
             maskEnabled: true
             maskSource: circleMask
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
-            antialiasing: true
-        }
-        // Aro fino.
-        Rectangle {
-            anchors.fill: parent
-            radius: width / 2
-            color: "transparent"
-            border.width: 1
-            border.color: Theme.track
-            antialiasing: true
-            visible: art.hasArt
         }
         // Agujero central sutil, como un disco.
         Rectangle {
             anchors.centerIn: parent
             width: 7; height: 7; radius: 3.5
             color: Theme.raised; opacity: 0.85
-            border.width: 1; border.color: Theme.track
+            antialiasing: true
             visible: art.hasArt
         }
     }
