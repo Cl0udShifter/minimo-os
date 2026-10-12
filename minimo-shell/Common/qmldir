@@ -16,3 +16,4 @@ singleton CharacterBus 1.0 CharacterBus.qml
 singleton IdleState 1.0 IdleState.qml
 singleton Network 1.0 Network.qml
 singleton SysStatus 1.0 SysStatus.qml
+singleton Notifs 1.0 Notifs.qml

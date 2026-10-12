@@ -41,7 +41,7 @@ PanelWindow {
     Timer {
         id: hideTimer
         interval: Theme.hideDelay
-        onTriggered: if (win.hideWanted && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "") win.shown = false
+        onTriggered: if (win.hideWanted && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "" && Notifs.current === null) win.shown = false
     }
     onHoveredChanged: {
         if (hovered) { hideTimer.stop(); shown = true }
@@ -94,6 +94,16 @@ PanelWindow {
         }
     }
 
+    // Notificaciones: la isla aparece mientras haya una en pantalla; el mouse encima pausa el tiempo.
+    Connections {
+        target: Notifs
+        function onCurrentChanged() {
+            if (Notifs.current !== null) { win.shown = true; hideTimer.stop() }
+            else if (!win.hovered && !win.open) hideTimer.restart()
+        }
+    }
+    Binding { target: Notifs; property: "paused"; value: win.hovered }
+
     // Clic afuera de la isla mientras está expandida: colapsa.
     MouseArea {
         anchors.fill: parent
@@ -108,7 +118,7 @@ PanelWindow {
     MouseArea {
         id: hoverZone
         hoverEnabled: true
-        acceptedButtons: Qt.LeftButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: win.expanded ? Qt.ArrowCursor : Qt.PointingHandCursor
         // Margen extra alrededor de la píldora: un clic/arrastre que empieza justo en el
         // borde no "se escapa" a la ventana de abajo (que seleccionaría su texto).
@@ -132,7 +142,13 @@ PanelWindow {
             if (!dragging && Math.abs(dx) > 8) dragging = true
             if (dragging) drag = dx
         }
-        onReleased: {
+        onReleased: m => {
+            // Con una notificación: clic = abrir la app, clic derecho = descartar.
+            if (!dragging && !win.open && Notifs.current !== null) {
+                if (m.button === Qt.RightButton) Notifs.dismiss(); else Notifs.activate()
+                dragging = false; drag = 0; return
+            }
+            if (m.button === Qt.RightButton) return
             if (dragging) {
                 if (Math.abs(drag) > 40) win.panel = !win.panel
             } else if (!win.open) win.expanded = true

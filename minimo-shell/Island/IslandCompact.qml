@@ -13,6 +13,9 @@ Item {
     implicitWidth: row.implicitWidth
     implicitHeight: Theme.compactH
 
+    // Notificación en curso (la isla la muestra junto al personaje, sin taparlo).
+    readonly property var notif: Notifs.current   // cola en Common/Notifs.qml
+    readonly property bool notifQuiet: notif !== null && Notifs.fromFocused(notif)
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
     Row {
@@ -21,6 +24,7 @@ Item {
         spacing: 10
         Character { id: chr; size: 22; active: root.active && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter }
         Text {
+            visible: !root.notif
             enabled: false              // texto decorativo: sin interacción ni selección
             anchors.verticalCenter: parent.verticalCenter
             text: Qt.formatDateTime(clock.date, "HH:mm")
@@ -65,6 +69,45 @@ Item {
             width: Math.min(implicitWidth, 230)
         }
         // Sin internet: punto rojo fijo (desliz sobre la isla para ver el detalle).
+        Row {
+            id: toast
+            visible: root.notif !== null && Recorder.notice === ""
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 8
+            opacity: visible ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
+            Image {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 18; height: 18; sourceSize: Qt.size(36, 36)
+                source: Notifs.iconOf(root.notif)
+                visible: status === Image.Ready
+                asynchronous: true; smooth: true
+            }
+            Text {
+                enabled: false
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.min(implicitWidth, root.notifQuiet ? 200 : 300)
+                elide: Text.ElideRight
+                textFormat: Text.PlainText
+                text: !root.notif ? "" : (root.notif.summary || root.notif.appName)
+                      + (!root.notifQuiet && root.notif.body ? "  ·  " + root.notif.body.replace(/\s+/g, " ") : "")
+                color: root.notifQuiet ? Theme.textSecondary : Theme.textPrimary
+                font.family: Theme.font; font.pixelSize: 13; font.weight: root.notifQuiet ? Font.Normal : Font.Medium
+            }
+            Repeater {
+                // Hasta 2 acciones como píldoras (la "default" es el clic en el aviso).
+                model: root.notif && !root.notifQuiet ? Array.from(root.notif.actions || []).filter(a => a.identifier !== "default").slice(0, 2) : []
+                delegate: Rectangle {
+                    required property var modelData
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: at.implicitWidth + 20; height: 24; radius: 12
+                    color: am.containsMouse ? Theme.hover : Theme.field
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Text { id: at; anchors.centerIn: parent; text: modelData.text; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium }
+                    MouseArea { id: am; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Notifs.invoke(modelData) }
+                }
+            }
+        }
         Rectangle {
             visible: SysStatus.known && !SysStatus.online
             anchors.verticalCenter: parent.verticalCenter
