@@ -74,7 +74,7 @@ info() {
   while read -r l v _; do case $l in MemTotal:) mt=$v ;; MemAvailable:) ma=$v; break ;; esac; done < /proc/meminfo
   local wm=${XDG_CURRENT_DESKTOP:-}; [[ $HYPRLAND_INSTANCE_SIGNATURE ]] && wm=Hyprland; wm=${wm:-Hyprland}
   local term=${TERM_PROGRAM:-}; [[ $GHOSTTY_RESOURCES_DIR || $TERM == xterm-ghostty ]] && term=Ghostty; term=${term:-$TERM}
-  if (( cols >= 90 )); then I=( "${TITLE[@]/#/$B}" ""); TOP=0; else I=( "${B}M I N I M O   O S$N" ""); TOP=4; fi
+  if (( BIG )); then I=(); TOP=6; else I=( "${B}M I N I M O   O S$N" ""); TOP=4; fi
   I+=( "$B${USER:-$(id -un)}$N$G@$N$B$host$N"
       "$G──────────────$N"
       "${G}SO       $N$os"
@@ -87,17 +87,19 @@ info() {
       "${G}Memoria  $N$(gb $((mt-ma))) / $(gb $mt)"
       "${G}Disco    $N$DISK" )
 }
-# Título grande (5 filas, bloques), embebido: sin figlet
-TITLE=( "█   █ █ █   █ █ █   █  ███     ███   ████"
-        "██ ██ █ ██  █ █ ██ ██ █   █   █   █ █    "
-        "█ █ █ █ █ █ █ █ █ █ █ █   █   █   █  ███ "
-        "█   █ █ █  ██ █ █   █ █   █   █   █     █"
-        "█   █ █ █   █ █ █   █  ███     ███  ████ " )
-TITLE=( "${TITLE[@]/%/$'\e[0m'}" )
+# Título grande (6 filas, caracteres de densidad como Minimo), embebido: sin figlet
+TITLE=( "  \$\$\$\$    .\$\$\$% :\$\$ .\$\$\$.   +\$\$ .\$\$. \$\$\$\$    .\$\$\$\$   +\$\$\$\$\$%:       .+\$\$\$\$\$%:   :%\$\$\$\$\$+"
+        "  \$\$\$\$+   \$\$\$\$\$ :\$\$ .\$\$\$\$.  +\$\$ .\$\$. \$\$\$\$%   %\$\$\$\$ .\$\$%.  .\$\$\$     :\$\$+.  :\$\$% .\$\$:   %\$+"
+        "  \$\$:\$\$. +\$%+\$\$ :\$\$ .\$\$:\$\$+ +\$\$ .\$\$. \$\$+\$\$: :\$\$+\$\$ %\$\$      \$\$:    \$\$%     .\$\$. %\$\$%++:"
+        "  \$\$::\$\$.\$\$.%\$\$ :\$\$ .\$\$. %\$%+\$\$ .\$\$. \$\$::\$\$.\$\$.+\$\$ %\$\$      \$\$:    \$\$%     .\$\$.  .::+%\$\$+"
+        "  \$\$: %\$\$\$: %\$\$ :\$\$ .\$\$.  +\$\$\$\$ .\$\$. \$\$: %\$\$\$+ +\$\$ .\$\$%.  .\$\$\$     :\$\$+.  :\$\$% :\$\$.   +\$\$"
+        "  \$\$:  \$\$%  %\$\$ :\$\$ .\$\$.   :\$\$\$ .\$\$. \$\$:  \$\$%  +\$\$   +\$\$\$\$\$%:       .+\$\$\$\$\$%:   :\$\$\$\$\$\$%." )
 gb() { local k=$1; printf -v R '%d.%d GiB' $((k/1048576)) $((k%1048576*10/1048576)); printf '%s' "$R"; }
 B=$'\e[1m' N=$'\e[0m' G=$'\e[90m'
 disk_line() { local o; o=$(df -Pk / 2>/dev/null) || return; o=${o#*$'\n'}; local -a a; read -ra a <<<"$o"; DISK="$(gb ${a[2]}) / $(gb ${a[1]})"; }
+BIG=$(( cols >= 96 ))
 disk_line; info
+title() { (( BIG )) || return 0; printf "\n"; printf "  $B%s$N\n" "${TITLE[@]}"; printf "\n"; }
 OFF=0
 row() { # línea completa r: arte + info
   local r=$1 i=$(( r - 1 - TOP ))
@@ -116,13 +118,13 @@ ART=${XDG_CACHE_HOME:-$HOME/.cache}/minimo-hello.art.v2
 if (( static )); then
   if [[ -r $ART ]]; then mapfile -t F < "$ART"
   else frame 100 0 0 100 100 0; { mkdir -p "${ART%/*}" && printf '%s\n' "${F[@]}" > "$ART"; } 2>/dev/null; fi
-  for (( r=0; r<ROWS; r++ )); do row $r; printf '\n'; done
+  title; for (( r=0; r<ROWS; r++ )); do row $r; printf '\n'; done
   exit 0
 fi
 
 cleanup() { printf '\e[?25h%s' "$N"; }
 trap cleanup EXIT; trap 'exit 130' INT TERM
-SH=1; printf '\e[?25l'; for (( r=0; r<ROWS; r++ )); do printf '\n'; done
+SH=1; printf '\e[?25l'; title; for (( r=0; r<ROWS; r++ )); do printf '\n'; done
 skip=0
 tick() { (( skip )) && return; local k; ((FR++)); read -rsn1 -t 0.05 k && skip=1; }
 # Línea de tiempo (20 fps): aparece, parpadea, mira, guiña
