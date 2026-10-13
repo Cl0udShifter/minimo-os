@@ -46,6 +46,13 @@ Column {
             Behavior on scale { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
             antialiasing: true
         }
+        // Toda la píldora es clicable: un clic en cualquier parte enfoca el campo.
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.IBeamCursor
+            onPressed: field.forceActiveFocus()
+            onWheel: w => w.accepted = true
+        }
         Icon {
             id: lupa
             x: 16; anchors.verticalCenter: parent.verticalCenter
