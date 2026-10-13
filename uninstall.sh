@@ -17,6 +17,11 @@ for u in minimo-shell.service hyprland-session.target; do
 done
 run systemctl --user daemon-reload
 
+printf '%s==>%s Terminal\n' "$C" "$N"
+[ -L "$HOME/.local/bin/minimo-hello" ] && run rm -f "$HOME/.local/bin/minimo-hello"
+[ -L "$HOME/.config/ghostty/config" ] && run rm -f "$HOME/.config/ghostty/config"
+printf '  %s!%s La línea de minimo-hello en ~/.bashrc queda inofensiva (comprueba que exista).\n' "$Y" "$N"
+
 printf '%s==>%s Hyprland\n' "$C" "$N"
 HYPR="$HOME/.config/hypr"
 last=$(ls -d "$HYPR".bak-* 2>/dev/null | sort | tail -1 || true)

@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# minimo-hello — Minimo te saluda al abrir la terminal. Bash puro, sin dependencias.
+# Uso: minimo-hello [--static] [--force]     Desactivar: MINIMO_HELLO=0
+
+static=0 force=0
+for a; do case $a in --static) static=1 ;; --force) force=1 ;; -h|--help) echo "minimo-hello [--static] [--force]"; exit 0 ;; esac; done
+[[ ${MINIMO_HELLO:-1} == 0 ]] && exit 0
+# El chequeo de shells anidados vive en ~/.bashrc
+:
+[[ -t 1 ]] || static=1
+cols=${COLUMNS:-0}; (( cols )) || { [[ -t 1 ]] && cols=$(tput cols 2>/dev/null); }; cols=${cols:-80}
+(( cols < 70 )) && static=1
+[[ -t 0 ]] || static=1
+
+# ---------- Arte: cuerpo 30x30 px, half-blocks (1 celda = 1x2 px) ----------
+W=40 ROWS=20 SH=0 FR=0
+CH=(' ' '.' ':' '+' '%' '@' '$')     # densidad, de hueco a cuerpo
+declare -a F P
+declare -A CACHE
+frame() {
+  local key="$* $(( SH ? FR%3 : 9 ))"
+  if [[ ${CACHE[$key]+x} ]]; then IFS=$'\n' read -rd '' -a F <<<"${CACHE[$key]}"; return; fi
+  _frame "$@"; local IFS=$'\n'; CACHE[$key]="${F[*]}"
+}
+# Unidades: 2 por columna; una fila (≈2:1) son 4 → el cuerpo se ve redondo.
+_frame() {
+  local s=$1 dx=$2 dy=$3 oL=$4 oR=$5 wk=$6
+  local cx=40 cy=40 R=$(( 38*s/100 ))
+  local Ri=$(( (R-1)*(R-1) )) Ro=$(( (R+2)*(R+2) )) Rs=$(( Ro - Ri ))
+  (( Rs < 1 )) && Rs=1
+  local ex1=$(( cx - 14*s/100 + dx )) ex2=$(( cx + 14*s/100 + dx )) ey=$(( cy - 4*s/100 + dy ))
+  local ew=$(( 5*s/100 )) eh=$(( 9*s/100 ))
+  local hL=$(( eh*oL/100 )) hR=$(( eh*oR/100 ))
+  local e2i=$(( ew*ew )) e2o=$(( (ew+3)*(ew+3) )) es=$(( (ew+3)*(ew+3) - ew*ew ))
+  (( es < 1 )) && es=1
+  local x r X Y d v q c line
+  for (( r=0; r<ROWS; r++ )); do
+    line=; Y=$(( r*4+2 ))
+    for (( x=0; x<W; x++ )); do
+      X=$(( x*2+1 )); d=$(( (X-cx)*(X-cx) + (Y-cy)*(Y-cy) ))
+      v=$(( (d - R*R) / (2*R+1) ))          # distancia con signo al borde (≈ unidades)
+      if (( v >= 3 )); then line+=' '; continue; fi
+      if (( v <= -2 )); then v=6; else v=$(( 3 - v )); fi
+      # ojo izquierdo (píldora vertical)
+      c=$(( Y<ey-hL ? ey-hL : (Y>ey+hL ? ey+hL : Y) )); q=$(( (X-ex1)*(X-ex1) + (Y-c)*(Y-c) ))
+      if (( q < e2o )); then (( q <= e2i )) && v=0 || { c=$(( 1+(q-e2i)*5/es )); (( c<v )) && v=$c; }; fi
+      if (( wk )); then   # guiño: guion horizontal
+        c=$(( X<ex2-ew ? ex2-ew : (X>ex2+ew ? ex2+ew : X) )); q=$(( (X-c)*(X-c) + (Y-ey-2)*(Y-ey-2) ))
+        if (( q < 36 )); then (( q <= 9 )) && v=0 || { c=$(( 1+(q-9)*5/27 )); (( c<v )) && v=$c; }; fi
+      else
+        c=$(( Y<ey-hR ? ey-hR : (Y>ey+hR ? ey+hR : Y) )); q=$(( (X-ex2)*(X-ex2) + (Y-c)*(Y-c) ))
+        if (( q < e2o )); then (( q <= e2i )) && v=0 || { c=$(( 1+(q-e2i)*5/es )); (( c<v )) && v=$c; }; fi
+      fi
+      if (( SH && v>0 && v<6 )); then v=$(( v + (x*7+r*3+FR)%3 - 1 )); (( v<1 )) && v=1; (( v>5 )) && v=5; fi
+      line+=${CH[v]}
+    done
+    F[r]=$line
+  done
+}
+
+# ---------- Info del sistema (sólo /proc, /etc y builtins) ----------
+info() {
+  local host os k up s d h m cpu n=0 mt ma l v
+  read -r host < /proc/sys/kernel/hostname
+  while IFS='=' read -r k v; do [[ $k == PRETTY_NAME ]] && { os=${v//\"/}; break; }; done < /etc/os-release 2>/dev/null
+  [[ $os == *Arch* || -z $os ]] && os="Minimo OS · ${os:-Arch Linux}"
+  read -r k < /proc/sys/kernel/osrelease
+  read -r up _ < /proc/uptime; s=${up%.*}; d=$((s/86400)) h=$((s%86400/3600)) m=$((s%3600/60))
+  up=; (( d )) && up+="${d} d "; (( h )) && up+="${h} h "; up+="${m} min"
+  while IFS=: read -r l v; do
+    case $l in "model name"*) [[ $cpu ]] || cpu=${v# } ;; processor*) ((n++)) ;; esac
+  done < /proc/cpuinfo
+  cpu=${cpu//(R)/}; cpu=${cpu//(TM)/}; cpu=${cpu% CPU*}; cpu=${cpu%% with*}; cpu=${cpu%%  *}
+  while read -r l v _; do case $l in MemTotal:) mt=$v ;; MemAvailable:) ma=$v; break ;; esac; done < /proc/meminfo
+  local wm=${XDG_CURRENT_DESKTOP:-}; [[ $HYPRLAND_INSTANCE_SIGNATURE ]] && wm=Hyprland; wm=${wm:-Hyprland}
+  local term=${TERM_PROGRAM:-}; [[ $GHOSTTY_RESOURCES_DIR || $TERM == xterm-ghostty ]] && term=Ghostty; term=${term:-$TERM}
+  if (( cols >= 90 )); then I=( "${TITLE[@]/#/$B}" ""); TOP=0; else I=( "${B}M I N I M O   O S$N" ""); TOP=4; fi
+  I+=( "$B${USER:-$(id -un)}$N$G@$N$B$host$N"
+      "$G──────────────$N"
+      "${G}SO       $N$os"
+      "${G}Kernel   $N$k"
+      "${G}Activo   $N$up"
+      "${G}WM       $N$wm"
+      "${G}Shell    ${N}bash ${BASH_VERSION%%(*}"
+      "${G}Terminal $N$term"
+      "${G}CPU      $N$cpu ($n)"
+      "${G}Memoria  $N$(gb $((mt-ma))) / $(gb $mt)"
+      "${G}Disco    $N$DISK" )
+}
+# Título grande (5 filas, bloques), embebido: sin figlet
+TITLE=( "█   █ █ █   █ █ █   █  ███     ███   ████"
+        "██ ██ █ ██  █ █ ██ ██ █   █   █   █ █    "
+        "█ █ █ █ █ █ █ █ █ █ █ █   █   █   █  ███ "
+        "█   █ █ █  ██ █ █   █ █   █   █   █     █"
+        "█   █ █ █   █ █ █   █  ███     ███  ████ " )
+TITLE=( "${TITLE[@]/%/$'\e[0m'}" )
+gb() { local k=$1; printf -v R '%d.%d GiB' $((k/1048576)) $((k%1048576*10/1048576)); printf '%s' "$R"; }
+B=$'\e[1m' N=$'\e[0m' G=$'\e[90m'
+disk_line() { local o; o=$(df -Pk / 2>/dev/null) || return; o=${o#*$'\n'}; local -a a; read -ra a <<<"$o"; DISK="$(gb ${a[2]}) / $(gb ${a[1]})"; }
+disk_line; info
+OFF=0
+row() { # línea completa r: arte + info
+  local r=$1 i=$(( r - 1 - TOP ))
+  printf '\r  %s%s   %s\e[K' "$P_DIM" "${F[r]}" "$N$( (( i>=0 && i<${#I[@]} )) && printf '%s' "${I[i]}")"
+}
+draw() { # redibuja sólo filas cambiadas
+  local r
+  for (( r=0; r<ROWS; r++ )); do
+    [[ ${F[r]} == "${P[r]}" && $1 != all ]] && continue
+    printf '\e[%dA' $(( ROWS - r )); row $r; printf '\e[%dB\r' $(( ROWS - r ))
+    P[r]=${F[r]}
+  done
+}
+
+ART=${XDG_CACHE_HOME:-$HOME/.cache}/minimo-hello.art.v2
+if (( static )); then
+  if [[ -r $ART ]]; then mapfile -t F < "$ART"
+  else frame 100 0 0 100 100 0; { mkdir -p "${ART%/*}" && printf '%s\n' "${F[@]}" > "$ART"; } 2>/dev/null; fi
+  for (( r=0; r<ROWS; r++ )); do row $r; printf '\n'; done
+  exit 0
+fi
+
+cleanup() { printf '\e[?25h%s' "$N"; }
+trap cleanup EXIT; trap 'exit 130' INT TERM
+SH=1; printf '\e[?25l'; for (( r=0; r<ROWS; r++ )); do printf '\n'; done
+skip=0
+tick() { (( skip )) && return; local k; ((FR++)); read -rsn1 -t 0.05 k && skip=1; }
+# Línea de tiempo (20 fps): aparece, parpadea, mira, guiña
+S=(10 30 55 78 95 104 102 100)
+for (( f=0; f<${#S[@]} && !skip; f++ )); do P_DIM=$( (( f<4 )) && echo $'\e[2m'); frame ${S[f]} 0 0 100 100 0; draw; tick; done
+P_DIM=; seq_() { local -n q=$1; local v; for v in "${q[@]}"; do (( skip )) && return; eval "frame $v"; draw; tick; done; }
+A=( "100 0 0 100 100 0"
+    "100 0 0 45 45 0" "100 0 0 0 0 0" "100 0 0 45 45 0" "100 0 0 100 100 0"
+    "100 -3 0 100 100 0" "100 -5 0 100 100 0" "100 -5 0 100 100 0" "100 -5 0 100 100 0"
+    "100 0 0 100 100 0" "100 5 0 100 100 0" "100 5 0 100 100 0" "100 5 0 100 100 0"
+    "100 2 0 100 100 0" "100 0 0 100 100 0"
+    "100 0 0 100 40 0" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 85 100 1"
+    "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 100 40 0" "100 0 0 100 100 0" )
+seq_ A
+SH=0; frame 100 0 0 100 100 0; P_DIM=; draw all
+
+# ---------- Bucle de reposo: parpadea y guiña hasta una tecla ----------
+(( skip )) && exit 0                     # una tecla en la intro también devuelve el prompt
+(( ${MINIMO_HELLO_LOOP:-1} )) || exit 0
+[[ -t 0 ]] || exit 0
+max=${MINIMO_HELLO_LOOP_MAX:-600} quit=0 SECONDS=0
+trap 'quit=1' WINCH
+wait_k() { local k; read -rsn1 -t "$1" k; local st=$?; (( st == 0 )) && quit=1; (( st > 128 && st != 142 )) && quit=1; }
+# read -t devuelve >128 por timeout; un SIGWINCH también interrumpe y fija quit por la trampa
+play() { local v; for v; do (( quit )) && return; eval "frame $v"; draw; wait_k 0.05; done; }
+O="100 0 0 100 100 0"
+while (( !quit && SECONDS < max )); do
+  w=$(( RANDOM % 2500 + 2500 )); wait_k "$(( w/1000 )).$(printf '%03d' $(( w%1000 )))"
+  (( quit )) && break
+  r=$(( RANDOM % 10 ))
+  if (( r < 4 )); then play "100 0 0 100 40 0" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 85 100 1" "100 0 0 100 40 0" "$O"
+  elif (( r < 9 )); then play "100 0 0 45 45 0" "100 0 0 0 0 0" "100 0 0 45 45 0" "$O"
+  else play "100 0 0 45 45 0" "100 0 0 0 0 0" "100 0 0 45 45 0" "$O" "$O" "100 0 0 45 45 0" "100 0 0 0 0 0" "100 0 0 45 45 0" "$O"; fi
+done
+frame $O; draw                           # deja el cuadro estático; el cursor ya está bajo el arte

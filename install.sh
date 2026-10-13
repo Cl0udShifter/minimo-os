@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 # Instalador de Minimo OS (Hyprland + minimo-shell) para Arch Linux.
-# Uso:  ./install.sh [--dry-run] [--yes]
+# Uso:  ./install.sh [--dry-run] [--yes] [--preview]
 #   o:  curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh | bash
 #       (con opciones: ... | bash -s -- --dry-run)
 # Si no se ejecuta desde una copia del repo, lo clona en ~/Proyectos/minimo-os y se
@@ -15,42 +15,77 @@ REPO_URL="https://github.com/$REPO_SLUG.git"
 DEST="$HOME/Proyectos/minimo-os"
 TS=$(date +%Y%m%d-%H%M%S)
 
-DRY=0; YES=0
+DRY=0; YES=0; PREVIEW=0
 for a in "$@"; do
     case "$a" in
         --dry-run|-n) DRY=1 ;;
         --yes|-y) YES=1 ;;
+        --preview) PREVIEW=1; DRY=1 ;;   # muestra la interfaz sin comprobar ni cambiar nada
         -h|--help) sed -n '2,5p' "$0" 2>/dev/null || true; exit 0 ;;
         *) echo "Opción desconocida: $a" >&2; exit 2 ;;
     esac
 done
 
 # --- salida ---
-if [ -t 1 ]; then B=$'\e[1m'; G=$'\e[32m'; Y=$'\e[33m'; R=$'\e[31m'; C=$'\e[36m'; D=$'\e[2m'; N=$'\e[0m'
+if [ -t 1 ] || [ "$PREVIEW" = 1 ]; then
+    B=$'\e[1m'; G=$'\e[32m'; Y=$'\e[33m'; R=$'\e[31m'; C=$'\e[36m'; D=$'\e[2m'; N=$'\e[0m'
 else B=; G=; Y=; R=; C=; D=; N=; fi
-step() { printf '\n%s==>%s %s%s%s\n' "$C" "$N" "$B" "$*" "$N"; }
-ok()   { printf '  %s✓%s %s\n' "$G" "$N" "$*"; }
-warn() { printf '  %s!%s %s\n' "$Y" "$N" "$*"; }
-die()  { printf '%s✗ %s%s\n' "$R" "$*" "$N" >&2; exit 1; }
+TOTAL=7; STEP=0; WARNS=0; T0=$SECONDS
+header() {
+    printf '\n'
+    printf '   %s     ▄▄▄▄▄▄%s\n'                       "$B" "$N"
+    printf '   %s   ▄████████▄%s      %s█   █ █ █   █ █ █   █  ███     ███   ████%s\n' "$B" "$N" "$B" "$N"
+    printf '   %s  ███ ▀██▀ ███%s     %s██ ██ █ ██  █ █ ██ ██ █   █   █   █ █    %s\n' "$B" "$N" "$B" "$N"
+    printf '   %s  ███ ▐██▌ ███%s     %s█ █ █ █ █ █ █ █ █ █ █ █   █   █   █  ███ %s\n' "$B" "$N" "$B" "$N"
+    printf '   %s  ████████████%s     %s█   █ █ █  ██ █ █   █ █   █   █   █     █%s\n' "$B" "$N" "$B" "$N"
+    printf '   %s   ▀████████▀%s      %s█   █ █ █   █ █ █   █  ███     ███  ████ %s\n' "$B" "$N" "$B" "$N"
+    printf '   %s     ▀▀▀▀▀▀%s\n'                       "$B" "$N"
+    printf '\n   %sInstalador · Hyprland + minimo-shell · Arch Linux%s\n' "$D" "$N"
+    printf '   %s──────────────────────────────────────────────────────────%s\n' "$D" "$N"
+}
+step() {
+    STEP=$((STEP+1))
+    local bar="" i
+    for ((i=1; i<=TOTAL; i++)); do if [ $i -le $STEP ]; then bar+="━"; else bar+="─"; fi; done
+    printf '\n   %s%d/%d%s  %s%s%s  %s%s%s\n' "$D" "$STEP" "$TOTAL" "$N" "$B" "$*" "$N" "$D" "$bar" "$N"
+}
+substep() { printf '\n   %s···%s  %s%s%s\n' "$D" "$N" "$B" "$*" "$N"; }
+ok()   { printf '        %s✓%s %s\n' "$G" "$N" "$*"; }
+warn() { WARNS=$((WARNS+1)); printf '        %s!%s %s\n' "$Y" "$N" "$*"; }
+die()  { printf '\n        %s✗ %s%s\n\n' "$R" "$*" "$N" >&2; exit 1; }
+# spin MSG CMD...: comando silencioso con indicador (sólo en terminal; nunca para sudo interactivo)
+spin() {
+    local msg=$1; shift
+    if [ "$DRY" = 1 ]; then printf '        %s○ %s%s\n' "$D" "$msg" "$N"; return 0; fi
+    if [ ! -t 1 ]; then "$@" >/dev/null 2>&1 && ok "$msg" || { printf '        %s✗%s %s\n' "$R" "$N" "$msg"; return 1; }; return 0; fi
+    "$@" >/dev/null 2>&1 & local pid=$! f='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏' i=0
+    while kill -0 $pid 2>/dev/null; do printf '\r        %s%s%s %s' "$C" "${f:i++%10:1}" "$N" "$msg"; sleep 0.08; done
+    if wait $pid; then printf '\r        %s✓%s %s\e[K\n' "$G" "$N" "$msg"
+    else printf '\r        %s✗%s %s\e[K\n' "$R" "$N" "$msg"; return 1; fi
+}
 # run: ejecuta (o solo muestra en --dry-run)
 run() {
-    if [ "$DRY" = 1 ]; then printf '  %s[dry-run]%s %s\n' "$D" "$N" "$*"
-    else printf '  %s$ %s%s\n' "$D" "$*" "$N"; "$@"; fi
+    if [ "$DRY" = 1 ]; then printf '        %s○ %s%s\n' "$D" "$*" "$N"
+    else printf '        %s› %s%s\n' "$D" "$*" "$N"; "$@"; fi
 }
 confirm() {
     [ "$YES" = 1 ] && return 0
     [ "$DRY" = 1 ] && return 0
-    local r; read -r -p "  $1 [S/n] " r </dev/tty || r=s
+    local r; read -r -p "        $1 [S/n] " r </dev/tty || r=s
     case "${r,,}" in n|no) return 1 ;; *) return 0 ;; esac
 }
+header
 
 # --- comprobaciones ---
 step "Comprobaciones"
-command -v pacman >/dev/null || die "Esto no parece Arch Linux (falta pacman)."
-[ "$(id -u)" -ne 0 ] || die "No lo ejecutes como root; usa tu usuario (se pedirá sudo)."
-command -v sudo >/dev/null || die "Falta sudo."
-ok "Arch Linux, usuario $USER"
-[ "$DRY" = 1 ] && warn "Modo --dry-run: no se cambia nada."
+if [ "$PREVIEW" = 1 ]; then ok "Arch Linux, usuario ${USER:-$(id -un)} (vista previa)"
+else
+    command -v pacman >/dev/null || die "Esto no parece Arch Linux (falta pacman)."
+    [ "$(id -u)" -ne 0 ] || die "No lo ejecutes como root; usa tu usuario (se pedirá sudo)."
+    command -v sudo >/dev/null || die "Falta sudo."
+    ok "Arch Linux, usuario $USER"
+fi
+[ "$DRY" = 1 ] && warn "Modo prueba: no se cambia nada."
 
 # --- repo: si no se ejecuta desde dentro del repo, clonarlo ---
 SELF_DIR=""
@@ -59,7 +94,7 @@ if [ -n "$SELF_DIR" ] && [ -d "$SELF_DIR/minimo-shell" ] && [ -d "$SELF_DIR/hypr
     REPO="$SELF_DIR"
 else
     REPO="$DEST"
-    step "Repositorio"
+    substep "Repositorio"
     if [ -d "$REPO/.git" ]; then
         ok "Ya existe $REPO (git pull)"
         run git -C "$REPO" pull --ff-only || warn "No se pudo actualizar; sigo con lo que hay."
@@ -99,7 +134,7 @@ PKGS=(
 OPTIONAL=(fuzzel wl-clipboard github-cli)
 step "Paquetes"
 missing=()
-for p in "${PKGS[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p"); done
+for p in "${PKGS[@]}"; do { [ "$PREVIEW" = 0 ] && pacman -Q "$p" >/dev/null 2>&1; } || missing+=("$p"); done
 if [ ${#missing[@]} -eq 0 ]; then ok "Todo instalado"
 else
     warn "Faltan: ${missing[*]}"
@@ -108,10 +143,10 @@ fi
 # Marcar como instalados explícitamente: así `pacman -Rns` de otro paquete (p. ej. otra shell)
 # nunca los borra como dependencias huérfanas.
 deps=()
-for p in "${PKGS[@]}"; do pacman -Qqd "$p" >/dev/null 2>&1 && deps+=("$p"); done
+for p in "${PKGS[@]}"; do [ "$PREVIEW" = 0 ] && pacman -Qqd "$p" >/dev/null 2>&1 && deps+=("$p"); done
 if [ ${#deps[@]} -gt 0 ]; then run sudo pacman -D --asexplicit "${deps[@]}"; fi
 optmissing=()
-for p in "${OPTIONAL[@]}"; do pacman -Q "$p" >/dev/null 2>&1 || optmissing+=("$p"); done
+for p in "${OPTIONAL[@]}"; do { [ "$PREVIEW" = 0 ] && pacman -Q "$p" >/dev/null 2>&1; } || optmissing+=("$p"); done
 if [ ${#optmissing[@]} -gt 0 ]; then
     if confirm "¿Instalar opcionales (${optmissing[*]})?"; then run sudo pacman -S --needed --noconfirm "${optmissing[@]}"; fi
 else ok "Opcionales instalados"; fi
@@ -163,7 +198,7 @@ for f in "$REPO"/assets/wallpapers/*; do
     run cp "$f" "$WALL/"
 done
 
-step "Notificaciones"
+step "Notificaciones y bandeja"
 # La isla es el servidor de notificaciones: otro daemon activo se quedaría con el nombre en D-Bus.
 for d in mako dunst swaync; do
     if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: cerralo y quitalo del autoarranque (la isla muestra las notificaciones)."; fi
@@ -174,6 +209,29 @@ ok "Las notificaciones las muestra la isla"
 for d in waybar snixembed; do
     if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: puede quedarse con la bandeja del sistema (apps en segundo plano)."; fi
 done
+
+step "Terminal: Ghostty + Minimo"
+# Saludo de Minimo al abrir la terminal
+link "$REPO/terminal/minimo-hello" "$HOME/.local/bin/minimo-hello"
+# Configuración de Ghostty: enlace al repo; se respalda una config propia existente
+GCONF="$HOME/.config/ghostty/config"
+if [ -e "$GCONF" ] && ! { [ -L "$GCONF" ] && [ "$(readlink -f "$GCONF")" = "$(readlink -f "$REPO/terminal/ghostty/config")" ]; }; then
+    run mv "$GCONF" "$GCONF.bak-$TS"
+    ok "Respaldo: $GCONF.bak-$TS"
+fi
+link "$REPO/terminal/ghostty/config" "$GCONF"
+# Fragmento idempotente para bash y zsh (sólo en shells interactivas de primer nivel)
+add_hello() {
+    local rc=$1 parent=$2
+    [ -f "$rc" ] || { [ "$rc" = "$HOME/.bashrc" ] || return 0; }
+    if grep -qs 'minimo-hello' "$rc"; then ok "$rc ya saluda"; return; fi
+    local line="[[ \$- == *i* && \$(ps -o comm= -p \$PPID) != $parent ]] && [ -x ~/.local/bin/minimo-hello ] && ~/.local/bin/minimo-hello"
+    if [ "$DRY" = 1 ]; then printf '        %s○ añadir saludo a %s%s\n' "$D" "$rc" "$N"; return; fi
+    printf '\n# Minimo saluda al abrir la terminal\n%s\n' "$line" >> "$rc"
+    ok "Saludo añadido a $rc"
+}
+add_hello "$HOME/.bashrc" bash
+add_hello "$HOME/.zshrc" zsh
 
 step "Servicio de la shell (systemd --user)"
 UNITS="$HOME/.config/systemd/user"
@@ -191,4 +249,12 @@ else
     ok "Se iniciará al entrar en Hyprland"
 fi
 
-printf '\n%s%sMinimo OS instalado.%s Cerrá sesión y entrá en Hyprland. Desinstalar: %s/uninstall.sh\n' "$G" "$B" "$N" "$REPO"
+el=$((SECONDS-T0))
+printf '\n   %s──────────────────────────────────────────────────────────%s\n' "$D" "$N"
+if [ "$DRY" = 1 ]; then printf '\n   %s✓ Prueba completa.%s No se cambió nada.\n' "$B" "$N"
+else printf '\n   %s%s✓ Minimo OS instalado%s %sen %dm %02ds%s\n' "$G" "$B" "$N" "$D" $((el/60)) $((el%60)) "$N"; fi
+[ "$WARNS" -gt 0 ] && printf '   %s! %d aviso(s) arriba%s\n' "$Y" "$WARNS" "$N"
+printf '\n   %sSiguiente%s   Cerrá sesión y entrá en Hyprland\n' "$D" "$N"
+printf   '   %sTerminal%s    Abrí Ghostty: Minimo te saluda\n' "$D" "$N"
+printf   '   %sRepo%s        %s\n' "$D" "$N" "$REPO"
+printf   '   %sDesinstalar%s %s/uninstall.sh\n\n' "$D" "$N" "$REPO"
