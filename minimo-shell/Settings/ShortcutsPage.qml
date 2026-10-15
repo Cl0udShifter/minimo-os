@@ -60,7 +60,8 @@ Column {
                     font.pixelSize: 13
                     selectByMouse: true
                     clip: true
-                    onTextChanged: ShortcutsManager.searchFilter = text.trim().toLowerCase()
+                    text: ShortcutsManager.searchFilter
+                    onTextEdited: ShortcutsManager.searchFilter = text.trim().toLowerCase()
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Buscar atalhos..."
