@@ -499,7 +499,7 @@ Column {
                         width: parent.width
                         spacing: 6
                         Repeater {
-                            model: ["space", "T", "Q", "F", "R", "W", "X", "comma", "Print", "F10", "F11", "F12", "left", "right", "up", "down", "Page_Down", "Page_Up"]
+                            model: ["space", "T", "Q", "F", "R", "W", "X", "comma", "Print", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F10", "F11", "F12", "left", "right", "up", "down", "Page_Down", "Page_Up"]
                             delegate: Rectangle {
                                 required property string modelData
                                 readonly property bool cur: root.mainKey.toLowerCase() === modelData.toLowerCase()

@@ -67,6 +67,24 @@ Singleton {
         { id: "ws_prev", cat: "Áreas de Trabalho", name: "Área de Trabalho Anterior", desc: "Alterna para a área de trabalho anterior", icon: "desktops", defaultKeys: "SUPER + Page_Up" },
         { id: "ws_move_next", cat: "Áreas de Trabalho", name: "Mover Janela para Próxima Área", desc: "Leva a janela ativa para a próxima área", icon: "desktops", defaultKeys: "SUPER + SHIFT + Page_Down" },
         { id: "ws_move_prev", cat: "Áreas de Trabalho", name: "Mover Janela para Área Anterior", desc: "Leva a janela ativa para a área anterior", icon: "desktops", defaultKeys: "SUPER + SHIFT + Page_Up" },
+        { id: "ws_1", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 1", desc: "Alterna o foco para a área de trabalho 1", icon: "desktops", defaultKeys: "SUPER + 1" },
+        { id: "ws_2", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 2", desc: "Alterna o foco para a área de trabalho 2", icon: "desktops", defaultKeys: "SUPER + 2" },
+        { id: "ws_3", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 3", desc: "Alterna o foco para a área de trabalho 3", icon: "desktops", defaultKeys: "SUPER + 3" },
+        { id: "ws_4", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 4", desc: "Alterna o foco para a área de trabalho 4", icon: "desktops", defaultKeys: "SUPER + 4" },
+        { id: "ws_5", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 5", desc: "Alterna o foco para a área de trabalho 5", icon: "desktops", defaultKeys: "SUPER + 5" },
+        { id: "ws_6", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 6", desc: "Alterna o foco para a área de trabalho 6", icon: "desktops", defaultKeys: "SUPER + 6" },
+        { id: "ws_7", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 7", desc: "Alterna o foco para a área de trabalho 7", icon: "desktops", defaultKeys: "SUPER + 7" },
+        { id: "ws_8", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 8", desc: "Alterna o foco para a área de trabalho 8", icon: "desktops", defaultKeys: "SUPER + 8" },
+        { id: "ws_9", cat: "Áreas de Trabalho", name: "Ir para Área de Trabalho 9", desc: "Alterna o foco para a área de trabalho 9", icon: "desktops", defaultKeys: "SUPER + 9" },
+        { id: "ws_move_1", cat: "Áreas de Trabalho", name: "Mover Janela para Área 1", desc: "Leva a janela ativa para a área de trabalho 1", icon: "desktops", defaultKeys: "SUPER + SHIFT + 1" },
+        { id: "ws_move_2", cat: "Áreas de Trabalho", name: "Mover Janela para Área 2", desc: "Leva a janela ativa para a área de trabalho 2", icon: "desktops", defaultKeys: "SUPER + SHIFT + 2" },
+        { id: "ws_move_3", cat: "Áreas de Trabalho", name: "Mover Janela para Área 3", desc: "Leva a janela ativa para a área de trabalho 3", icon: "desktops", defaultKeys: "SUPER + SHIFT + 3" },
+        { id: "ws_move_4", cat: "Áreas de Trabalho", name: "Mover Janela para Área 4", desc: "Leva a janela ativa para a área de trabalho 4", icon: "desktops", defaultKeys: "SUPER + SHIFT + 4" },
+        { id: "ws_move_5", cat: "Áreas de Trabalho", name: "Mover Janela para Área 5", desc: "Leva a janela ativa para a área de trabalho 5", icon: "desktops", defaultKeys: "SUPER + SHIFT + 5" },
+        { id: "ws_move_6", cat: "Áreas de Trabalho", name: "Mover Janela para Área 6", desc: "Leva a janela ativa para a área de trabalho 6", icon: "desktops", defaultKeys: "SUPER + SHIFT + 6" },
+        { id: "ws_move_7", cat: "Áreas de Trabalho", name: "Mover Janela para Área 7", desc: "Leva a janela ativa para a área de trabalho 7", icon: "desktops", defaultKeys: "SUPER + SHIFT + 7" },
+        { id: "ws_move_8", cat: "Áreas de Trabalho", name: "Mover Janela para Área 8", desc: "Leva a janela ativa para a área de trabalho 8", icon: "desktops", defaultKeys: "SUPER + SHIFT + 8" },
+        { id: "ws_move_9", cat: "Áreas de Trabalho", name: "Mover Janela para Área 9", desc: "Leva a janela ativa para a área de trabalho 9", icon: "desktops", defaultKeys: "SUPER + SHIFT + 9" },
 
         // 7. Sessão
         { id: "session_exit", cat: "Sessão", name: "Encerrar Sessão", desc: "Sai do Minimo OS e retorna à tela de login", icon: "logout", defaultKeys: "SUPER + SHIFT + E" },
@@ -302,10 +320,12 @@ Singleton {
         out += 'bind("SUPER + SHIFT + equal", dsp.window.resize({ x = 0, y = 100, relative = true }), r)\n\n'
 
         out += "-- Áreas de trabalho diretas 1 a 9\n"
-        out += "for i = 1, 9 do\n"
-        out += '    bind("SUPER + " .. i, dsp.focus({ workspace = tostring(i) }))\n'
-        out += '    bind("SUPER + SHIFT + " .. i, dsp.window.move({ workspace = tostring(i) }))\n'
-        out += "end\n"
+        for (let i = 1; i <= 9; i++) {
+            let kFocus = (map && map["ws_" + i]) ? map["ws_" + i] : ("SUPER + " + i)
+            let kMove = (map && map["ws_move_" + i]) ? map["ws_move_" + i] : ("SUPER + SHIFT + " + i)
+            out += 'bind("' + kFocus + '", dsp.focus({ workspace = "' + i + '" }))\n'
+            out += 'bind("' + kMove + '", dsp.window.move({ workspace = "' + i + '" }))\n'
+        }
 
         return out
     }
