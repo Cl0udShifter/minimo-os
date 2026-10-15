@@ -22,7 +22,6 @@ Column {
     property int countdown: 0
     readonly property var scales: [1, 1.25, 1.5, 2]
     readonly property string outputsFile: Quickshell.env("HOME") + "/.config/hypr/minimo/monitores.lua"
-    readonly property bool hasHeadless: (layoutList || []).some(m => m.name && m.name.indexOf("HEADLESS") === 0)
 
     function refresh() { query.running = false; query.running = true }
     Component.onCompleted: refresh()
@@ -362,17 +361,7 @@ Column {
         refreshLater.restart()
     }
 
-    function toggleSimulation() {
-        if (hasHeadless) {
-            let h = layoutList.find(m => m.name && m.name.indexOf("HEADLESS") === 0)
-            if (h) {
-                Quickshell.execDetached(["hyprctl", "output", "remove", h.name])
-            }
-        } else {
-            Quickshell.execDetached(["hyprctl", "output", "create", "headless"])
-        }
-        refreshLater.restart()
-    }
+
 
     // Pide un cambio: aplica y arranca la cuenta regresiva.
     function request(m, mode, scale) {
@@ -430,13 +419,6 @@ Column {
 
         Row {
             spacing: 8
-
-            PillButton {
-                text: root.hasHeadless ? "Remover Tela de Teste" : "+ Simular 2ª Tela"
-                icon: "display"
-                outlined: true
-                onClicked: root.toggleSimulation()
-            }
 
             PillButton {
                 visible: root.positionsDirty
@@ -597,7 +579,7 @@ Column {
             spacing: 6
             Icon { name: "info"; size: 14; anchors.verticalCenter: parent.verticalCenter }
             Text {
-                text: "1 tela detectada. Use '+ Simular 2ª Tela' para testar a disposição multimonitor."
+                text: "1 monitor conectado."
                 color: Theme.textSecondary
                 font.family: Theme.font; font.pixelSize: 12
                 anchors.verticalCenter: parent.verticalCenter
