@@ -33,13 +33,30 @@ Singleton {
     function stop() {
         startDelay.stop()
         starting = false
-        if (proc.running) proc.signal(2)   // SIGINT → wf-recorder finaliza el archivo
+        if (proc.running) {
+            proc.signal(2)   // SIGINT → wf-recorder finaliza o arquivo mp4
+            forceStopTimer.restart()
+        } else {
+            recording = false
+        }
     }
     function say(msg, ms) { notice = msg; noticeTimer.interval = ms || 2200; noticeTimer.restart() }
 
     Timer { id: startDelay; onTriggered: root.launch() }
     Timer { id: noticeTimer; onTriggered: root.notice = "" }
     Timer { running: root.recording; interval: 1000; repeat: true; onTriggered: root.elapsed++ }
+    Timer {
+        id: forceStopTimer
+        interval: 2500
+        onTriggered: {
+            if (proc.running) {
+                console.warn("Recorder: wf-recorder não respondeu a SIGINT a tempo, forçando encerramento...")
+                proc.signal(15)
+                Quickshell.execDetached(["sh", "-c", "sleep 0.8; pkill -9 wf-recorder 2>/dev/null || true"])
+            }
+            root.recording = false
+        }
+    }
 
     function launch() {
         const stamp = Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss")
@@ -50,7 +67,6 @@ Singleton {
             'dir="$dir/Gravações"; mkdir -p "$dir"; echo "DIR:$dir"\n' +
             'out=$(hyprctl activeworkspace 2>/dev/null | sed -n "1s/.* on monitor \\(.*\\):$/\\1/p")\n' +
             'set -- "$1" -f "$dir/$2"; [ -n "$out" ] && set -- "$@" -o "$out"\n' +
-            'if command -v pactl >/dev/null 2>&1; then s=$(pactl get-default-sink 2>/dev/null); [ -n "$s" ] && set -- "$@" "--audio=$s.monitor"; fi\n' +
             'exec "$@"',
             "minimo-rec", root.bin, root.file]
         root.elapsed = 0
@@ -63,6 +79,7 @@ Singleton {
         id: proc
         stdout: SplitParser { onRead: l => { if (l.startsWith("DIR:")) root.dir = l.slice(4) } }
         onExited: (code, status) => {
+            forceStopTimer.stop()
             const was = root.recording
             root.recording = false
             if (code === 127) root.say("Instale o wf-recorder", 3500)
