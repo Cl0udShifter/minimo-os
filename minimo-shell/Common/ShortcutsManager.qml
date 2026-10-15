@@ -43,6 +43,7 @@ Singleton {
         { id: "terminal", cat: "Aplicativos e Shell", name: "Terminal", desc: "Abre o terminal acelerado por GPU", icon: "terminal", defaultKeys: "SUPER + T" },
         { id: "island", cat: "Aplicativos e Shell", name: "Menu da Ilha (Notch)", desc: "Expande a ilha dinâmica de controle e monitoramento", icon: "apps", defaultKeys: "SUPER + X" },
         { id: "recorder", cat: "Aplicativos e Shell", name: "Gravação de Tela", desc: "Inicia ou para a gravação da tela", icon: "record", defaultKeys: "SUPER + SHIFT + R" },
+        { id: "toggle_kb_layout", cat: "Aplicativos e Shell", name: "Alternar Layout de Teclado", desc: "Alterna rapidamente entre Português (ABNT2) e Inglês (Internacional)", icon: "keyboard", defaultKeys: "SUPER + backslash" },
 
         // 2. Janelas
         { id: "close_window", cat: "Janelas", name: "Fechar Janela", desc: "Fecha a janela atualmente em foco", icon: "power", defaultKeys: "SUPER + Q" },
@@ -268,7 +269,11 @@ Singleton {
         out += 'bind("' + map.settings + '", dsp.exec_cmd(qs .. "settings toggle"))\n'
         out += 'bind("' + map.terminal + '", dsp.exec_cmd("ghostty"))\n'
         out += 'bind("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
-        out += 'bind("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n\n'
+        out += 'bind("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'
+        if (map.toggle_kb_layout) {
+            out += 'bind("' + map.toggle_kb_layout + '", dsp.exec_cmd(qs .. "keyboard toggle"))\n'
+        }
+        out += "\n"
 
         out += "-- Sessão\n"
         out += 'bind("' + map.session_exit + '", dsp.exit())\n'

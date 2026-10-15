@@ -15,6 +15,7 @@ bind("SUPER + comma", dsp.exec_cmd(qs .. "settings toggle"))
 bind("SUPER + T", dsp.exec_cmd("ghostty"))
 bind("SUPER + X", dsp.exec_cmd(qs .. "island open"))
 bind("SUPER + SHIFT + R", dsp.exec_cmd(qs .. "recorder toggle"))
+bind("SUPER + backslash", dsp.exec_cmd(qs .. "keyboard toggle"))
 
 -- Sessão
 bind("SUPER + SHIFT + E", dsp.exit())

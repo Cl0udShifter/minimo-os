@@ -115,6 +115,7 @@ Item {
             width: 7; height: 7; radius: 3.5
             color: Theme.recording
         }
+        KeyboardBadge { anchors.verticalCenter: parent.verticalCenter }
         WorkspaceDots { anchors.verticalCenter: parent.verticalCenter; screen: root.screen }
     }
 

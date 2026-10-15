@@ -60,29 +60,7 @@ def main():
     touchpad_scroll_factor = float(cfg.get("touchpadScrollFactor", 1.0))
     gestures = cfg.get("touchpadGestures", True)
 
-    # 1. Aplicar dinamicamente ao Hyprland via eval hl.config
-    lua_eval = (
-        f'return hl.config({{ '
-        f'input = {{ '
-        f'kb_layout = "{kb_layout}", '
-        f'kb_variant = "{kb_variant}", '
-        f'kb_model = "{kb_model}", '
-        f'numlock_by_default = {numlock_by_default}, '
-        f'follow_mouse = {follow_mouse}, '
-        f'sensitivity = {sensitivity:.2f}, '
-        f'accel_profile = "{accel_profile}", '
-        f'natural_scroll = {natural_scroll_mouse}, '
-        f'touchpad = {{ '
-        f'tap_to_click = {touchpad_tap}, '
-        f'natural_scroll = {touchpad_natural}, '
-        f'scroll_factor = {touchpad_scroll_factor:.2f} '
-        f'}} '
-        f'}} '
-        f'}})'
-    )
-    send_hypr(f"eval {lua_eval}\n")
-
-    # 2. Persistir no arquivo ~/.config/hypr/minimo/entrada.lua e repo
+    # 1. Persistir no arquivo ~/.config/hypr/minimo/entrada.lua e repo
     content = "-- SPDX-License-Identifier: MIT\n"
     content += "-- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS\n"
     content += "-- Entrada: layout do sistema, Num Lock ativo, foco segue o mouse, touchpad natural.\n"
@@ -121,5 +99,30 @@ def main():
         except Exception:
             pass
 
+    # 2. Aplicar dinamicamente ao Hyprland via eval e reload
+    lua_eval = (
+        f'return hl.config({{ '
+        f'input = {{ '
+        f'kb_layout = "{kb_layout}", '
+        f'kb_variant = "{kb_variant}", '
+        f'kb_model = "{kb_model}", '
+        f'numlock_by_default = {numlock_by_default}, '
+        f'follow_mouse = {follow_mouse}, '
+        f'sensitivity = {sensitivity:.2f}, '
+        f'accel_profile = "{accel_profile}", '
+        f'natural_scroll = {natural_scroll_mouse}, '
+        f'touchpad = {{ '
+        f'tap_to_click = {touchpad_tap}, '
+        f'natural_scroll = {touchpad_natural}, '
+        f'scroll_factor = {touchpad_scroll_factor:.2f} '
+        f'}} '
+        f'}} '
+        f'}})'
+    )
+    send_hypr(f"eval {lua_eval}\n")
+    send_hypr('eval package.loaded["minimo.entrada"] = nil\n')
+    send_hypr("reload\n")
+
 if __name__ == "__main__":
     main()
+

@@ -16,7 +16,7 @@ Singleton {
     property string kbModel: ""
     property bool numlockByDefault: true
     property int followMouse: 1              // 1 = foco segue o mouse (hover), 0 = apenas ao clicar
-    property real sensitivity: 0.0          // -1.0 a 1.0 (0.0 = normal)
+    property real sensitivity: 0.0          // -2.0 a 2.0 (0.0 = normal)
     property string accelProfile: "adaptive" // "adaptive" | "flat"
     property bool naturalScrollMouse: false  // inverter scroll do mouse normal
     property bool touchpadTapToClick: true
@@ -41,10 +41,40 @@ Singleton {
     readonly property string jsonPath: stateDir + "/input.json"
     readonly property string applyScript: Qt.resolvedUrl("../scripts/apply-input.py").toString().replace("file://", "")
 
+    signal layoutSwitched()
+
+    readonly property string activeBadgeText: {
+        if (kbLayout === "br") return "BR"
+        if (kbLayout === "us") return "US"
+        if (kbLayout === "latam" || kbLayout === "es") return "ES"
+        if (kbLayout === "de") return "DE"
+        if (kbLayout === "fr") return "FR"
+        return (kbLayout || "BR").toUpperCase()
+    }
+
+    IpcHandler {
+        target: "keyboard"
+        function toggle() {
+            root.toggleKbLayout()
+        }
+        function set(layout: string, variant: string) {
+            root.setKbLayout(layout, variant)
+        }
+    }
+
+    function toggleKbLayout() {
+        if (kbLayout === "br") {
+            setKbLayout("us", "intl")
+        } else {
+            setKbLayout("br", "abnt2")
+        }
+    }
+
     function setKbLayout(layout, variant) {
         kbLayout = layout
         kbVariant = variant || ""
         scheduleApply()
+        layoutSwitched()
     }
 
     function setNumlockByDefault(v) {
@@ -58,7 +88,7 @@ Singleton {
     }
 
     function setSensitivity(v) {
-        sensitivity = Math.max(-1.0, Math.min(1.0, v))
+        sensitivity = Math.max(-2.0, Math.min(2.0, Math.round(v * 10) / 10))
         scheduleApply()
     }
 

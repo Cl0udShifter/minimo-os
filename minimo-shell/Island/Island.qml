@@ -117,6 +117,19 @@ PanelWindow {
             }
         }
     }
+
+    // Al alternar layout de teclado: mostrar la isla brevemente para ver el badge (BR / US).
+    Connections {
+        target: InputState
+        function onLayoutSwitched() {
+            if (win.hideWanted) {
+                win.shown = true
+                hideTimer.stop()
+                wsHideTimer.restart()
+            }
+        }
+    }
+
     Timer {
         id: wsHideTimer
         interval: 1400

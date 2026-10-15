@@ -29,15 +29,26 @@ Column {
             // Foco ao apontar (Hover vs Click)
             Item {
                 width: parent.width
-                height: 64
+                height: Math.max(68, focusCol.implicitHeight + 20)
 
                 Column {
+                    id: focusCol
                     anchors.left: parent.left; anchors.leftMargin: 18
-                    anchors.right: focusPill.left; anchors.rightMargin: 12
+                    anchors.right: focusPill.left; anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Text { text: "Comportamento do foco"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
-                    Text { text: "Escolha se a janela ganha destaque ao passar o cursor ou apenas ao clicar."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Comportamento do foco"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Escolha se a janela ganha destaque ao passar o cursor ou apenas ao clicar."
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
                 }
 
                 Rectangle {
@@ -83,15 +94,26 @@ Column {
             // Perfil de aceleração
             Item {
                 width: parent.width
-                height: 64
+                height: Math.max(68, accelCol.implicitHeight + 20)
 
                 Column {
+                    id: accelCol
                     anchors.left: parent.left; anchors.leftMargin: 18
-                    anchors.right: accelPill.left; anchors.rightMargin: 12
+                    anchors.right: accelPill.left; anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Text { text: "Aceleração do cursor"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
-                    Text { text: "Aceleração suave para uso geral ou resposta direta 1:1 para jogos."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Aceleração do cursor"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Aceleração suave para uso geral ou resposta direta 1:1 para jogos."
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
                 }
 
                 Rectangle {
@@ -137,15 +159,26 @@ Column {
             // Velocidade do ponteiro (Slider)
             Item {
                 width: parent.width
-                height: 72
+                height: Math.max(72, sensCol.implicitHeight + 20)
 
                 Column {
+                    id: sensCol
                     anchors.left: parent.left; anchors.leftMargin: 18
                     anchors.right: sensSlider.left; anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Text { text: "Velocidade do ponteiro"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
-                    Text { text: "Sensibilidade do cursor. Toque no ícone para redefinir."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Velocidade do ponteiro"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Sensibilidade do cursor. Toque no ícone para redefinir a 0."
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
                 }
 
                 MSlider {
@@ -155,11 +188,15 @@ Column {
                     width: 250
                     icon: "mouse"
                     iconClickable: true
-                    from: -1.0; to: 1.0
+                    from: -2.0; to: 2.0
                     value: InputState.sensitivity
-                    valueText: (value > 0 ? "+" : "") + Math.round(value * 100) + "%"
+                    valueText: {
+                        let r = Math.round(value * 10) / 10
+                        if (Math.abs(r) < 0.05) return "0"
+                        return r.toFixed(1).replace(".", ",")
+                    }
                     onIconClicked: InputState.setSensitivity(0.0)
-                    onMoved: v => InputState.setSensitivity(v)
+                    onMoved: v => InputState.setSensitivity(Math.round(v * 10) / 10)
                 }
             }
 
@@ -197,24 +234,35 @@ Column {
                 width: parent.width
                 height: 68
 
-                Row {
+                Item {
+                    id: kbHeaderRow
                     anchors.left: parent.left; anchors.leftMargin: 18
+                    anchors.right: kbActionRow.left; anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 12
+                    height: 44
 
                     Rectangle {
+                        id: kbIconBox
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
                         width: 40; height: 40; radius: 12; color: Theme.raised
                         Icon { anchors.centerIn: parent; name: "keyboard"; size: 20 }
                     }
 
                     Column {
+                        anchors.left: kbIconBox.right; anchors.leftMargin: 12
+                        anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
                         Text {
+                            width: parent.width
+                            wrapMode: Text.WordWrap
                             text: "Disposição do teclado"
                             color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
                         }
                         Text {
+                            width: parent.width
+                            wrapMode: Text.WordWrap
                             text: {
                                 const cur = InputState.keyboardLayouts.find(l => l.id === InputState.kbLayout && l.variant === InputState.kbVariant)
                                 return cur ? cur.label : (InputState.kbLayout + (InputState.kbVariant ? " (" + InputState.kbVariant + ")" : ""))
@@ -224,34 +272,70 @@ Column {
                     }
                 }
 
-                Rectangle {
+                Row {
+                    id: kbActionRow
                     anchors.right: parent.right; anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    width: changeBtnText.implicitWidth + 24; height: 32; radius: 16
-                    color: changeMouse.containsMouse ? Theme.hover : Theme.raised
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    spacing: 8
 
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: 6
-                        Text {
-                            id: changeBtnText
-                            text: root.layoutPickerOpen ? "Fechar" : "Alterar..."
-                            color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: badgeRow.implicitWidth + 16; height: 32; radius: 16
+                        color: toggleMouse.containsMouse ? Theme.hover : Theme.raised
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        Row {
+                            id: badgeRow
+                            anchors.centerIn: parent
+                            spacing: 6
+                            Text {
+                                text: InputState.activeBadgeText
+                                color: Theme.accent
+                                font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Bold
+                            }
+                            Text {
+                                text: "⇄ Alternar"
+                                color: Theme.textSecondary
+                                font.family: Theme.font; font.pixelSize: 11
+                            }
                         }
-                        Icon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "chevron"
-                            size: 14
-                            rotation: root.layoutPickerOpen ? 90 : 0
-                            Behavior on rotation { NumberAnimation { duration: 180 } }
+
+                        MouseArea {
+                            id: toggleMouse
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: InputState.toggleKbLayout()
                         }
                     }
 
-                    MouseArea {
-                        id: changeMouse
-                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: root.layoutPickerOpen = !root.layoutPickerOpen
+                    Rectangle {
+                        id: changeBtn
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: changeBtnText.implicitWidth + 24; height: 32; radius: 16
+                        color: changeMouse.containsMouse ? Theme.hover : Theme.raised
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 6
+                            Text {
+                                id: changeBtnText
+                                text: root.layoutPickerOpen ? "Fechar" : "Alterar..."
+                                color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium
+                            }
+                            Icon {
+                                anchors.verticalCenter: parent.verticalCenter
+                                name: "chevron"
+                                size: 14
+                                rotation: root.layoutPickerOpen ? 90 : 0
+                                Behavior on rotation { NumberAnimation { duration: 180 } }
+                            }
+                        }
+
+                        MouseArea {
+                            id: changeMouse
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: root.layoutPickerOpen = !root.layoutPickerOpen
+                        }
                     }
                 }
             }
@@ -376,15 +460,26 @@ Column {
             // Velocidade de rolagem (Slider)
             Item {
                 width: parent.width
-                height: 72
+                height: Math.max(72, scrollCol.implicitHeight + 20)
 
                 Column {
+                    id: scrollCol
                     anchors.left: parent.left; anchors.leftMargin: 18
                     anchors.right: scrollSlider.left; anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Text { text: "Velocidade de rolagem"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
-                    Text { text: "Multiplicador de scroll. Toque no ícone para redefinir a 100%."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Velocidade de rolagem"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Multiplicador de rolagem do touchpad. Toque no ícone para redefinir a 1,0."
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
                 }
 
                 MSlider {
@@ -396,9 +491,9 @@ Column {
                     iconClickable: true
                     from: 0.2; to: 2.0
                     value: InputState.touchpadScrollFactor
-                    valueText: Math.round(value * 100) + "%"
+                    valueText: (Math.round(value * 10) / 10).toFixed(1).replace(".", ",") + "x"
                     onIconClicked: InputState.setTouchpadScrollFactor(1.0)
-                    onMoved: v => InputState.setTouchpadScrollFactor(v)
+                    onMoved: v => InputState.setTouchpadScrollFactor(Math.round(v * 10) / 10)
                 }
             }
 
