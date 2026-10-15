@@ -121,7 +121,6 @@ def main():
     )
     send_hypr(f"eval {lua_eval}\n")
     send_hypr('eval package.loaded["minimo.entrada"] = nil\n')
-    send_hypr("reload\n")
 
 if __name__ == "__main__":
     main()
