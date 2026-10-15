@@ -186,6 +186,7 @@ Column {
         height: kbCol.implicitHeight
         radius: 20
         color: Theme.field
+        Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
         Column {
             id: kbCol
@@ -257,9 +258,12 @@ Column {
 
             // Gaveta de seleção de layouts
             Column {
+                id: layoutDrawer
                 width: parent.width
-                visible: root.layoutPickerOpen
+                height: root.layoutPickerOpen ? implicitHeight : 0
+                visible: height > 0 || root.layoutPickerOpen
                 clip: true
+                Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
                 Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
 
