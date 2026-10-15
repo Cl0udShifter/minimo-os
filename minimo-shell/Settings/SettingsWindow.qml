@@ -152,7 +152,6 @@ PanelWindow {
                     id: shortcuts
                     width: flick.width
                     visible: SettingsState.section === "atalhos"
-                    cardParent: card
                 }
             }
         }
@@ -185,6 +184,11 @@ PanelWindow {
                     }
                 }
             }
+        }
+
+        // Modal de Edição de Atalho do Teclado
+        ShortcutEditorModal {
+            page: shortcuts
         }
     }
 }
