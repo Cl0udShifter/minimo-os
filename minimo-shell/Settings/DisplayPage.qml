@@ -72,7 +72,7 @@ Column {
     QtObject { id: saver; property bool armed: false }
     onMonitorsChanged: if (saver.armed) { saver.armed = false; writeOutputs() }
     function writeOutputs() {
-        let txt = "-- Monitores de esta PC — escrito por Ajustes › Pantalla de Minimo OS.\n\n"
+        let txt = "-- Monitores deste PC — escrito por Configurações › Tela do Minimo OS.\n\n"
         txt += 'hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })\n'
         for (const m of monitors) txt += rule(m.name, { mode: modeOf(m), pos: posOf(m), scale: m.scale }) + "\n"
         writer.command = ["sh", "-c", 'f="$1"; mkdir -p "$(dirname "$f")"; [ -e "$f" ] && { [ -e "$f.bak" ] || cp -a "$f" "$f.bak"; }; printf "%s" "$2" > "$f.tmp" && mv "$f.tmp" "$f"', "w", outputsFile, txt]
@@ -113,8 +113,8 @@ Column {
                     }
                 }
 
-                // Resolución y frecuencia (desplegable).
-                Text { text: "Resolución"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13 }
+                // Resolução e frequência (menu suspenso).
+                Text { text: "Resolução"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13 }
                 Rectangle {
                     width: parent.width; height: 40; radius: 20; color: Theme.raised
                     Text {
@@ -177,7 +177,7 @@ Column {
         }
     }
 
-    SectionTitle { text: "Brillo y color" }
+    SectionTitle { text: "Brilho e cor" }
     Column {
         width: parent.width
         spacing: 10
@@ -197,6 +197,6 @@ Column {
             onIconClicked: DisplayState.set(1.0, DisplayState.brightness)
             onMoved: v => DisplayState.set(Math.abs(v - 1) < 0.04 ? 1.0 : v, DisplayState.brightness)
         }
-        Text { text: "Por software (shader de Hyprland). Tocá la gota para volver al 100%."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11 }
+        Text { text: "Por software (shader do Hyprland). Toque na gota para voltar a 100%."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11 }
     }
 }

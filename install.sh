@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
-# Instalador de Minimo OS (Hyprland + minimo-shell) para Arch Linux.
+# Instalador do Minimo OS (Hyprland + minimo-shell) para Arch Linux.
 # Uso:  ./install.sh [--dry-run] [--yes] [--preview]
-#   o:  curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh | bash
-#       (con opciones: ... | bash -s -- --dry-run)
-# Si no se ejecuta desde una copia del repo, lo clona en ~/Proyectos/minimo-os y se
-# vuelve a ejecutar desde ahí. Las preguntas se leen de /dev/tty (funciona con tubería).
-# Es idempotente: se puede volver a correr sin romper nada.
+#   ou: curl -fsSL https://raw.githubusercontent.com/$REPO_SLUG/main/install.sh | bash
+#       (com opções: ... | bash -s -- --dry-run)
+# Se não for executado a partir de uma cópia do repo, clona em ~/Projetos/minimo-os e
+# executa a partir de lá. As perguntas são lidas de /dev/tty (funciona via pipe).
+# É idempotente: pode ser executado novamente sem quebrar nada.
 set -euo pipefail
 
 REPO_SLUG="Diegolede/minimo-os"
 REPO_URL="https://github.com/$REPO_SLUG.git"
-DEST="$HOME/Proyectos/minimo-os"
+DEST="$HOME/Projetos/minimo-os"
 TS=$(date +%Y%m%d-%H%M%S)
 
 DRY=0; YES=0; PREVIEW=0
@@ -20,18 +20,18 @@ for a in "$@"; do
     case "$a" in
         --dry-run|-n) DRY=1 ;;
         --yes|-y) YES=1 ;;
-        --preview) PREVIEW=1; DRY=1 ;;   # muestra la interfaz sin comprobar ni cambiar nada
+        --preview) PREVIEW=1; DRY=1 ;;   # exibe a interface sem verificar ou alterar nada
         -h|--help) sed -n '2,5p' "$0" 2>/dev/null || true; exit 0 ;;
-        *) echo "Opción desconocida: $a" >&2; exit 2 ;;
+        *) echo "Opção desconhecida: $a" >&2; exit 2 ;;
     esac
 done
 
-# --- salida ---
+# --- saída ---
 if [ -t 1 ] || [ "$PREVIEW" = 1 ]; then
     B=$'\e[1m'; G=$'\e[32m'; Y=$'\e[33m'; R=$'\e[31m'; C=$'\e[36m'; D=$'\e[2m'; N=$'\e[0m'
 else B=; G=; Y=; R=; C=; D=; N=; fi
 TOTAL=7; STEP=0; WARNS=0; T0=$SECONDS
-# Minimo y título con caracteres de densidad (el mismo algoritmo que terminal/minimo-hello)
+# Minimo e título com caracteres de densidade (mesmo algoritmo do terminal/minimo-hello)
 HDR_MINIMO=( "         ......"
              "     .:++%%%%%%++:."
              "   .++\$\$\$\$\$\$\$\$\$\$\$\$++."
@@ -56,7 +56,7 @@ header() {
     printf '\n'
     if [ "$cols" -ge 82 ]; then for l in "${HDR_TITLE[@]}"; do printf '   %s%s%s\n' "$B" "$l" "$N"; done
     else printf '   %sM I N I M O   O S%s\n' "$B" "$N"; fi
-    printf '\n   %sInstalador · Hyprland + minimo-shell · Arch Linux%s\n' "$D" "$N"
+    printf '\n   %sInstalador · Hyprland + minimo-shell · Arch Linux (PT-BR)%s\n' "$D" "$N"
     printf '   %s──────────────────────────────────────────────────────────%s\n' "$D" "$N"
 }
 step() {
@@ -69,7 +69,7 @@ substep() { printf '\n   %s···%s  %s%s%s\n' "$D" "$N" "$B" "$*" "$N"; }
 ok()   { printf '        %s✓%s %s\n' "$G" "$N" "$*"; }
 warn() { WARNS=$((WARNS+1)); printf '        %s!%s %s\n' "$Y" "$N" "$*"; }
 die()  { printf '\n        %s✗ %s%s\n\n' "$R" "$*" "$N" >&2; exit 1; }
-# spin MSG CMD...: comando silencioso con indicador (sólo en terminal; nunca para sudo interactivo)
+# spin MSG CMD...: comando silencioso com indicador (apenas em terminal; nunca para sudo interativo)
 spin() {
     local msg=$1; shift
     if [ "$DRY" = 1 ]; then printf '        %s○ %s%s\n' "$D" "$msg" "$N"; return 0; fi
@@ -79,7 +79,7 @@ spin() {
     if wait $pid; then printf '\r        %s✓%s %s\e[K\n' "$G" "$N" "$msg"
     else printf '\r        %s✗%s %s\e[K\n' "$R" "$N" "$msg"; return 1; fi
 }
-# run: ejecuta (o solo muestra en --dry-run)
+# run: executa (ou apenas exibe em --dry-run)
 run() {
     if [ "$DRY" = 1 ]; then printf '        %s○ %s%s\n' "$D" "$*" "$N"
     else printf '        %s› %s%s\n' "$D" "$*" "$N"; "$@"; fi
@@ -88,32 +88,32 @@ confirm() {
     [ "$YES" = 1 ] && return 0
     [ "$DRY" = 1 ] && return 0
     local r; read -r -p "        $1 [S/n] " r </dev/tty || r=s
-    case "${r,,}" in n|no) return 1 ;; *) return 0 ;; esac
+    case "${r,,}" in n|no|nao|não) return 1 ;; *) return 0 ;; esac
 }
 header
 
-# --- comprobaciones ---
-step "Comprobaciones"
-if [ "$PREVIEW" = 1 ]; then ok "Arch Linux, usuario ${USER:-$(id -un)} (vista previa)"
+# --- verificações ---
+step "Verificações"
+if [ "$PREVIEW" = 1 ]; then ok "Arch Linux, usuário ${USER:-$(id -un)} (pré-visualização)"
 else
-    command -v pacman >/dev/null || die "Esto no parece Arch Linux (falta pacman)."
-    [ "$(id -u)" -ne 0 ] || die "No lo ejecutes como root; usa tu usuario (se pedirá sudo)."
-    command -v sudo >/dev/null || die "Falta sudo."
-    ok "Arch Linux, usuario $USER"
+    command -v pacman >/dev/null || die "Isto não parece o Arch Linux (falta o pacman)."
+    [ "$(id -u)" -ne 0 ] || die "Não execute como root; use seu usuário comum (o sudo será solicitado)."
+    command -v sudo >/dev/null || die "Falta o comando sudo."
+    ok "Arch Linux, usuário $USER"
 fi
-[ "$DRY" = 1 ] && warn "Modo prueba: no se cambia nada."
+[ "$DRY" = 1 ] && warn "Modo de teste: nada será alterado."
 
-# --- repo: si no se ejecuta desde dentro del repo, clonarlo ---
+# --- repo: se não estiver rodando de dentro do repo, clonar ---
 SELF_DIR=""
 if [ -f "${BASH_SOURCE[0]:-}" ]; then SELF_DIR=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd); fi
 if [ -n "$SELF_DIR" ] && [ -d "$SELF_DIR/minimo-shell" ] && [ -d "$SELF_DIR/hypr" ]; then
     REPO="$SELF_DIR"
 else
     REPO="$DEST"
-    substep "Repositorio"
+    substep "Repositório"
     if [ -d "$REPO/.git" ]; then
-        ok "Ya existe $REPO (git pull)"
-        run git -C "$REPO" pull --ff-only || warn "No se pudo actualizar; sigo con lo que hay."
+        ok "Já existe $REPO (git pull)"
+        run git -C "$REPO" pull --ff-only || warn "Não foi possível atualizar; continuando com o conteúdo local."
     else
         command -v git >/dev/null || run sudo pacman -S --needed --noconfirm git
         run mkdir -p "$(dirname "$REPO")"
@@ -123,52 +123,50 @@ else
             run git clone "$REPO_URL" "$REPO"
         fi
     fi
-    # Continuar con el instalador del repo clonado (la copia por tubería puede ser vieja).
+    # Continuar com o instalador do repo clonado
     if [ -f "$REPO/install.sh" ] && [ -z "${MINIMO_REEXEC:-}" ]; then
-        ok "Continuando desde $REPO/install.sh"
+        ok "Continuando a partir de $REPO/install.sh"
         MINIMO_REEXEC=1 exec bash "$REPO/install.sh" "$@"
     fi
     if [ ! -d "$REPO/minimo-shell" ]; then
-        [ "$DRY" = 1 ] && { warn "En --dry-run no se clona: el resto se mostraría después de clonar."; exit 0; }
-        die "No se pudo obtener el repositorio en $REPO (si es privado: gh auth login)."
+        [ "$DRY" = 1 ] && { warn "Em modo --dry-run não clonamos: o restante aparecerá após a clonagem real."; exit 0; }
+        die "Não foi possível obter o repositório em $REPO."
     fi
 fi
-ok "Repo: $REPO"
+ok "Repositório: $REPO"
 
-# --- paquetes (todos en los repos oficiales: extra) ---
+# --- pacotes (todos nos repositórios oficiais: extra) ---
 PKGS=(
     hyprland xdg-desktop-portal-hyprland hyprpolkitagent       # compositor, portal, polkit
-    quickshell qt6-declarative qt6-svg qt6-wayland             # shell (QtQuick, Effects, iconos SVG)
-    pipewire pipewire-pulse wireplumber                        # audio (Pipewire en la shell)
-    cava playerctl                                             # niveles de audio (baile), teclas multimedia
-    ghostty grim slurp wf-recorder zenity                      # terminal, capturas, grabación, selector de fondo
-    adwaita-fonts                                              # tipografía Adwaita Sans
-    networkmanager                                             # Wi-Fi en la isla (nmcli)
-    python                                                     # scripts de la shell (cursor, estado, escritorios)
+    quickshell qt6-declarative qt6-svg qt6-wayland             # shell (QtQuick, Effects, ícones SVG)
+    pipewire pipewire-pulse wireplumber                        # áudio (PipeWire na shell)
+    cava playerctl                                             # níveis de áudio (dança), teclas multimídia
+    ghostty grim slurp wf-recorder zenity                      # terminal, capturas, gravação, seletor de fundo
+    adwaita-fonts                                              # tipografia Adwaita Sans
+    networkmanager                                             # Wi-Fi na ilha (nmcli)
+    python                                                     # scripts da shell (cursor, status, workspaces)
     git
 )
 OPTIONAL=(fuzzel wl-clipboard github-cli)
-step "Paquetes"
+step "Pacotes"
 missing=()
 for p in "${PKGS[@]}"; do { [ "$PREVIEW" = 0 ] && pacman -Q "$p" >/dev/null 2>&1; } || missing+=("$p"); done
-if [ ${#missing[@]} -eq 0 ]; then ok "Todo instalado"
+if [ ${#missing[@]} -eq 0 ]; then ok "Todos os pacotes essenciais já estão instalados"
 else
-    warn "Faltan: ${missing[*]}"
-    if confirm "¿Instalar con pacman?"; then run sudo pacman -S --needed --noconfirm "${PKGS[@]}"; else die "Cancelado."; fi
+    warn "Pacotes necessários não encontrados: ${missing[*]}"
+    if confirm "Deseja instalar com pacman?"; then run sudo pacman -S --needed --noconfirm "${PKGS[@]}"; else die "Instalação cancelada."; fi
 fi
-# Marcar como instalados explícitamente: así `pacman -Rns` de otro paquete (p. ej. otra shell)
-# nunca los borra como dependencias huérfanas.
+# Marcar como instalados explicitamente
 deps=()
 for p in "${PKGS[@]}"; do [ "$PREVIEW" = 0 ] && pacman -Qqd "$p" >/dev/null 2>&1 && deps+=("$p"); done
 if [ ${#deps[@]} -gt 0 ]; then run sudo pacman -D --asexplicit "${deps[@]}"; fi
 optmissing=()
 for p in "${OPTIONAL[@]}"; do { [ "$PREVIEW" = 0 ] && pacman -Q "$p" >/dev/null 2>&1; } || optmissing+=("$p"); done
 if [ ${#optmissing[@]} -gt 0 ]; then
-    if confirm "¿Instalar opcionales (${optmissing[*]})?"; then run sudo pacman -S --needed --noconfirm "${optmissing[@]}"; fi
-else ok "Opcionales instalados"; fi
+    if confirm "Deseja instalar os pacotes opcionais (${optmissing[*]})?"; then run sudo pacman -S --needed --noconfirm "${optmissing[@]}"; fi
+else ok "Pacotes opcionais instalados"; fi
 
-# --- enlaces ---
-# link SRC DST: symlink idempotente; respalda un archivo real existente.
+# --- links ---
 link() {
     local src=$1 dst=$2
     if [ -L "$dst" ] && [ "$(readlink -f "$dst")" = "$(readlink -f "$src")" ]; then ok "$dst"; return; fi
@@ -176,11 +174,10 @@ link() {
     run ln -sfn "$src" "$dst"
 }
 
-step "Configuración de Hyprland"
+step "Configuração do Hyprland"
 HYPR="$HOME/.config/hypr"
 needs_backup=0
 if [ -e "$HYPR" ]; then
-    # solo respaldar si hay algo que no sea ya un enlace a este repo
     while IFS= read -r -d '' f; do
         case "$f" in */monitores.lua) continue ;; esac
         [ -L "$f" ] && [[ "$(readlink -f "$f")" == "$REPO"/* ]] && continue
@@ -189,7 +186,7 @@ if [ -e "$HYPR" ]; then
 fi
 if [ "$needs_backup" = 1 ]; then
     run cp -a "$HYPR" "$HYPR.bak-$TS"
-    ok "Respaldo: $HYPR.bak-$TS"
+    ok "Backup criado: $HYPR.bak-$TS"
 fi
 link "$REPO/hypr/hyprland.lua" "$HYPR/hyprland.lua"
 link "$REPO/hypr/minimo.lua"   "$HYPR/minimo.lua"
@@ -198,63 +195,57 @@ for f in "$REPO"/hypr/minimo/*.lua; do
     [ "$n" = monitores.lua ] && continue
     link "$f" "$HYPR/minimo/$n"
 done
-# Monitores: específico de cada PC → copia (auto) solo si no existe.
+# Monitores: específico de cada PC → copia apenas se não existir.
 MON="$HYPR/minimo/monitores.lua"
-if [ -f "$MON" ] && [ ! -L "$MON" ]; then ok "$MON (se conserva el de esta PC)"
+if [ -f "$MON" ] && [ ! -L "$MON" ]; then ok "$MON (mantendo a configuração deste PC)"
 else
     [ -L "$MON" ] && run rm -f "$MON"
     run install -Dm644 "$REPO/hypr/minimo/monitores.lua" "$MON"
 fi
 
-step "Fondos de pantalla"
-WALL="$HOME/Imágenes/Fondos"
+step "Papéis de parede"
+WALL=$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Wallpapers
 run mkdir -p "$WALL"
 for f in "$REPO"/assets/wallpapers/*; do
     [ -e "$WALL/$(basename "$f")" ] && { ok "$WALL/$(basename "$f")"; continue; }
     run cp "$f" "$WALL/"
 done
 
-step "Notificaciones y bandeja"
-# La isla es el servidor de notificaciones: otro daemon activo se quedaría con el nombre en D-Bus.
+step "Notificações e bandeja"
 for d in mako dunst swaync; do
-    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: cerralo y quitalo del autoarranque (la isla muestra las notificaciones)."; fi
+    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está em execução: feche-o e remova-o do autoarranque (a ilha do Minimo gerencia as notificações)."; fi
 done
-ok "Las notificaciones las muestra la isla"
-# La isla también es la bandeja del sistema (StatusNotifierWatcher): otra barra con bandeja
-# se quedaría con el nombre y las apps en segundo plano no aparecerían en la isla.
+ok "As notificações são exibidas pela ilha"
 for d in waybar snixembed; do
-    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está corriendo: puede quedarse con la bandeja del sistema (apps en segundo plano)."; fi
+    if pgrep -x "$d" >/dev/null 2>&1; then warn "$d está em execução: pode competir pela bandeja do sistema (ícones em segundo plano)."; fi
 done
 
 step "Terminal: Ghostty + Minimo"
-# Saludo de Minimo al abrir la terminal
 link "$REPO/terminal/minimo-hello" "$HOME/.local/bin/minimo-hello"
-# Configuración de Ghostty: enlace al repo; se respalda una config propia existente
 GCONF="$HOME/.config/ghostty/config"
 if [ -e "$GCONF" ] && ! { [ -L "$GCONF" ] && [ "$(readlink -f "$GCONF")" = "$(readlink -f "$REPO/terminal/ghostty/config")" ]; }; then
     run mv "$GCONF" "$GCONF.bak-$TS"
-    ok "Respaldo: $GCONF.bak-$TS"
+    ok "Backup do Ghostty criado: $GCONF.bak-$TS"
 fi
 link "$REPO/terminal/ghostty/config" "$GCONF"
-# Fragmento idempotente para bash y zsh (sólo en shells interactivas de primer nivel)
 add_hello() {
     local rc=$1 parent=$2
     [ -f "$rc" ] || { [ "$rc" = "$HOME/.bashrc" ] || return 0; }
-    if grep -qs 'minimo-hello' "$rc"; then ok "$rc ya saluda"; return; fi
+    if grep -qs 'minimo-hello' "$rc"; then ok "$rc já possui a saudação"; return; fi
     local line="[[ \$- == *i* && \$(ps -o comm= -p \$PPID) != $parent ]] && [ -x ~/.local/bin/minimo-hello ] && ~/.local/bin/minimo-hello"
-    if [ "$DRY" = 1 ]; then printf '        %s○ añadir saludo a %s%s\n' "$D" "$rc" "$N"; return; fi
-    printf '\n# Minimo saluda al abrir la terminal\n%s\n' "$line" >> "$rc"
-    ok "Saludo añadido a $rc"
+    if [ "$DRY" = 1 ]; then printf '        %s○ adicionar saudação em %s%s\n' "$D" "$rc" "$N"; return; fi
+    printf '\n# Minimo te saúda ao abrir o terminal\n%s\n' "$line" >> "$rc"
+    ok "Saudação adicionada em $rc"
 }
 add_hello "$HOME/.bashrc" bash
 add_hello "$HOME/.zshrc" zsh
 
-step "Servicio de la shell (systemd --user)"
+step "Serviço da shell (systemd --user)"
 UNITS="$HOME/.config/systemd/user"
 link "$REPO/systemd/minimo-shell.service" "$UNITS/minimo-shell.service"
 link "$REPO/systemd/hyprland-session.target" "$UNITS/hyprland-session.target"
 if [ "$REPO" != "$DEST" ]; then
-    warn "El repo no está en $DEST: la unidad y el atajo Super+B asumen esa ruta."
+    warn "O repositório não está em $DEST: certifique-se de manter o caminho sincronizado."
 fi
 run systemctl --user daemon-reload
 run systemctl --user enable minimo-shell.service
@@ -262,15 +253,15 @@ if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     run systemctl --user restart minimo-shell.service
     run hyprctl reload
 else
-    ok "Se iniciará al entrar en Hyprland"
+    ok "Será iniciado automaticamente ao entrar no Hyprland"
 fi
 
 el=$((SECONDS-T0))
 printf '\n   %s──────────────────────────────────────────────────────────%s\n' "$D" "$N"
-if [ "$DRY" = 1 ]; then printf '\n   %s✓ Prueba completa.%s No se cambió nada.\n' "$B" "$N"
-else printf '\n   %s%s✓ Minimo OS instalado%s %sen %dm %02ds%s\n' "$G" "$B" "$N" "$D" $((el/60)) $((el%60)) "$N"; fi
-[ "$WARNS" -gt 0 ] && printf '   %s! %d aviso(s) arriba%s\n' "$Y" "$WARNS" "$N"
-printf '\n   %sSiguiente%s   Cerrá sesión y entrá en Hyprland\n' "$D" "$N"
-printf   '   %sTerminal%s    Abrí Ghostty: Minimo te saluda\n' "$D" "$N"
-printf   '   %sRepo%s        %s\n' "$D" "$N" "$REPO"
-printf   '   %sDesinstalar%s %s/uninstall.sh\n\n' "$D" "$N" "$REPO"
+if [ "$DRY" = 1 ]; then printf '\n   %s✓ Teste concluído com sucesso.%s Nenhuma alteração foi feita no sistema.\n' "$B" "$N"
+else printf '\n   %s%s✓ Minimo OS instalado com sucesso%s %sem %dm %02ds%s\n' "$G" "$B" "$N" "$D" $((el/60)) $((el%60)) "$N"; fi
+[ "$WARNS" -gt 0 ] && printf '   %s! %d aviso(s) acima%s\n' "$Y" "$WARNS" "$N"
+printf '\n   %sPróximo passo%s   Encerre a sessão atual e inicie o Hyprland\n' "$D" "$N"
+printf   '   %sTerminal%s        Abra o Ghostty: o Minimo irá te saudar\n' "$D" "$N"
+printf   '   %sRepositório%s     %s\n' "$D" "$N" "$REPO"
+printf   '   %sDesinstalar%s     %s/uninstall.sh\n\n' "$D" "$N" "$REPO"

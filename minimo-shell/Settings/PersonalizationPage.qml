@@ -12,20 +12,20 @@ Column {
     spacing: 20
     signal pickerOpened()       // el selector de archivos necesita el teclado
 
-    readonly property string mainDir: Quickshell.env("HOME") + "/Imágenes/Fondos"
+    readonly property string mainDir: Quickshell.env("HOME") + "/Imagens/Wallpapers"
     property var images: []
 
     function refresh() { scan.running = false; scan.running = true }
     Component.onCompleted: refresh()
 
-    // Solo fondos reales: el actual, los elegidos antes y los que el usuario agregó a
-    // ~/Imágenes/Fondos (sin los de ejemplo "minimo-*"). Se descartan archivos inexistentes.
+    // Apenas papéis de parede reais: o atual, os escolhidos antes e os que o usuário adicionou
+    // em ~/Imagens/Wallpapers (sem os de exemplo "minimo-*"). Arquivos inexistentes são descartados.
     Process {
         id: scan
         property var found: []
         command: ["sh", "-c",
-            'mkdir -p "$HOME/Imágenes/Fondos"; for f in "$@"; do [ -f "$f" ] && echo "$f" || echo "!$f"; done; ' +
-            'for d in "$HOME/Imágenes/Fondos" "$HOME/Pictures/Wallpapers"; do [ -d "$d" ] && find "$d" -maxdepth 1 -type f ! -name "minimo-*" \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done',
+            'mkdir -p "$HOME/Imagens/Wallpapers"; for f in "$@"; do [ -f "$f" ] && echo "$f" || echo "!$f"; done; ' +
+            'for d in "$HOME/Imagens/Wallpapers" "$HOME/Imagens/Fondos" "$HOME/Pictures/Wallpapers" "$HOME/Imágenes/Fondos"; do [ -d "$d" ] && find "$d" -maxdepth 1 -type f ! -name "minimo-*" \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done',
             "sh"].concat(DisplayState.wallpaper ? [DisplayState.wallpaper] : []).concat(DisplayState.wallpaperHistory)
         stdout: SplitParser { onRead: line => scan.found.push(line) }
         onStarted: found = []
@@ -38,14 +38,14 @@ Column {
     }
     Process {
         id: picker
-        command: ["zenity", "--file-selection", "--title=Elegir fondo de pantalla",
+        command: ["zenity", "--file-selection", "--title=Escolher papel de parede",
                   "--filename=" + root.mainDir + "/",
-                  "--file-filter=Imágenes | *.png *.jpg *.jpeg *.webp"]
+                  "--file-filter=Imagens | *.png *.jpg *.jpeg *.webp"]
         stdout: SplitParser { onRead: line => { if (line.trim() !== "") DisplayState.setWallpaper(line.trim()) } }
         onExited: root.refresh()
     }
 
-    SectionTitle { text: "Fondo de pantalla" }
+    SectionTitle { text: "Papel de parede" }
 
     Grid {
         id: grid
@@ -105,12 +105,12 @@ Column {
 
     Row {
         spacing: 8
-        PillButton { icon: "folder"; text: "Elegir imagen…"; onClicked: if (!picker.running) { root.pickerOpened(); picker.running = true } }
-        PillButton { text: "Sin fondo"; outlined: true; onClicked: DisplayState.setWallpaper("") }
+        PillButton { icon: "folder"; text: "Escolher imagem…"; onClicked: if (!picker.running) { root.pickerOpened(); picker.running = true } }
+        PillButton { text: "Sem fundo"; outlined: true; onClicked: DisplayState.setWallpaper("") }
     }
-    Text { text: "Carpeta: ~/Imágenes/Fondos"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11 }
+    Text { text: "Pasta: ~/Imagens/Wallpapers"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11 }
 
-    SectionTitle { text: "Apariencia" }
+    SectionTitle { text: "Aparência" }
     Rectangle {
         width: parent.width
         height: ap.implicitHeight
@@ -121,14 +121,14 @@ Column {
             width: parent.width
             Item {
                 width: parent.width; height: 56
-                Text { anchors.left: parent.left; anchors.leftMargin: 18; anchors.verticalCenter: parent.verticalCenter; text: "Apariencia"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
+                Text { anchors.left: parent.left; anchors.leftMargin: 18; anchors.verticalCenter: parent.verticalCenter; text: "Aparência"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
                 Rectangle {
                     anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
                     width: 184; height: 32; radius: 16; color: Theme.raised
                     Row {
                         anchors.fill: parent; anchors.margins: 3
                         Repeater {
-                            model: [{ id: "light", label: "Claro" }, { id: "dark", label: "Oscuro" }]
+                            model: [{ id: "light", label: "Claro" }, { id: "dark", label: "Escuro" }]
                             delegate: Rectangle {
                                 required property var modelData
                                 readonly property bool cur: DisplayState.theme === modelData.id
@@ -144,7 +144,7 @@ Column {
         }
     }
 
-    SectionTitle { text: "Isla dinámica" }
+    SectionTitle { text: "Ilha dinâmica" }
     Rectangle {
         width: parent.width
         height: opts.implicitHeight
@@ -155,37 +155,37 @@ Column {
             width: parent.width
             SwitchRow {
                 width: parent.width
-                text: "Ocultar isla automáticamente"
-                detail: "Se esconde arriba y aparece al pasar el mouse."
+                text: "Ocultar ilha automaticamente"
+                detail: "Esconde no topo e aparece ao passar o mouse."
                 checked: DisplayState.islandAutoHide
                 onToggled: v => DisplayState.setIslandAutoHide(v)
             }
             Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
             SwitchRow {
                 width: parent.width
-                text: "Ocultamiento inteligente"
-                detail: "Oculta la isla cuando hay una app abierta en el escritorio."
+                text: "Ocultamento inteligente"
+                detail: "Oculta a ilha quando há um aplicativo aberto na área de trabalho."
                 checked: DisplayState.islandSmartHide
                 onToggled: v => DisplayState.setIslandSmartHide(v)
             }
             Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
             SwitchRow {
                 width: parent.width
-                text: "Personaje animado"
-                detail: "Sigue el mouse, parpadea, baila y se duerme."
+                text: "Personagem animado"
+                detail: "Segue o mouse, pisca, dança e dorme."
                 checked: DisplayState.characterAnimated
                 onToggled: v => DisplayState.setCharacterAnimated(v)
             }
             Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
-            // Dormir tras inactividad (segmentado 1/2/5 min).
+            // Dormir após inatividade (segmentado 1/2/5 min).
             Item {
                 width: parent.width; height: 64
                 Column {
                     anchors.left: parent.left; anchors.leftMargin: 18
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Text { text: "Dormir tras inactividad"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
-                    Text { text: "Sin teclado ni mouse en toda la PC."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                    Text { text: "Dormir após inatividade"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
+                    Text { text: "Sem teclado ou mouse em todo o computador."; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
                 }
                 Rectangle {
                     anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter

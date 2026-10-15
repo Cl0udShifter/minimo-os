@@ -94,16 +94,16 @@ Item {
         Card {
             Row2 {
                 icon: root.n && root.n.type === "wifi" ? "wifi" : "ethernet"
-                label: !root.n || !root.n.type ? "Sin conexión" : (root.n.type === "wifi" ? (root.n.name || "Wi-Fi") : "Ethernet")
-                value: !SysStatus.known ? "Comprobando…"
+                label: !root.n || !root.n.type ? "Sem conexão" : (root.n.type === "wifi" ? (root.n.name || "Wi-Fi") : "Ethernet")
+                value: !SysStatus.known ? "Verificando…"
                      : SysStatus.online ? "Conectado"
-                     : SysStatus.connectivity === "portal" ? "Requiere inicio de sesión"
-                     : SysStatus.connectivity === "limited" ? "Sin internet (red limitada)" : "Sin internet"
+                     : SysStatus.connectivity === "portal" ? "Requer login na rede"
+                     : SysStatus.connectivity === "limited" ? "Sem internet (rede limitada)" : "Sem internet"
                 valueColor: SysStatus.known && !SysStatus.online ? Theme.danger : Theme.textSecondary
             }
             Row2 {
                 visible: !!(root.n && root.n.type === "wifi")
-                icon: "wifi"; label: "Señal"
+                icon: "wifi"; label: "Sinal"
                 value: root.n ? root.n.signal + "%" : ""
             }
         }
@@ -113,9 +113,9 @@ Item {
         Card {
             Row2 { icon: "chip"; label: "CPU"; value: root.r ? root.r.cpu + "%" + (root.r.temp !== null && root.r.temp !== undefined ? " · " + root.r.temp + " °C" : "") : "…" }
             Bar { frac: root.r ? root.r.cpu / 100 : 0 }
-            Row2 { icon: "apps"; label: "Memoria"; value: root.r ? SysStatus.gib(root.r.memUsed) + " / " + SysStatus.gib(root.r.memTotal) + " GB" : "…" }
+            Row2 { icon: "apps"; label: "Memória"; value: root.r ? SysStatus.gib(root.r.memUsed) + " / " + SysStatus.gib(root.r.memTotal) + " GB" : "…" }
             Bar { frac: root.r ? root.r.memUsed / root.r.memTotal : 0 }
-            Row2 { icon: "folder"; label: "Disco"; value: root.r ? Math.round(100 * root.r.diskUsed / root.r.diskTotal) + "% · " + SysStatus.gib(root.r.diskTotal - root.r.diskUsed) + " GB libres" : "…" }
+            Row2 { icon: "folder"; label: "Disco"; value: root.r ? Math.round(100 * root.r.diskUsed / root.r.diskTotal) + "% · " + SysStatus.gib(root.r.diskTotal - root.r.diskUsed) + " GB livres" : "…" }
             Bar { frac: root.r ? root.r.diskUsed / root.r.diskTotal : 0 }
             Row2 {
                 visible: !!SysStatus.gpu
@@ -129,7 +129,7 @@ Item {
         Card {
             Repeater { model: root.d ? root.d.keyboards : []; Row2 { required property var modelData; icon: "keyboard"; label: "Teclado"; value: modelData } }
             Repeater { model: root.d ? root.d.mice : []; Row2 { required property var modelData; icon: "mouse"; label: "Mouse"; value: modelData } }
-            Row2 { visible: !!(root.d && root.d.audio); icon: "volume"; label: "Audio"; value: root.d ? root.d.audio : "" }
+            Row2 { visible: !!(root.d && root.d.audio); icon: "volume"; label: "Áudio"; value: root.d ? root.d.audio : "" }
             Repeater { model: root.d ? root.d.bluetooth : []; Row2 { required property var modelData; icon: "bluetooth"; label: "Bluetooth"; value: modelData } }
             Repeater { model: root.d ? root.d.usb : []; Row2 { required property var modelData; icon: "usb"; label: "USB"; value: modelData } }
             Row2 { visible: !root.d; icon: "info"; label: "Buscando…"; value: "" }

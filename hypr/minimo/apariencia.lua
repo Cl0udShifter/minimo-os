@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: MIT
 -- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
--- Apariencia: ventanas con esquinas de 12 px, huecos finos, sin bordes y sombra suave.
+-- Aparência: janelas com cantos de 12 px, espaçamento fino, sem bordas e sombra suave.
 
-local acento = "rgb(9aa38f)"    -- verde grisáceo
+local acento = "rgb(9aa38f)"    -- verde acinzentado
 local apagado = "rgb(807f7c)"
 local bloqueado = "rgb(ff7568)"
 
@@ -46,7 +46,8 @@ hl.config({
 	},
 })
 
--- Animaciones cortas con la curva por defecto.
+-- Animações curtas com a curva padrão.
 for leaf, speed in pairs({ windowsIn = 3, windowsOut = 3, windowsMove = 4, workspaces = 5, fade = 3, border = 3 }) do
 	hl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = "default" })
 end
+

@@ -1,38 +1,35 @@
 # Minimo Shell
 
-Shell mínima de Minimo OS en Quickshell (QML), escrita desde cero.
+Shell minimalista do Minimo OS em Quickshell (QML), desenvolvida do zero.
 
-## Estructura
-- `shell.qml` — raíz (`ShellRoot`), crea una isla por monitor.
-- `Common/Theme.qml` — singleton con colores, radios, fuentes, duraciones y tamaños.
-- `Island/Island.qml` — ventana layer-shell (arriba, capa overlay, `exclusiveZone: 0`), auto-ocultar y expansión.
+## Estrutura
+- `shell.qml` — raiz (`ShellRoot`), cria uma ilha por monitor.
+- `Common/Theme.qml` — singleton com cores, raios, fontes, durações e tamanhos.
+- `Island/Island.qml` — janela layer-shell (topo, camada overlay, `exclusiveZone: 0`), ocultamento automático e expansão.
 - `Island/IslandCompact.qml` — estado compacto: avatar + hora (HH:mm).
-- `Island/IslandMenu.qml` — menú: Terminal, Aplicaciones, Captura, Bloquear, Cerrar sesión, Reiniciar, Apagar.
-- `Island/MenuButton.qml` — botón icono+etiqueta; las acciones de energía piden un segundo clic ("¿Seguro?").
-- `assets/avatar.svg` — avatar original (carita de bot).
+- `Island/IslandMenu.qml` — menu: Terminal, Aplicativos, Captura, Bloquear, Encerrar sessão, Reiniciar, Desligar.
+- `Island/MenuButton.qml` — botão ícone+legenda; ações de energia solicitam um segundo clique ("Tem certeza?").
+- `assets/avatar.svg` — avatar original (carinha de bot).
 
-## Comportamiento
-- Se esconde 600 ms después de que el puntero sale; reaparece al tocar la franja de 3 px del borde superior.
-- La máscara de input es UNA sola región (`hoverZone`) que cambia de tamaño: franja oculta ↔ píldora visible.
-- Clic en la isla: se expande. Escape o clic afuera (`HyprlandFocusGrab`): se colapsa.
-- "Aplicaciones" aparece solo si hay `fuzzel` o `rofi`; "Captura" solo si hay `grim` (con `slurp` usa selección de región). Capturas en `~/Imágenes/Capturas`.
+## Comportamento
+- Oculta-se 600 ms após o ponteiro sair; reaparece ao tocar a faixa de 3 px na borda superior.
+- A máscara de input é UMA única região (`hoverZone`) que altera o tamanho: faixa oculta ↔ pílula visível.
+- Clique na ilha: expande. Tecla Escape ou clique fora (`HyprlandFocusGrab`): colapsa.
+- "Aplicativos" aparece apenas se houver `fuzzel` ou `rofi`; "Captura" apenas se houver `grim` (com `slurp` usa seleção de região). Capturas salvas em `~/Imagens/Capturas`.
 
-## Probar
-```
+## Testar
+```bash
 ./run-preview.sh
 ```
 
-## Diseño (rediseño blanco)
-- Tarjeta blanca con sombra difusa (MultiEffect), texto #0A0A0B / #636366 (oscuro: #F5F5F7 / #AEAEB2), contraste AA, sin emojis.
-- `Character/Character.qml`: personaje (esfera negra + ojos-cápsula) dibujado en QML. Mira al cursor,
-  parpadea, respira, salta al aparecer, gira y rebota al abrir, gira de vuelta al cerrar.
-- `Common/Cursor.qml`: posición global del cursor vía `hyprctl cursorpos` (~25 Hz), solo mientras
-  el personaje está visible.
-- `Common/Icon.qml` + `assets/icons/`: iconos de línea propios (ver `assets/icons/README.md`).
-- `Common/MSlider.qml`: sliders estilo Centro de Control. `Island/MenuButton.qml`: botones circulares.
+## Design (redesign branco)
+- Cartão branco com sombra difusa (MultiEffect), texto #0A0A0B / #636366 (escuro: #F5F5F7 / #AEAEB2), contraste AA, sem emojis.
+- `Character/Character.qml`: mascote (esfera preta + olhos-cápsula) desenhado em QML. Olha para o cursor, pisca, respira, pula ao aparecer, gira e rebate ao abrir, gira de volta ao fechar.
+- `Common/Cursor.qml`: posição global do cursor via `hyprctl cursorpos` (~25 Hz), somente enquanto o mascote estiver visível.
+- `Common/Icon.qml` + `assets/icons/`: ícones de linha próprios (consulte `assets/icons/README.md`).
+- `Common/MSlider.qml`: controles deslizantes estilo Central de Controle. `Island/MenuButton.qml`: botões circulares.
 
-## Lanzador (Super+B)
-- `Launcher/Launcher.qml`: tarjeta tipo Spotlight; `Common/LauncherState.qml` expone el IpcHandler `launcher`
-  (`qs -p ~/Proyectos/minimo-os/minimo-shell ipc call launcher toggle`).
-- Atajo en `hypr/minimo.lua` (copiar a `~/.config/hypr/minimo.lua` y agregar `require("minimo")` al final de `hyprland.lua`).
-- `Common/Apps.qml`: búsqueda de apps compartida por la isla y el lanzador.
+## Lançador (Super+B)
+- `Launcher/Launcher.qml`: cartão estilo Spotlight; `Common/LauncherState.qml` expõe o IpcHandler `launcher` (`qs -p ~/Projetos/minimo-os/minimo-shell ipc call launcher toggle`).
+- Atalho em `hypr/minimo.lua` (copiar para `~/.config/hypr/minimo.lua` e adicionar `require("minimo")` ao final de `hyprland.lua`).
+- `Common/Apps.qml`: busca de aplicativos compartilhada pela ilha e pelo lançador.

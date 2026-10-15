@@ -25,8 +25,8 @@ PanelWindow {
     onOpenChanged: if (open) { card.forceActiveFocus(); personal.refresh(); display.refresh() }
 
     readonly property var sections: [
-        { id: "personalizacion", label: "Personalización", icon: "brush" },
-        { id: "pantalla", label: "Pantalla", icon: "display" },
+        { id: "personalizacion", label: "Personalização", icon: "brush" },
+        { id: "pantalla", label: "Tela", icon: "display" },
         { id: "minimo", label: "Minimo OS", icon: "info" }
     ]
 
@@ -74,7 +74,7 @@ PanelWindow {
                 x: 14; y: 22
                 width: parent.width - 28
                 spacing: 4
-                Text { x: 12; text: "Ajustes"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold; bottomPadding: 14 }
+                Text { x: 12; text: "Configurações"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold; bottomPadding: 14 }
                 Repeater {
                     model: win.sections
                     delegate: Rectangle {
@@ -103,7 +103,7 @@ PanelWindow {
             Text {
                 id: heading
                 x: 36; y: 26
-                text: SettingsState.section === "pantalla" ? "Pantalla" : SettingsState.section === "minimo" ? "Acerca de" : "Personalización"
+                text: SettingsState.section === "pantalla" ? "Tela" : SettingsState.section === "minimo" ? "Sobre" : "Personalização"
                 color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold
             }
             Flickable {
@@ -137,7 +137,7 @@ PanelWindow {
             }
         }
 
-        // Confirmación de cambio de pantalla (estilo macOS).
+        // Confirmação de alteração de tela (estilo macOS).
         Rectangle {
             anchors.fill: parent
             color: Theme.scrim
@@ -154,14 +154,14 @@ PanelWindow {
                     width: parent.width - 48
                     spacing: 10
                     Icon { anchors.horizontalCenter: parent.horizontalCenter; name: "display"; size: 30 }
-                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "¿Mantener esta configuración?"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 16; font.weight: Font.DemiBold }
-                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "Se revierte en " + display.countdown + " s"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13; font.features: { "tnum": 1 } }
+                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "Deseja manter esta configuração?"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 16; font.weight: Font.DemiBold }
+                    Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: "Revertendo em " + display.countdown + " s"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13; font.features: { "tnum": 1 } }
                     Item { width: 1; height: 6 }
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: 10
-                        PillButton { text: "Revertir"; outlined: true; onClicked: display.revert() }
-                        PillButton { text: "Mantener"; primary: true; onClicked: display.keep() }
+                        PillButton { text: "Reverter"; outlined: true; onClicked: display.revert() }
+                        PillButton { text: "Manter"; primary: true; onClicked: display.keep() }
                     }
                 }
             }

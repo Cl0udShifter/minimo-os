@@ -15,26 +15,26 @@ Column {
 
     function run(cmd) { Quickshell.execDetached(["sh", "-c", cmd]); root.done() }
 
-    readonly property string shotCmd: 'd="$HOME/Imágenes/Capturas"; mkdir -p "$d"; g=$(slurp) || exit 0; grim -g "$g" "$d/captura-$(date +%Y%m%d-%H%M%S).png"'
+    readonly property string shotCmd: 'd="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; g=$(slurp) || exit 0; grim -g "$g" "$d/captura-$(date +%Y%m%d-%H%M%S).png"'
 
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
         MenuButton { icon: "terminal"; label: "Terminal"; onActivated: root.run("ghostty") }
-        // Grabar pantalla: cierra la isla y arranca a los 0,4 s (para no grabarla abierta).
+        // Gravar tela: fecha a ilha e inicia após 0,4 s (para não gravá-la aberta).
         MenuButton {
             icon: Recorder.recording ? "stop" : "record"
-            label: Recorder.recording ? "Detener" : "Grabar"
+            label: Recorder.recording ? "Parar" : "Gravar"
             active: Recorder.recording
             onActivated: { if (Recorder.recording) Recorder.stop(); else Recorder.start(400); root.done() }
         }
         MenuButton { icon: "capture"; label: "Captura"; onActivated: root.run("sleep 0.3; " + root.shotCmd) }
-        MenuButton { icon: "desktops"; label: "Escritorios"; onActivated: root.desktops() }
+        MenuButton { icon: "desktops"; label: "Áreas de trabalho"; onActivated: root.desktops() }
     }
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
-        MenuButton { icon: "logout"; label: "Cerrar sesión"; confirm: true; onActivated: root.run("hyprctl dispatch 'hl.dsp.exit()'") }
+        MenuButton { icon: "logout"; label: "Encerrar sessão"; confirm: true; onActivated: root.run("hyprctl dispatch 'hl.dsp.exit()'") }
         MenuButton { icon: "restart"; label: "Reiniciar"; confirm: true; onActivated: root.run("systemctl reboot") }
-        MenuButton { icon: "power"; label: "Apagar"; confirm: true; onActivated: root.run("systemctl poweroff") }
-        MenuButton { icon: "settings"; label: "Ajustes"; onActivated: root.settings() }
+        MenuButton { icon: "power"; label: "Desligar"; confirm: true; onActivated: root.run("systemctl poweroff") }
+        MenuButton { icon: "settings"; label: "Configurações"; onActivated: root.settings() }
     }
 }

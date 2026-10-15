@@ -90,7 +90,7 @@ Item {
             }
         }
 
-        Title { text: "En segundo plano" }
+        Title { text: "Em segundo plano" }
         Rectangle {
             width: parent.width; radius: 18; color: Theme.field
             height: (root.items.length === 0 ? empty.height : list.implicitHeight) + 8
@@ -101,7 +101,7 @@ Item {
                 visible: root.items.length === 0
                 y: 4; width: parent.width; height: 44
                 horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                text: "No hay apps en segundo plano"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13
+                text: "Nenhum aplicativo em segundo plano"; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13
             }
             Column {
                 id: list
@@ -185,7 +185,7 @@ Item {
                                     }
                                     Text {
                                         x: 16; anchors.verticalCenter: parent.verticalCenter
-                                        text: "Cerrar"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
+                                        text: "Fechar"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                                     }
                                     MouseArea { id: qMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.quit(row.modelData) }
                                 }

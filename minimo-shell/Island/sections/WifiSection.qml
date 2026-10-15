@@ -34,9 +34,9 @@ Column {
             Text { width: parent.width; elide: Text.ElideRight; text: "Wi-Fi"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: Font.DemiBold }
             Text {
                 width: parent.width; elide: Text.ElideRight
-                text: !Network.wifiEnabled ? "Desactivado"
+                text: !Network.wifiEnabled ? "Desativado"
                     : Network.connecting ? "Conectando a " + Network.connecting + "…"
-                    : Network.ssid || "Sin conexión"
+                    : Network.ssid || "Sem conexão"
                 color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
             }
         }
@@ -120,7 +120,7 @@ Column {
                                 color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
                                 clip: true
                                 cursorDelegate: Rectangle { width: 2; radius: 1; color: Theme.textPrimary; visible: pass.activeFocus }
-                                Text { visible: !pass.text; text: "Contraseña"; color: Theme.textSecondary; font: pass.font }
+                                Text { visible: !pass.text; text: "Senha"; color: Theme.textSecondary; font: pass.font }
                                 onAccepted: go.submit()
                             }
                             Rectangle {
@@ -129,7 +129,7 @@ Column {
                                 anchors.right: parent.right; anchors.rightMargin: 4; anchors.verticalCenter: parent.verticalCenter
                                 width: 76; height: 32; radius: 16
                                 color: pass.text.length > 0 ? Theme.fill : Theme.track
-                                Text { anchors.centerIn: parent; text: "Unirse"; color: pass.text.length > 0 ? Theme.onAccent : Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold }
+                                Text { anchors.centerIn: parent; text: "Conectar"; color: pass.text.length > 0 ? Theme.onAccent : Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.DemiBold }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: go.submit() }
                             }
                         }

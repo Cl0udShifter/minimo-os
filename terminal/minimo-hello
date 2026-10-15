@@ -79,12 +79,12 @@ info() {
       "$G──────────────$N"
       "${G}SO       $N$os"
       "${G}Kernel   $N$k"
-      "${G}Activo   $N$up"
+      "${G}Ativo    $N$up"
       "${G}WM       $N$wm"
       "${G}Shell    ${N}bash ${BASH_VERSION%%(*}"
       "${G}Terminal $N$term"
       "${G}CPU      $N$cpu ($n)"
-      "${G}Memoria  $N$(gb $((mt-ma))) / $(gb $mt)"
+      "${G}Memória  $N$(gb $((mt-ma))) / $(gb $mt)"
       "${G}Disco    $N$DISK" )
 }
 # Título grande (6 filas, caracteres de densidad como Minimo), embebido: sin figlet

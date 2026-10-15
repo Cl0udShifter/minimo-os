@@ -46,7 +46,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 4
         Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Minimo OS"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 28; font.weight: Font.Bold }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.version ? "Versión " + root.version : ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13 }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.version ? "Versão " + root.version : ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 13 }
     }
     Text {
         width: Math.min(parent.width, 440)
@@ -54,12 +54,12 @@ Column {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         lineHeight: 1.25
-        text: "Minimo OS es una configuración minimalista de Hyprland: una isla flotante y un personaje feliz. Nada más de lo necesario."
+        text: "O Minimo OS é uma configuração minimalista do Hyprland: uma ilha flutuante e um personagem feliz. Nada além do necessário."
         color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14
     }
     PillButton {
         anchors.horizontalCenter: parent.horizontalCenter
-        icon: "external"; text: "Ver en GitHub"
+        icon: "external"; text: "Ver no GitHub"
         onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/Diegolede/minimo-os"])
     }
 
@@ -74,10 +74,10 @@ Column {
             y: 4
             Repeater {
                 model: [
-                    { k: "Creado por", v: "TRN1 (Diego Ledesma)" },
+                    { k: "Criado por", v: "TRN1 (Diego Ledesma)" },
                     { k: "Hyprland", v: root.hyprVersion || "—" },
                     { k: "Quickshell", v: root.qsVersion || "—" },
-                    { k: "Licencia", v: "MIT" }
+                    { k: "Licença", v: "MIT" }
                 ]
                 delegate: Item {
                     required property var modelData
@@ -92,7 +92,7 @@ Column {
     }
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "© 2026 Diego Ledesma (TRN1). Licencia MIT."
+        text: "© 2026 Diego Ledesma (TRN1). Licença MIT."
         color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
     }
 }

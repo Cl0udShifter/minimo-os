@@ -75,7 +75,7 @@ Column {
             clip: true
             Text {
                 visible: !field.text
-                text: "Buscar"
+                text: "Buscar aplicativos"
                 color: Theme.textSecondary
                 font: field.font
             }

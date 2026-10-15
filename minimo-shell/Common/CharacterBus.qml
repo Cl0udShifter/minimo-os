@@ -5,10 +5,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Canal para disparar reacciones del personaje y mostrar la isla desde afuera:
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call character react giggle
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call character list | look 0.9 0 | sleep | wake
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call island reveal|dismiss|open|close
+// Canal para disparar reações do personagem e exibir a ilha externamente:
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call character react giggle
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call character list | look 0.9 0 | sleep | wake
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call island reveal|dismiss|open|close
 Singleton {
     id: root
     signal react(string name)

@@ -68,7 +68,7 @@ Item {
                         font.features: { "tnum": 1 }
                     }
                     Text {
-                        text: { const t = clock.date.toLocaleDateString(Qt.locale("es_AR"), "dddd d 'de' MMMM"); return t.charAt(0).toUpperCase() + t.slice(1) }
+                        text: { const t = clock.date.toLocaleDateString(Qt.locale("pt_BR"), "dddd, d 'de' MMMM"); return t.charAt(0).toUpperCase() + t.slice(1) }
                         color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
                     }
                 }

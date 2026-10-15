@@ -5,8 +5,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Estado del lanzador (Super+B). Desde Hyprland:
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call launcher toggle
+// Estado do lançador (Super+B). A partir do Hyprland:
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call launcher toggle
 Singleton {
     id: root
     property bool open: false

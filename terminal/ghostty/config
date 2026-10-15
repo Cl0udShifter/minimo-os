@@ -1,5 +1,5 @@
 # Ghostty — Minimo OS
-# Blanco, limpio, sin distracciones. Instalado por install.sh.
+# Branco, limpo, sem distrações. Instalado por install.sh.
 font-family = "Adwaita Mono"
 font-size = 12
 window-padding-x = 18
@@ -15,7 +15,7 @@ copy-on-select = clipboard
 shell-integration-features = no-cursor
 background-opacity = 0.97
 
-# Paleta Minimo: blanco y negro, grises suaves, acentos sobrios
+# Paleta Minimo: preto e branco, cinzas suaves, destaques sóbrios
 background = #ffffff
 foreground = #1d1d1f
 cursor-color = #1d1d1f

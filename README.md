@@ -4,134 +4,111 @@
 
 <h1 align="center">Minimo OS</h1>
 
-<p align="center">Hyprland minimalista: una isla flotante y un personaje feliz. Nada más de lo necesario.</p>
+<p align="center">Hyprland minimalista: uma ilha flutuante e um personagem feliz. Nada além do necessário.</p>
 
-<p align="center"><a href="https://diegolede.github.io/minimo-os-web/">Web oficial</a></p>
+<p align="center"><a href="https://diegolede.github.io/minimo-os-web/">Site oficial</a></p>
 
 ---
 
-## Qué es
+## O que é
 
-Minimo OS es una configuración completa de escritorio para Arch Linux sobre Hyprland, con una
-shell propia escrita en Quickshell (QML). Toda la interfaz vive en una sola isla flotante en la
-parte superior de la pantalla, acompañada por un pequeño personaje que reacciona a lo que hacés.
+O **Minimo OS** é uma configuração completa de ambiente de desktop para Arch Linux sobre o Hyprland, com uma shell própria desenvolvida em Quickshell (QML). Toda a interface vive em uma única ilha flutuante no topo da tela, acompanhada por um pequeno personagem animado que reage às suas ações.
 
 ## Características
 
-- **Isla dinámica.** Hora, escritorios y estado en una píldora compacta que se oculta sola y aparece al acercar el mouse. Al hacer clic se expande: buscador, música, volumen, brillo, saturación y accesos rápidos.
-- **Personaje.** Una esfera negra con ojos que siguen al mouse con proyección esférica. Parpadea, respira, salta hacia atrás, se ríe, guiña, se marea, bosteza, saluda al abrir la isla y baila con la música.
-- **Paneles deslizables.** Arrastrá la isla de izquierda a derecha para ver los recursos del sistema, o de derecha a izquierda para ver las apps en segundo plano de la bandeja del sistema (Steam, Discord…), como los iconos ocultos de Windows 11; un clic las vuelve a abrir.
-- **Notificaciones.** La isla muestra las notificaciones entrantes; se pausan al pasar el mouse y se respeta el modo No molestar.
-- **Sueño.** Cuando la PC queda inactiva (1, 2 o 5 minutos) el personaje se duerme y aparecen las "z". Despierta al volver a usar el equipo.
-- **Lanzador.** `Super + B` abre un buscador de aplicaciones centrado, navegable con el teclado.
-- **Grabación de pantalla.** Botón "Grabar" en la isla (wf-recorder, con audio del sistema). Los videos se guardan en `~/Vídeos/Grabaciones`.
-- **Reproductor.** Carátula circular que gira como un vinilo mientras suena la música.
-- **Wi-Fi.** En equipos sin cable, la isla muestra la red actual, la señal y las redes cercanas para conectarse.
-- **Ajustes.** Ventana propia con fondo de pantalla, opciones de la isla y del personaje, monitores (resolución, frecuencia y escala con confirmación) y brillo/saturación.
+- **Ilha dinâmica:** Relógio, áreas de trabalho e status em uma cápsula compacta que se oculta automaticamente e ressurge ao aproximar o cursor. Ao clicar, ela se expande revelando: busca, música, volume, brilho, saturação e atalhos rápidos.
+- **Personagem:** Uma esfera preta com olhos que seguem o cursor com projeção esférica real. Ele pisca, respira, ri, pisca um olho, fica tonto, boceja, saúda ao abrir a ilha e dança no ritmo da música.
+- **Painéis deslizáveis:** Arraste a ilha da esquerda para a direita para ver os recursos do sistema (CPU, RAM, disco, rede, periféricos), ou da direita para a esquerda para ver os aplicativos em segundo plano na bandeja do sistema (Steam, Discord…), funcionando como a bandeja oculta do Windows 11; um clique os traz de volta para o foco.
+- **Notificações:** A ilha exibe as notificações recebidas; elas pausam ao passar o mouse por cima e respeitam o modo Não Perturbe.
+- **Modo Dormir:** Quando o computador fica inativo (1, 2 ou 5 minutos) o personagem adormece e exibe as letras "z". Ele acorda imediatamente ao detectar movimento de mouse ou teclado.
+- **Lançador central:** `Super + B` abre um buscador centralizado de aplicativos, com navegação rápida via teclado.
+- **Gravação de tela:** Botão "Gravar" integrado na ilha (wf-recorder, com gravação de áudio do sistema). Os vídeos são salvos automaticamente em `~/Vídeos/Gravações`.
+- **Reprodutor de mídia:** Capa circular de álbum que gira como um vinil enquanto a música toca.
+- **Wi-Fi:** Em computadores sem conexão cabeada, a ilha exibe o status da rede atual, força do sinal e as redes próximas disponíveis para conexão com suporte a senha.
+- **Configurações:** Janela própria para troca de papel de parede, opções de ocultamento da ilha, animações do personagem, ajuste de monitores (resolução, frequência em Hz e escala com contagem regressiva de segurança) e controle de brilho/saturação por software.
 
-## Capturas
+## Capturas de Tela
 
-| Personalización | Pantalla | Acerca de |
+| Personalização | Tela | Sobre |
 |---|---|---|
-| ![Personalización](docs/ajustes-personalizacion.png) | ![Pantalla](docs/ajustes-pantalla.png) | ![Acerca de](docs/ajustes-acerca.png) |
+| ![Personalização](docs/ajustes-personalizacion.png) | ![Tela](docs/ajustes-pantalla.png) | ![Sobre](docs/ajustes-acerca.png) |
 
 ## Requisitos
 
-- Arch Linux (usuario normal con `sudo`).
-- Hyprland 0.56 o superior (configuración en Lua).
-- Paquetes (el instalador los instala): `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts networkmanager git`.
-- Opcionales: `fuzzel wl-clipboard github-cli` (playerctl ahora es obligatorio: teclas multimedia).
+- **Arch Linux** (usuário comum com acesso ao `sudo`).
+- **Hyprland 0.56 ou superior** (configuração via API Lua).
+- **Pacotes oficiais (o instalador instala automaticamente):** `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts networkmanager git`.
+- **Opcionais:** `fuzzel wl-clipboard github-cli`.
 
-## Instalación
+## Instalação
 
-En una sola línea:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Diegolede/minimo-os/main/install.sh | bash
-```
-
-Con opciones: `curl -fsSL …/install.sh | bash -s -- --dry-run`. Clona el proyecto en
-`~/Proyectos/minimo-os` y continúa desde ahí; las preguntas se responden en la terminal.
-
-> La instalación en una línea requiere que el repositorio sea público. Mientras sea privado,
-> usá el método manual después de `gh auth login`.
-
-Manual:
+Manual (recomendado):
 
 ```bash
-git clone https://github.com/Diegolede/minimo-os.git ~/Proyectos/minimo-os
-~/Proyectos/minimo-os/install.sh
+git clone https://github.com/SEU_USUARIO/minimo-os.git ~/Projetos/minimo-os
+cd ~/Projetos/minimo-os
+./install.sh
 ```
 
-- `--dry-run` muestra cada paso sin cambiar nada.
-- `--yes` no hace preguntas.
+- `--dry-run`: Executa em modo de simulação sem modificar nada no sistema.
+- `--yes`: Aceita todas as confirmações automaticamente.
 
-El instalador es idempotente. Instala los paquetes, respalda `~/.config/hypr` en
-`~/.config/hypr.bak-<fecha>`, enlaza la configuración del repositorio (un `git pull` la
-actualiza), copia `minimo/monitores.lua` una sola vez (es propio de cada PC), copia los fondos a
-`~/Imágenes/Fondos` y habilita el servicio `minimo-shell.service`.
+O instalador é **idempotente**. Ele instala os pacotes necessários, cria um backup de segurança de `~/.config/hypr` em `~/.config/hypr.bak-<data>`, vincula os arquivos de configuração do repositório via symlink, copia `minimo/monitores.lua` apenas na primeira vez (preservando configurações específicas do seu computador), copia os papéis de parede para `~/Imagens/Wallpapers` e ativa o serviço `minimo-shell.service`.
 
-
-## Desinstalación
+## Desinstalação
 
 ```bash
-~/Proyectos/minimo-os/uninstall.sh
+~/Projetos/minimo-os/uninstall.sh
 ```
 
-Desactiva la shell y restaura el último respaldo de `~/.config/hypr`. No borra paquetes ni fondos.
+Desativa a shell e restaura o último backup de `~/.config/hypr`. Não remove seus pacotes nem seus papéis de parede.
 
-## Configuración
+## Configuração e Ajustes
 
-Todo lo habitual se cambia desde **Ajustes** (botón en la isla o `Super + ,`):
+Tudo o que você precisa pode ser alterado na janela de **Configurações** (botão na ilha ou atalho `Super + ,`):
 
-- **Personalización:** fondo de pantalla, ocultar la isla automáticamente, personaje animado y tiempo para dormir.
-- **Pantalla:** resolución, frecuencia y escala por monitor (se revierte en 15 s si no confirmás), brillo y saturación.
-- **Minimo OS:** versión e información del sistema.
+- **Personalização:** papel de parede, ocultar a ilha automaticamente, personagem animado e tempo de espera para dormir.
+- **Tela:** resolução, frequência (Hz) e escala por monitor (com reversão de segurança em 15 s se você não confirmar), além de brilho e saturação.
+- **Minimo OS:** versão e informações do sistema.
 
-El estado se guarda en `~/.config/minimo-os/state.json`. La configuración de Hyprland está en
-`hypr/` y se puede editar directamente.
+As preferências do usuário ficam salvas em `~/.config/minimo-os/state.json`. A configuração do Hyprland reside em `hypr/` e pode ser customizada livremente.
 
-Desde la terminal o atajos propios:
+Comandos úteis via terminal (IPC do Quickshell):
 
 ```bash
-qs -p ~/Proyectos/minimo-os/minimo-shell ipc call launcher toggle
-qs -p ~/Proyectos/minimo-os/minimo-shell ipc call settings toggle
-qs -p ~/Proyectos/minimo-os/minimo-shell ipc call recorder toggle
-qs -p ~/Proyectos/minimo-os/minimo-shell ipc call character list
+qs -p ~/Projetos/minimo-os/minimo-shell ipc call launcher toggle
+qs -p ~/Projetos/minimo-os/minimo-shell ipc call settings toggle
+qs -p ~/Projetos/minimo-os/minimo-shell ipc call recorder toggle
+qs -p ~/Projetos/minimo-os/minimo-shell ipc call character list
 ```
 
-## Estructura del proyecto
+## Estrutura do Projeto
 
 ```
 minimo-os/
-├── install.sh / uninstall.sh   instalación y desinstalación
+├── install.sh / uninstall.sh   Instalação e desinstalação automatizadas
 ├── hypr/
-│   ├── hyprland.lua            punto de entrada de Hyprland
-│   ├── minimo.lua              atajos de la shell
-│   └── minimo/                 apariencia, entrada, monitores, reglas y atajos
-├── minimo-shell/               shell en Quickshell (QML)
-│   ├── Island/                 isla dinámica y sus secciones
-│   ├── Character/              personaje y reacciones
-│   ├── Launcher/               lanzador (Super + B)
-│   ├── Settings/               ventana de Ajustes
-│   ├── Wallpaper/              fondo de pantalla
-│   ├── Common/                 estado compartido, tema y servicios
-│   └── assets/                 iconos de línea
-├── systemd/                    servicio de usuario de la shell
-├── assets/                     icono y fondos por defecto
-└── docs/                       capturas
+│   ├── hyprland.lua            Ponto de entrada do Hyprland
+│   ├── minimo.lua              Atalhos específicos da shell
+│   └── minimo/                 Aparência, entrada, monitores, regras e atalhos
+├── minimo-shell/               Shell gráfica desenvolvida em Quickshell (QML)
+│   ├── Island/                 Ilha dinâmica e seus painéis
+│   ├── Character/              Personagem animado e reações visuais
+│   ├── Launcher/               Lançador de aplicativos central (Super + B)
+│   ├── Settings/               Janela de Configurações
+│   ├── Wallpaper/              Renderizador de papel de parede
+│   ├── Common/                 Estado compartilhado, tema e serviços
+│   └── assets/                 Ícones vetoriais em linha
+├── systemd/                    Serviço de usuário systemd da shell
+├── assets/                     Ícone do sistema e papéis de parede padrão
+└── docs/                       Capturas de tela e documentação adicional
 ```
-
-## Apoyar Minimo OS
-
-Si te gusta Minimo OS y querés que siga mejorando, podés apoyar el proyecto:
-<!-- TODO: reemplazar por el link de donaciones (y completar .github/FUNDING.yml) -->
-**[Apoyar Minimo OS](#)** _(link pendiente)_
 
 ## Autor
 
-Creado por **TRN1 (Diego Ledesma)**.
+Criado originalmente por **TRN1 (Diego Ledesma)**.
+Adaptado e traduzido para Português do Brasil (PT-BR).
 
-## Licencia
+## Licença
 
 [MIT](LICENSE) — © 2026 Diego Ledesma (TRN1).

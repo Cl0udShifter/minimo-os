@@ -5,9 +5,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Estado de la ventana de Ajustes. Desde Hyprland / terminal:
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call settings toggle
-//   qs -p ~/Proyectos/minimo-os/minimo-shell ipc call settings section pantalla
+// Estado da janela de Configurações. Do Hyprland / terminal:
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call settings toggle
+//   qs -p ~/Projetos/minimo-os/minimo-shell ipc call settings section pantalla
 Singleton {
     id: root
     property bool open: false

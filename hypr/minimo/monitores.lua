@@ -1,6 +1,6 @@
 -- SPDX-License-Identifier: MIT
 -- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
--- Monitores. Propio de cada PC: el instalador lo copia una sola vez y Ajustes › Pantalla
--- lo reescribe al confirmar un cambio. Por defecto: modo preferido, posición y escala automáticas.
+-- Monitores. Próprio de cada PC: o instalador copia apenas uma vez e Configurações › Tela
+-- o reescreve ao confirmar uma alteração. Por padrão: modo preferido, posição e escala automáticas.
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
