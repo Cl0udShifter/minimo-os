@@ -151,7 +151,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         name: VolumeOSDState.muted ? "mute" : "volume"
                         size: 18
-                        tone: "dark"
+                        tone: VolumeOSDState.muted ? "gray" : "dark"
                     }
                     Text {
                         x: 44

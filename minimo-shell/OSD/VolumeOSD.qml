@@ -77,7 +77,7 @@ PanelWindow {
             Icon {
                 anchors.verticalCenter: parent.verticalCenter
                 name: VolumeOSDState.muted || VolumeOSDState.volume <= 0.005 ? "mute" : "volume"
-                tone: "gray"
+                tone: VolumeOSDState.muted ? "gray" : "dark"
                 size: 20
             }
 
@@ -105,7 +105,7 @@ PanelWindow {
                 width: 42
                 horizontalAlignment: Text.AlignRight
                 text: VolumeOSDState.muted ? "Mudo" : Math.round(Math.min(1, VolumeOSDState.volume) * 100) + "%"
-                color: Theme.textPrimary
+                color: VolumeOSDState.muted ? Theme.textSecondary : Theme.textPrimary
                 font.family: Theme.font
                 font.pixelSize: 13
                 font.weight: Font.Medium
