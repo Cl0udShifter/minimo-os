@@ -137,7 +137,7 @@ Item {
                 width: parent ? parent.width : 0
                 property bool menuOpen: false
                 readonly property var sinks: (root.d && root.d.audioSinks) ? root.d.audioSinks : []
-                readonly property bool hasChoices: sinks.length > 1
+                readonly property bool hasChoices: sinks.length > 0
 
                 // Cabeçalho da linha de áudio
                 Rectangle {
