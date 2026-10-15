@@ -2,13 +2,14 @@
 // Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import "../Common"
 
-// Pantalla: disposición visual de monitores (arrastrar y ordenar) +
-// resolución/frecuencia, escala, brillo y saturación.
-// Los cambios de posición se aplican con la API Lua de Hyprland (hyprctl eval 'hl.monitor{…}')
-// y se guardan en ~/.config/hypr/minimo/monitores.lua.
+// Pantalla: disposição visual de monitores (arrastrar y ordenar) +
+// resolução/frequência, escala, brilho e saturação.
+// As alterações de posição são aplicadas com a API Lua do Hyprland (hyprctl eval 'hl.monitor{…}')
+// e gravadas em ~/.config/hypr/minimo/monitores.lua.
 Column {
     id: root
     spacing: 20
@@ -25,6 +26,17 @@ Column {
 
     function refresh() { query.running = false; query.running = true }
     Component.onCompleted: refresh()
+    onVisibleChanged: if (visible) root.refresh()
+
+    Connections {
+        target: Hyprland
+        function onRawEvent(ev) {
+            const n = ev.name
+            if (n === "monitoradded" || n === "monitorremoved" || n === "monitoraddedv2") {
+                root.refresh()
+            }
+        }
+    }
 
     Process {
         id: query
