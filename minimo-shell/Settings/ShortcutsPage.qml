@@ -3,6 +3,7 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import "../Common"
 
 // Página de Gerenciamento de Atalhos de Teclado do Minimo OS.
