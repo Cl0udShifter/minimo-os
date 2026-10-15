@@ -11,10 +11,16 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("systemctl --user start hyprland-session.target")
 end)
 
-require("minimo.apariencia")   -- espaçamento, bordas, cantos, sombras, animações, cores
-require("minimo.entrada")      -- teclado, mouse, touchpad, gestos
-require("minimo.monitores")    -- monitores (próprio de cada PC; escrito por Configurações › Tela)
-require("minimo.workspaces")   -- regras de workspaces independentes por monitor
-require("minimo.reglas")       -- regras de janelas e camadas
-require("minimo.atajos")       -- atalhos de teclado
-require("minimo")              -- atalhos da shell (Super+B, etc.)
+local function reload_module(name)
+	package.loaded[name] = nil
+	return require(name)
+end
+
+reload_module("minimo.apariencia")   -- espaçamento, bordas, cantos, sombras, animações, cores
+reload_module("minimo.entrada")      -- teclado, mouse, touchpad, gestos
+reload_module("minimo.monitores")    -- monitores (próprio de cada PC; escrito por Configurações › Tela)
+reload_module("minimo.workspaces")   -- regras de workspaces independentes por monitor
+reload_module("minimo.reglas")       -- regras de janelas e camadas
+reload_module("minimo.atajos")       -- atalhos de teclado
+reload_module("minimo")              -- atalhos da shell (Super+B, etc.)
+
