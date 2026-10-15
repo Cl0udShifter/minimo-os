@@ -38,7 +38,7 @@ O **Minimo OS** é uma configuração completa de ambiente de desktop para Arch 
 - **Arch Linux** (usuário comum com acesso ao `sudo`).
 - **Hyprland 0.56 ou superior** (configuração via API Lua).
 - **Pacotes oficiais (o instalador instala automaticamente):** `hyprland xdg-desktop-portal-hyprland hyprpolkitagent quickshell qt6-declarative qt6-svg qt6-wayland pipewire pipewire-pulse wireplumber cava ghostty grim slurp zenity wf-recorder adwaita-fonts networkmanager git`.
-- **Opcionais:** `fuzzel wl-clipboard github-cli`.
+- **Opcionais:** `wl-clipboard github-cli`.
 
 ## Instalação
 

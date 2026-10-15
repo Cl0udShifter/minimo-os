@@ -15,7 +15,7 @@ Shell minimalista do Minimo OS em Quickshell (QML), desenvolvida do zero.
 - Oculta-se 600 ms após o ponteiro sair; reaparece ao tocar a faixa de 3 px na borda superior.
 - A máscara de input é UMA única região (`hoverZone`) que altera o tamanho: faixa oculta ↔ pílula visível.
 - Clique na ilha: expande. Tecla Escape ou clique fora (`HyprlandFocusGrab`): colapsa.
-- "Aplicativos" aparece apenas se houver `fuzzel` ou `rofi`; "Captura" apenas se houver `grim` (com `slurp` usa seleção de região). Capturas salvas em `~/Imagens/Capturas`.
+- "Captura" usa `grim` (com `slurp` usa seleção de região). Capturas salvas em `~/Imagens/Capturas`.
 
 ## Testar
 ```bash
@@ -29,7 +29,7 @@ Shell minimalista do Minimo OS em Quickshell (QML), desenvolvida do zero.
 - `Common/Icon.qml` + `assets/icons/`: ícones de linha próprios (consulte `assets/icons/README.md`).
 - `Common/MSlider.qml`: controles deslizantes estilo Central de Controle. `Island/MenuButton.qml`: botões circulares.
 
-## Lançador (Super+B)
+## Lançador (Super+Espaço / Super+B)
 - `Launcher/Launcher.qml`: cartão estilo Spotlight; `Common/LauncherState.qml` expõe o IpcHandler `launcher` (`qs -p ~/Projetos/minimo-os/minimo-shell ipc call launcher toggle`).
-- Atalho em `hypr/minimo.lua` (copiar para `~/.config/hypr/minimo.lua` e adicionar `require("minimo")` ao final de `hyprland.lua`).
+- Atalhos configurados em `hypr/minimo/atajos.lua` e `hypr/minimo.lua`.
 - `Common/Apps.qml`: busca de aplicativos compartilhada pela ilha e pelo lançador.

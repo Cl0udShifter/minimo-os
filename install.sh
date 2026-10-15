@@ -147,7 +147,7 @@ PKGS=(
     python                                                     # scripts da shell (cursor, status, workspaces)
     git
 )
-OPTIONAL=(fuzzel wl-clipboard github-cli)
+OPTIONAL=(wl-clipboard github-cli)
 step "Pacotes"
 missing=()
 for p in "${PKGS[@]}"; do { [ "$PREVIEW" = 0 ] && pacman -Q "$p" >/dev/null 2>&1; } || missing+=("$p"); done
