@@ -17,8 +17,8 @@ PanelWindow {
     visible: open || t > 0.01
     anchors { bottom: true }
     margins { bottom: 60 }
-    width: 280
-    height: 64
+    implicitWidth: 280
+    implicitHeight: 64
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Overlay
