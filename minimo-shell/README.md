@@ -29,7 +29,8 @@ Shell minimalista do Minimo OS em Quickshell (QML), desenvolvida do zero.
 - `Common/Icon.qml` + `assets/icons/`: ícones de linha próprios (consulte `assets/icons/README.md`).
 - `Common/MSlider.qml`: controles deslizantes estilo Central de Controle. `Island/MenuButton.qml`: botões circulares.
 
-## Lançador (Super+Espaço / Super+B)
+## Lançador (Super+Espaço)
 - `Launcher/Launcher.qml`: cartão estilo Spotlight; `Common/LauncherState.qml` expõe o IpcHandler `launcher` (`qs -p ~/Projetos/minimo-os/minimo-shell ipc call launcher toggle`).
-- Atalhos configurados em `hypr/minimo/atajos.lua` e `hypr/minimo.lua`.
+- Atalho configurado em `hypr/minimo/atajos.lua`.
 - `Common/Apps.qml`: busca de aplicativos compartilhada pela ilha e pelo lançador.
+

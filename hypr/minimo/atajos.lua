@@ -8,7 +8,6 @@ local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ip
 -- Aplicativos e shell
 bind("SUPER + T", dsp.exec_cmd("ghostty"))
 bind("SUPER + space", dsp.exec_cmd(qs .. "launcher toggle"))
-bind("SUPER + B", dsp.exec_cmd(qs .. "launcher toggle"))
 bind("SUPER + comma", dsp.exec_cmd(qs .. "settings toggle"))
 bind("SUPER + X", dsp.exec_cmd(qs .. "island open"))
 bind("SUPER + SHIFT + R", dsp.exec_cmd(qs .. "recorder toggle"))

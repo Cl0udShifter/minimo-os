@@ -99,6 +99,12 @@ PanelWindow {
                     Keys.onDownPressed: win.selected = Math.min(win.selected + 1, win.results.length - 1)
                     Keys.onUpPressed: win.selected = Math.max(win.selected - 1, 0)
                     Keys.onTabPressed: win.selected = (win.selected + 1) % Math.max(1, win.results.length)
+                    Keys.onPressed: event => {
+                        if (event.key === Qt.Key_Space && (event.modifiers & Qt.MetaModifier)) {
+                            LauncherState.hide()
+                            event.accepted = true
+                        }
+                    }
                     onAccepted: win.launch(win.results[win.selected])
                 }
             }
