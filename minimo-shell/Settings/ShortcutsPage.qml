@@ -9,7 +9,7 @@ import "../Common"
 // Permite visualizar, pesquisar, editar (1 a 3 teclas) com validação de conflitos e salvar.
 Column {
     id: root
-    spacing: 20
+    spacing: 16
 
     property var editingItem: null
     property string tempKeys: ""
@@ -20,10 +20,16 @@ Column {
     property bool modAlt: false
     property string mainKey: ""
 
+    onVisibleChanged: {
+        if (visible) {
+            if (typeof flick !== "undefined" && flick) flick.contentY = 0
+        }
+    }
+
     // Barra Superior: Busca, Notificação de Sucesso, Restaurar e Salvar
     Row {
         width: root.width
-        spacing: 12
+        spacing: 10
 
         // Campo de Busca
         Rectangle {
@@ -74,7 +80,7 @@ Column {
             onClicked: ShortcutsManager.resetAllToDefaults()
         }
 
-        // Botão Salvar Alterações (só destaca se dirty)
+        // Botão Salvar Alterações (só visível/destacado se houver mudanças)
         PillButton {
             visible: ShortcutsManager.dirty
             text: "Salvar"
@@ -86,7 +92,7 @@ Column {
     // Banner de Sucesso ao Salvar
     Rectangle {
         width: root.width
-        height: ShortcutsManager.saveSuccess ? 38 : 0
+        height: ShortcutsManager.saveSuccess ? 40 : 0
         radius: 12
         color: Theme.fill
         opacity: ShortcutsManager.saveSuccess ? 1 : 0
@@ -209,7 +215,7 @@ Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 10
 
-                                // Badges de teclas
+                                // Badges de teclas estilo keycaps
                                 Row {
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: 4
@@ -258,16 +264,16 @@ Column {
         }
     }
 
-    // Modal de Edição de Atalho
+    // Modal de Edição de Atalho (re-parented para o card central de configurações)
     Rectangle {
         id: modalOverlay
+        parent: card
         anchors.fill: parent
-        anchors.margins: -40
         color: Theme.scrim
         visible: root.editingItem !== null
         opacity: visible ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 150 } }
-        z: 99
+        z: 999
 
         MouseArea { anchors.fill: parent; onClicked: root.closeEditor() }
 
@@ -483,13 +489,12 @@ Column {
                     }
                 }
 
-                // Tecla Principal: Atalhos Populares / Campo de Texto
+                // Tecla Principal: Atalhos Populares / Seleção Rápida
                 Column {
                     width: parent.width
                     spacing: 8
                     Text { text: "Tecla Principal:"; color: Theme.textSecondary; font.pixelSize: 11; font.family: Theme.font }
 
-                    // Linha com atalhos rápidos frequentes
                     Flow {
                         width: parent.width
                         spacing: 6
