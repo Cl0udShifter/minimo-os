@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import QtQuick
 import QtQuick.Effects
+import Quickshell.Hyprland
 import "../Common"
 
 // Personaje de Minimo OS (v2, según reference2): esfera negra mate con dos ojos
@@ -41,8 +42,9 @@ Item {
         if (idle) { lookX = idleX; lookY = idleY; return }
         const win = c.Window.window
         const p = c.mapToItem(null, width / 2, height / 2)
-        const sx = (win && win.screen) ? win.screen.x : 0
-        const sy = (win && win.screen) ? win.screen.y : 0
+        const mon = (win && win.screen) ? Hyprland.monitorFor(win.screen) : null
+        const sx = mon ? mon.x : ((win && win.screen && typeof win.screen.x !== "undefined") ? win.screen.x : 0)
+        const sy = mon ? mon.y : ((win && win.screen && typeof win.screen.y !== "undefined") ? win.screen.y : 0)
         const dx = Cursor.x - (sx + p.x), dy = Cursor.y - (sy + p.y)
         // Escala anisotrópica: la isla está pegada al borde superior, así que hacia
         // arriba hay poco recorrido; se normaliza con la distancia al borde.

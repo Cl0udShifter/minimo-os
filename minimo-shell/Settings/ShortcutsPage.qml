@@ -419,23 +419,33 @@ Column {
                         let text = event.text
                         let mods = event.modifiers
 
+                        // Se pressionar Backspace ou Delete, remove a tecla principal
+                        if (key === Qt.Key_Backspace || key === Qt.Key_Delete) {
+                            root.mainKey = ""
+                            root.updateFromInputs()
+                            return
+                        }
+
                         // Atualiza flags de modificadores
                         let s = (mods & Qt.MetaModifier) !== 0
                         let c = (mods & Qt.ControlModifier) !== 0
                         let sh = (mods & Qt.ShiftModifier) !== 0
                         let a = (mods & Qt.AltModifier) !== 0
 
-                        // Verifica tecla principal
-                        let k = root.keyToHypr(key, text)
-                        if (k && !["SUPER", "CTRL", "SHIFT", "ALT"].includes(k.toUpperCase())) {
-                            root.mainKey = k
-                        }
+                        // Se a tecla pressionada for um modificador isolado
+                        let isModOnly = false
+                        if (key === Qt.Key_Super_L || key === Qt.Key_Super_R || key === Qt.Key_Meta) { s = true; isModOnly = true }
+                        if (key === Qt.Key_Control) { c = true; isModOnly = true }
+                        if (key === Qt.Key_Shift) { sh = true; isModOnly = true }
+                        if (key === Qt.Key_Alt) { a = true; isModOnly = true }
 
-                        // Se a tecla pressionada foi um modificador puro, alterna
-                        if (key === Qt.Key_Super_L || key === Qt.Key_Super_R || key === Qt.Key_Meta) s = true
-                        if (key === Qt.Key_Control) c = true
-                        if (key === Qt.Key_Shift) sh = true
-                        if (key === Qt.Key_Alt) a = true
+                        // Verifica tecla principal se não for tecla modificadora pura
+                        if (!isModOnly) {
+                            let k = root.keyToHypr(key, text)
+                            if (k && !["SUPER", "CTRL", "SHIFT", "ALT"].includes(k.toUpperCase())) {
+                                root.mainKey = k
+                            }
+                        }
 
                         root.modSuper = s
                         root.modCtrl = c
@@ -494,13 +504,79 @@ Column {
                 Column {
                     width: parent.width
                     spacing: 8
-                    Text { text: "Tecla Principal:"; color: Theme.textSecondary; font.pixelSize: 11; font.family: Theme.font }
+
+                    Row {
+                        width: parent.width
+                        spacing: 8
+
+                        Text {
+                            text: "Tecla Principal:"
+                            color: Theme.textSecondary
+                            font.pixelSize: 11
+                            font.family: Theme.font
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        // Badge da tecla atual com botão remover ✕
+                        Rectangle {
+                            visible: root.mainKey !== ""
+                            height: 22
+                            width: remKeyRow.implicitWidth + 14
+                            radius: 6
+                            color: Theme.hover
+                            border.width: 1
+                            border.color: Theme.track
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Row {
+                                id: remKeyRow
+                                anchors.centerIn: parent
+                                spacing: 6
+                                Text {
+                                    text: root.mainKey
+                                    color: Theme.textPrimary
+                                    font.family: Theme.font
+                                    font.pixelSize: 11
+                                    font.weight: Font.DemiBold
+                                }
+                                Text {
+                                    text: "✕"
+                                    color: Theme.danger
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    root.mainKey = ""
+                                    root.updateFromInputs()
+                                }
+                            }
+                        }
+
+                        Text {
+                            visible: root.mainKey !== ""
+                            text: "(clique para remover)"
+                            color: Theme.textSecondary
+                            font.pixelSize: 10
+                            font.family: Theme.font
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
 
                     Flow {
                         width: parent.width
                         spacing: 6
                         Repeater {
-                            model: ["space", "T", "Q", "F", "R", "W", "X", "comma", "Print", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F10", "F11", "F12", "left", "right", "up", "down", "Page_Down", "Page_Up"]
+                            model: [
+                                "space", "backslash", "slash", "Tab", "Return", "Escape",
+                                "T", "Q", "F", "R", "W", "X", "comma", "period", "minus", "equal",
+                                "Print", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                                "F10", "F11", "F12", "left", "right", "up", "down", "Page_Down", "Page_Up"
+                            ]
                             delegate: Rectangle {
                                 required property string modelData
                                 readonly property bool cur: root.mainKey.toLowerCase() === modelData.toLowerCase()
@@ -525,7 +601,11 @@ Column {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        root.mainKey = modelData
+                                        if (root.mainKey.toLowerCase() === modelData.toLowerCase()) {
+                                            root.mainKey = ""
+                                        } else {
+                                            root.mainKey = modelData
+                                        }
                                         root.updateFromInputs()
                                     }
                                 }
