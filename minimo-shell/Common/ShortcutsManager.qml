@@ -330,7 +330,7 @@ Singleton {
             'mkdir -p "$(dirname "$1")"; ' +
             'printf "%s" "$3" > "$1.tmp" && mv -f "$1.tmp" "$1"; ' +
             'if [ -d "$(dirname "$2")" ]; then printf "%s" "$3" > "$2.tmp" && mv -f "$2.tmp" "$2"; fi; ' +
-            'SIG=$(ls /run/user/1000/hypr 2>/dev/null); export HYPRLAND_INSTANCE_SIGNATURE=$SIG; hyprctl reload',
+            'SIG=$(ls -1t /run/user/$(id -u)/hypr 2>/dev/null | head -n1); export HYPRLAND_INSTANCE_SIGNATURE=$SIG; hyprctl reload',
             "save_shortcuts",
             root.atajosLuaPath,
             root.repoLuaPath,
