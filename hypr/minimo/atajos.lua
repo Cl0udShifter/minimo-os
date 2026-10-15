@@ -18,9 +18,9 @@ bind("SUPER + SHIFT + P", dsp.dpms({ action = "toggle" }))
 
 -- Volume e música (funcionam também com a tela bloqueada)
 local fixo, repete = { locked = true }, { locked = true, repeating = true }
-bind("XF86AudioRaiseVolume", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"), repete)
-bind("XF86AudioLowerVolume", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"), repete)
-bind("XF86AudioMute", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), fixo)
+bind("XF86AudioRaiseVolume", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+ && " .. qs .. "volume show"), repete)
+bind("XF86AudioLowerVolume", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%- && " .. qs .. "volume show"), repete)
+bind("XF86AudioMute", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && " .. qs .. "volume show"), fixo)
 bind("XF86AudioMicMute", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), fixo)
 bind("XF86AudioPlay", dsp.exec_cmd("playerctl play-pause"), fixo)
 bind("XF86AudioPause", dsp.exec_cmd("playerctl play-pause"), fixo)

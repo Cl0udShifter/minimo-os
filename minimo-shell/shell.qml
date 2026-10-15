@@ -7,8 +7,9 @@ import "Island"
 import "Wallpaper"
 import "Launcher"
 import "Settings"
+import "OSD"
 
-// Minimo OS shell root: fondo de pantalla e isla por monitor.
+// Minimo OS shell root: papel de parede, ilha e OSD por monitor.
 ShellRoot {
     Variants {
         model: Quickshell.screens
@@ -20,6 +21,13 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
         delegate: Island {
+            required property var modelData
+            screen: modelData
+        }
+    }
+    Variants {
+        model: Quickshell.screens
+        delegate: VolumeOSD {
             required property var modelData
             screen: modelData
         }
