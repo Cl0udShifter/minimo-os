@@ -149,7 +149,7 @@ Item {
                     Icon {
                         x: 14
                         anchors.verticalCenter: parent.verticalCenter
-                        name: "volume"
+                        name: VolumeOSDState.muted ? "mute" : "volume"
                         size: 18
                         tone: "dark"
                     }
@@ -172,8 +172,8 @@ Item {
                             width: Math.min(implicitWidth, audioRow.width - 150)
                             horizontalAlignment: Text.AlignRight
                             elide: Text.ElideRight
-                            text: root.d ? (root.d.audio || (audioRow.sinks.length > 0 ? audioRow.sinks[0].name : "")) : ""
-                            color: Theme.textSecondary
+                            text: (root.d ? (root.d.audio || (audioRow.sinks.length > 0 ? audioRow.sinks[0].name : "")) : "") + (VolumeOSDState.muted ? " (Mudo)" : "")
+                            color: VolumeOSDState.muted ? Theme.textSecondary : Theme.textPrimary
                             font.family: Theme.font
                             font.pixelSize: 13
                             font.features: { "tnum": 1 }

@@ -26,6 +26,18 @@ Singleton {
         onTriggered: root.initialized = true
     }
 
+    Connections {
+        target: root.ready ? root.sink.audio : null
+        function onVolumeChanged() {
+            if (!root.initialized) return
+            root.show()
+        }
+        function onMutedChanged() {
+            if (!root.initialized) return
+            root.show()
+        }
+    }
+
     onVolumeChanged: {
         if (!initialized) return
         root.show()
@@ -37,11 +49,14 @@ Singleton {
     }
 
     function show() {
+        console.log("VolumeOSDState: show() called, volume=" + root.volume + " muted=" + root.muted)
         triggered()
     }
 
     IpcHandler {
         target: "volume"
-        function show(): void { root.show() }
+        function trigger(): void { root.show() }
+        function open(): void { root.show() }
+        function bump(): void { root.show() }
     }
 }

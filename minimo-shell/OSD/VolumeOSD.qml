@@ -11,6 +11,7 @@ PanelWindow {
     id: win
 
     property bool open: false
+    onOpenChanged: console.log("VolumeOSD: open=" + open)
     property real t: open ? 1 : 0
     Behavior on t { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
