@@ -10,6 +10,7 @@ Item {
     id: root
     property alias character: chr
     property bool active: true
+    property var screen: null
     implicitWidth: row.implicitWidth
     implicitHeight: Theme.compactH
 
@@ -114,7 +115,7 @@ Item {
             width: 7; height: 7; radius: 3.5
             color: Theme.recording
         }
-        WorkspaceDots { anchors.verticalCenter: parent.verticalCenter }
+        WorkspaceDots { anchors.verticalCenter: parent.verticalCenter; screen: root.screen }
     }
 
     // Zzz al dormir (flotan desde el personaje).

@@ -19,6 +19,7 @@ Singleton {
     property bool characterAnimated: true   // personaje animado (si no, quieto)
     property string theme: "light"          // "light" | "dark"
     property int sleepMinutes: 1            // dormir tras inactividad (1, 2 o 5 min)
+    property bool splitWorkspaces: true     // workspaces independentes por monitor
 
     function setWallpaper(path) {
         wallpaper = path
@@ -32,12 +33,17 @@ Singleton {
     function setCharacterAnimated(v) { characterAnimated = v; save() }
     function setSleepMinutes(v) { sleepMinutes = v; save() }
     function setTheme(v) { theme = v; save() }
+    function setSplitWorkspaces(v) {
+        splitWorkspaces = v
+        save()
+        Quickshell.execDetached([Qt.resolvedUrl("../scripts/update-workspaces.py").toString().replace("file://", "")])
+    }
     // Empuja el tema al singleton Theme (sin dependencia inversa: evita init cíclico).
     onThemeChanged: Theme.dark = theme === "dark"
     function save() {
         file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper, wallpaperHistory: root.wallpaperHistory,
                                      islandAutoHide: root.islandAutoHide, islandSmartHide: root.islandSmartHide, characterAnimated: root.characterAnimated,
-                                     sleepMinutes: root.sleepMinutes, theme: root.theme }, null, 2))
+                                     sleepMinutes: root.sleepMinutes, theme: root.theme, splitWorkspaces: root.splitWorkspaces }, null, 2))
     }
 
     readonly property string stateDir: Quickshell.env("HOME") + "/.config/minimo-os"
@@ -78,6 +84,7 @@ Singleton {
                 root.characterAnimated = s.characterAnimated ?? true
                 root.sleepMinutes = s.sleepMinutes ?? 1
                 root.theme = s.theme === "dark" ? "dark" : "light"
+                root.splitWorkspaces = s.splitWorkspaces ?? true
                 root.set(s.saturation ?? 1.0, s.brightness ?? 1.0)
             } catch (e) {}
             root.loaded = true

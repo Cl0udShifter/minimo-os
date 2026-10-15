@@ -50,7 +50,9 @@ Singleton {
         const now = Date.now()
         if (deltaY === 0 || now - lastWheel < 220) return
         lastWheel = now
-        dispatchWs(deltaY > 0 ? "r-1" : "r+1")
+        const script = Qt.resolvedUrl("../scripts/minimo-ws").toString().replace("file://", "")
+        Quickshell.execDetached([script, deltaY > 0 ? "prev" : "next"])
+        triggerSwitch()
     }
     // Reordenar: `order` es la nueva secuencia de IDs; el contenido del escritorio que
     // quedó en la posición i pasa al ID i-ésimo original. Ignora si ya hay uno en curso.

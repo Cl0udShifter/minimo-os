@@ -707,6 +707,53 @@ Column {
 
     Item { width: 1; height: 4 }
 
+    SectionTitle { text: "Comportamento multimonitor" }
+
+    Rectangle {
+        width: parent.width
+        height: 68
+        radius: 20
+        color: Theme.field
+
+        Row {
+            x: 18; anchors.verticalCenter: parent.verticalCenter
+            spacing: 12
+            width: parent.width - 36
+
+            Rectangle {
+                width: 40; height: 40; radius: 12; color: Theme.raised
+                Icon { anchors.centerIn: parent; name: "desktops"; size: 22 }
+            }
+
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - 40 - 12 - splitSw.width - 12
+                spacing: 2
+                Text {
+                    text: "Workspaces independentes por monitor"
+                    color: Theme.textPrimary
+                    font.family: Theme.font; font.pixelSize: 14; font.weight: Font.DemiBold
+                }
+                Text {
+                    text: "Cada tela possui sua própria fita de áreas (1 a 9) sem alternar as outras telas."
+                    color: Theme.textSecondary
+                    font.family: Theme.font; font.pixelSize: 12
+                    elide: Text.ElideRight
+                    width: parent.width
+                }
+            }
+
+            MSwitch {
+                id: splitSw
+                anchors.verticalCenter: parent.verticalCenter
+                checked: DisplayState.splitWorkspaces
+                onToggled: v => DisplayState.setSplitWorkspaces(v)
+            }
+        }
+    }
+
+    Item { width: 1; height: 4 }
+
     // =========================================================================
     // SEÇÃO 2: OPÇÕES INDIVIDUAIS DOS MONITORES
     // =========================================================================

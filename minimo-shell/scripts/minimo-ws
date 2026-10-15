@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+import sys
+import os
+import json
+import socket
+
+def send_hypr(cmd_str):
+    try:
+        sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+        if not sig:
+            hypr_dir = f"/run/user/{os.getuid()}/hypr"
+            if not os.path.exists(hypr_dir):
+                return None
+            sigs = sorted(
+                [s for s in os.listdir(hypr_dir) if os.path.isdir(os.path.join(hypr_dir, s))],
+                key=lambda s: os.path.getmtime(os.path.join(hypr_dir, s)),
+                reverse=True
+            )
+            if not sigs:
+                return None
+            sig = sigs[0]
+        sock_path = f"/run/user/{os.getuid()}/hypr/{sig}/.socket.sock"
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.connect(sock_path)
+        payload = cmd_str.encode() if isinstance(cmd_str, str) else cmd_str
+        s.sendall(payload)
+        res = b""
+        while True:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            res += chunk
+            if len(chunk) < 4096:
+                break
+        s.close()
+        return res.decode()
+    except Exception:
+        return None
+
+def get_state():
+    state_file = os.path.expanduser("~/.config/minimo-os/state.json")
+    try:
+        with open(state_file, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def get_focused_monitor():
+    raw = send_hypr("j/monitors")
+    if raw:
+        try:
+            mons = json.loads(raw)
+            for m in mons:
+                if m.get("focused"):
+                    return m.get("id", 0)
+        except Exception:
+            pass
+    return 0
+
+def main():
+    if len(sys.argv) < 2:
+        return
+
+    action = sys.argv[1]
+    param = sys.argv[2] if len(sys.argv) > 2 else None
+
+    # Obter dados da área de trabalho ativa e monitor focado
+    ws_raw = send_hypr("j/activeworkspace")
+    ws_data = {}
+    if ws_raw:
+        try:
+            ws_data = json.loads(ws_raw)
+        except Exception:
+            pass
+
+    mon_id = ws_data.get("monitorID")
+    if mon_id is None:
+        mon_id = get_focused_monitor()
+
+    cur_id = ws_data.get("id", 1)
+
+    state = get_state()
+    # Padrão: ativado se houver splitWorkspaces em state.json
+    split = state.get("splitWorkspaces", True)
+
+    offset = (mon_id * 10) if split else 0
+
+    if action == "focus" and param:
+        num = int(param)
+        target = offset + num
+        send_hypr(f'dispatch hl.dsp.focus({{ workspace = "{target}" }})')
+    elif action == "move" and param:
+        num = int(param)
+        target = offset + num
+        send_hypr(f'dispatch hl.dsp.window.move({{ workspace = "{target}" }})')
+    elif action == "next":
+        if split:
+            base = offset + 1
+            max_ws = offset + 9
+            target = cur_id + 1 if cur_id < max_ws else base
+        else:
+            target = cur_id + 1
+        send_hypr(f'dispatch hl.dsp.focus({{ workspace = "{target}" }})')
+    elif action == "prev":
+        if split:
+            base = offset + 1
+            max_ws = offset + 9
+            target = cur_id - 1 if cur_id > base else max_ws
+        else:
+            target = max(1, cur_id - 1)
+        send_hypr(f'dispatch hl.dsp.focus({{ workspace = "{target}" }})')
+    elif action == "move-next":
+        if split:
+            base = offset + 1
+            max_ws = offset + 9
+            target = cur_id + 1 if cur_id < max_ws else base
+        else:
+            target = cur_id + 1
+        send_hypr(f'dispatch hl.dsp.window.move({{ workspace = "{target}" }})')
+    elif action == "move-prev":
+        if split:
+            base = offset + 1
+            max_ws = offset + 9
+            target = cur_id - 1 if cur_id > base else max_ws
+        else:
+            target = max(1, cur_id - 1)
+        send_hypr(f'dispatch hl.dsp.window.move({{ workspace = "{target}" }})')
+
+if __name__ == "__main__":
+    main()

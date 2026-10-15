@@ -14,6 +14,7 @@ end)
 require("minimo.apariencia")   -- espaçamento, bordas, cantos, sombras, animações, cores
 require("minimo.entrada")      -- teclado, mouse, touchpad, gestos
 require("minimo.monitores")    -- monitores (próprio de cada PC; escrito por Configurações › Tela)
+require("minimo.workspaces")   -- regras de workspaces independentes por monitor
 require("minimo.reglas")       -- regras de janelas e camadas
 require("minimo.atajos")       -- atalhos de teclado
 require("minimo")              -- atalhos da shell (Super+B, etc.)

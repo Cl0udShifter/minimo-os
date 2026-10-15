@@ -5,6 +5,7 @@
 
 local bind, dsp = hl.bind, hl.dsp
 local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "
+local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "
 local fixo, repete = { locked = true }, { locked = true, repeating = true }
 local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]
 
@@ -62,10 +63,10 @@ bind("SUPER + SHIFT + up", dsp.window.move({ direction = "u" }))
 bind("SUPER + SHIFT + down", dsp.window.move({ direction = "d" }))
 
 -- Áreas de trabalho
-bind("SUPER + Page_Down", dsp.focus({ workspace = "e+1" }))
-bind("SUPER + Page_Up", dsp.focus({ workspace = "e-1" }))
-bind("SUPER + SHIFT + Page_Down", dsp.window.move({ workspace = "e+1" }))
-bind("SUPER + SHIFT + Page_Up", dsp.window.move({ workspace = "e-1" }))
+bind("SUPER + Page_Down", dsp.exec_cmd(ws .. "next"))
+bind("SUPER + Page_Up", dsp.exec_cmd(ws .. "prev"))
+bind("SUPER + SHIFT + Page_Down", dsp.exec_cmd(ws .. "move-next"))
+bind("SUPER + SHIFT + Page_Up", dsp.exec_cmd(ws .. "move-prev"))
 
 -- Mover e redimensionar janelas com mouse (Super + botão esquerdo/direito)
 bind("SUPER + mouse:272", dsp.window.drag(), { mouse = true, description = "Mover janela" })
@@ -79,21 +80,21 @@ bind("SUPER + SHIFT + minus", dsp.window.resize({ x = 0, y = -100, relative = tr
 bind("SUPER + SHIFT + equal", dsp.window.resize({ x = 0, y = 100, relative = true }), r)
 
 -- Áreas de trabalho diretas 1 a 9
-bind("ALT + 1", dsp.focus({ workspace = "1" }))
-bind("SUPER + SHIFT + 1", dsp.window.move({ workspace = "1" }))
-bind("ALT + 2", dsp.focus({ workspace = "2" }))
-bind("SUPER + SHIFT + 2", dsp.window.move({ workspace = "2" }))
-bind("ALT + 3", dsp.focus({ workspace = "3" }))
-bind("SUPER + SHIFT + 3", dsp.window.move({ workspace = "3" }))
-bind("ALT + 4", dsp.focus({ workspace = "4" }))
-bind("SUPER + SHIFT + 4", dsp.window.move({ workspace = "4" }))
-bind("ALT + 5", dsp.focus({ workspace = "5" }))
-bind("SUPER + SHIFT + 5", dsp.window.move({ workspace = "5" }))
-bind("ALT + 6", dsp.focus({ workspace = "6" }))
-bind("SUPER + SHIFT + 6", dsp.window.move({ workspace = "6" }))
-bind("ALT + 7", dsp.focus({ workspace = "7" }))
-bind("SUPER + SHIFT + 7", dsp.window.move({ workspace = "7" }))
-bind("ALT + 8", dsp.focus({ workspace = "8" }))
-bind("SUPER + SHIFT + 8", dsp.window.move({ workspace = "8" }))
-bind("ALT + 9", dsp.focus({ workspace = "9" }))
-bind("SUPER + SHIFT + 9", dsp.window.move({ workspace = "9" }))
+bind("ALT + 1", dsp.exec_cmd(ws .. "focus 1"))
+bind("SUPER + SHIFT + 1", dsp.exec_cmd(ws .. "move 1"))
+bind("ALT + 2", dsp.exec_cmd(ws .. "focus 2"))
+bind("SUPER + SHIFT + 2", dsp.exec_cmd(ws .. "move 2"))
+bind("ALT + 3", dsp.exec_cmd(ws .. "focus 3"))
+bind("SUPER + SHIFT + 3", dsp.exec_cmd(ws .. "move 3"))
+bind("ALT + 4", dsp.exec_cmd(ws .. "focus 4"))
+bind("SUPER + SHIFT + 4", dsp.exec_cmd(ws .. "move 4"))
+bind("ALT + 5", dsp.exec_cmd(ws .. "focus 5"))
+bind("SUPER + SHIFT + 5", dsp.exec_cmd(ws .. "move 5"))
+bind("ALT + 6", dsp.exec_cmd(ws .. "focus 6"))
+bind("SUPER + SHIFT + 6", dsp.exec_cmd(ws .. "move 6"))
+bind("ALT + 7", dsp.exec_cmd(ws .. "focus 7"))
+bind("SUPER + SHIFT + 7", dsp.exec_cmd(ws .. "move 7"))
+bind("ALT + 8", dsp.exec_cmd(ws .. "focus 8"))
+bind("SUPER + SHIFT + 8", dsp.exec_cmd(ws .. "move 8"))
+bind("ALT + 9", dsp.exec_cmd(ws .. "focus 9"))
+bind("SUPER + SHIFT + 9", dsp.exec_cmd(ws .. "move 9"))

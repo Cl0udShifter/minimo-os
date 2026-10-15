@@ -1,0 +1,4 @@
+-- SPDX-License-Identifier: MIT
+-- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
+-- Regras de workspaces independentes por monitor.
+-- Gerenciado dinamicamente pelo Minimo OS.

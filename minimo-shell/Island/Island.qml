@@ -237,6 +237,7 @@ PanelWindow {
 
         IslandCompact {
             id: compact
+            screen: win.screen
             anchors.centerIn: parent
             active: win.shown && !win.open
             opacity: win.open ? 0 : 1

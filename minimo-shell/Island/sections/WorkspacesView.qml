@@ -110,7 +110,14 @@ Item {
                     Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
                     Text {
                         x: 10; y: 8
-                        text: tile.modelData.name || tile.modelData.id
+                        text: {
+                            if (DisplayState.splitWorkspaces && tile.modelData.id > 10) {
+                                let monNum = Math.floor(tile.modelData.id / 10) + 1
+                                let wsNum = tile.modelData.id % 10
+                                return wsNum + " (Tela " + monNum + ")"
+                            }
+                            return tile.modelData.name || tile.modelData.id
+                        }
                         color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Medium
                     }
                     Row {

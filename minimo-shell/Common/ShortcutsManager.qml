@@ -259,6 +259,7 @@ Singleton {
         out += "-- Gerado automaticamente por Configurações › Atalhos do Minimo OS.\n\n"
         out += "local bind, dsp = hl.bind, hl.dsp\n"
         out += 'local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "\n'
+        out += 'local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "\n'
         out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n"
         out += 'local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]\n\n'
 
@@ -316,10 +317,10 @@ Singleton {
         out += 'bind("' + map.move_down + '", dsp.window.move({ direction = "d" }))\n\n'
 
         out += "-- Áreas de trabalho\n"
-        out += 'bind("' + map.ws_next + '", dsp.focus({ workspace = "e+1" }))\n'
-        out += 'bind("' + map.ws_prev + '", dsp.focus({ workspace = "e-1" }))\n'
-        out += 'bind("' + map.ws_move_next + '", dsp.window.move({ workspace = "e+1" }))\n'
-        out += 'bind("' + map.ws_move_prev + '", dsp.window.move({ workspace = "e-1" }))\n\n'
+        out += 'bind("' + map.ws_next + '", dsp.exec_cmd(ws .. "next"))\n'
+        out += 'bind("' + map.ws_prev + '", dsp.exec_cmd(ws .. "prev"))\n'
+        out += 'bind("' + map.ws_move_next + '", dsp.exec_cmd(ws .. "move-next"))\n'
+        out += 'bind("' + map.ws_move_prev + '", dsp.exec_cmd(ws .. "move-prev"))\n\n'
 
         out += "-- Mover e redimensionar janelas com mouse (Super + botão esquerdo/direito)\n"
         out += 'bind("SUPER + mouse:272", dsp.window.drag(), { mouse = true, description = "Mover janela" })\n'
@@ -336,8 +337,8 @@ Singleton {
         for (let i = 1; i <= 9; i++) {
             let kFocus = (map && map["ws_" + i]) ? map["ws_" + i] : ("SUPER + " + i)
             let kMove = (map && map["ws_move_" + i]) ? map["ws_move_" + i] : ("SUPER + SHIFT + " + i)
-            out += 'bind("' + kFocus + '", dsp.focus({ workspace = "' + i + '" }))\n'
-            out += 'bind("' + kMove + '", dsp.window.move({ workspace = "' + i + '" }))\n'
+            out += 'bind("' + kFocus + '", dsp.exec_cmd(ws .. "focus ' + i + '"))\n'
+            out += 'bind("' + kMove + '", dsp.exec_cmd(ws .. "move ' + i + '"))\n'
         }
 
         return out
