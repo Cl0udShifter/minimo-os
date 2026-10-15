@@ -263,87 +263,144 @@ Singleton {
         out += 'local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "\n'
         out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n"
         out += 'local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]\n\n'
+        out += "local mod_syms = {\n"
+        out += '    SUPER = { "Super_L", "Super_R" },\n'
+        out += '    CTRL = { "Control_L", "Control_R" },\n'
+        out += '    SHIFT = { "Shift_L", "Shift_R" },\n'
+        out += '    ALT = { "Alt_L", "Alt_R" },\n'
+        out += "}\n\n"
+        out += "local function bind_key(combo, action, opts)\n"
+        out += '    if not combo or combo == "" then return end\n'
+        out += "    local tokens = {}\n"
+        out += '    for token in string.gmatch(combo, "[^%+%s]+") do\n'
+        out += "        table.insert(tokens, token)\n"
+        out += "    end\n"
+        out += "    local all_mods = true\n"
+        out += "    for _, t in ipairs(tokens) do\n"
+        out += "        local u = string.upper(t)\n"
+        out += "        if not mod_syms[u] then\n"
+        out += "            all_mods = false\n"
+        out += "            break\n"
+        out += "        end\n"
+        out += "    end\n"
+        out += "    if not all_mods or #tokens == 0 then\n"
+        out += "        bind(combo, action, opts)\n"
+        out += "        return\n"
+        out += "    end\n"
+        out += "    if #tokens == 1 then\n"
+        out += "        local u = string.upper(tokens[1])\n"
+        out += "        local syms = mod_syms[u] or { tokens[1] }\n"
+        out += "        for _, s in ipairs(syms) do\n"
+        out += "            bind(s, action, opts)\n"
+        out += "        end\n"
+        out += "    elseif #tokens == 2 then\n"
+        out += "        local m1, m2 = string.upper(tokens[1]), string.upper(tokens[2])\n"
+        out += "        local syms1 = mod_syms[m1] or { m1 }\n"
+        out += "        local syms2 = mod_syms[m2] or { m2 }\n"
+        out += "        for _, s in ipairs(syms2) do\n"
+        out += '            bind(m1 .. " + " .. s, action, opts)\n'
+        out += "        end\n"
+        out += "        for _, s in ipairs(syms1) do\n"
+        out += '            bind(m2 .. " + " .. s, action, opts)\n'
+        out += "        end\n"
+        out += "    elseif #tokens >= 3 then\n"
+        out += "        for i, target in ipairs(tokens) do\n"
+        out += "            local u = string.upper(target)\n"
+        out += "            local remaining = {}\n"
+        out += "            for j, other in ipairs(tokens) do\n"
+        out += "                if i ~= j then\n"
+        out += "                    table.insert(remaining, string.upper(other))\n"
+        out += "                end\n"
+        out += "            end\n"
+        out += '            local prefix = table.concat(remaining, " + ")\n'
+        out += "            local syms = mod_syms[u] or { target }\n"
+        out += "            for _, s in ipairs(syms) do\n"
+        out += '                bind(prefix .. " + " .. s, action, opts)\n'
+        out += "            end\n"
+        out += "        end\n"
+        out += "    end\n"
+        out += "end\n\n"
 
         out += "-- Aplicativos e shell\n"
-        out += 'bind("' + map.launcher + '", dsp.exec_cmd(qs .. "launcher toggle"))\n'
-        out += 'bind("' + map.settings + '", dsp.exec_cmd(qs .. "settings toggle"))\n'
-        out += 'bind("' + map.terminal + '", dsp.exec_cmd("ghostty"))\n'
-        out += 'bind("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
-        out += 'bind("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'
+        out += 'bind_key("' + map.launcher + '", dsp.exec_cmd(qs .. "launcher toggle"))\n'
+        out += 'bind_key("' + map.settings + '", dsp.exec_cmd(qs .. "settings toggle"))\n'
+        out += 'bind_key("' + map.terminal + '", dsp.exec_cmd("ghostty"))\n'
+        out += 'bind_key("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
+        out += 'bind_key("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'
         if (map.toggle_kb_layout) {
-            out += 'bind("' + map.toggle_kb_layout + '", dsp.exec_cmd(qs .. "keyboard toggle"))\n'
+            out += 'bind_key("' + map.toggle_kb_layout + '", dsp.exec_cmd(qs .. "keyboard toggle"))\n'
         }
         out += "\n"
 
         out += "-- Sessão\n"
-        out += 'bind("' + map.session_exit + '", dsp.exit())\n'
-        out += 'bind("' + map.session_dpms + '", dsp.dpms({ action = "toggle" }))\n\n'
+        out += 'bind_key("' + map.session_exit + '", dsp.exit())\n'
+        out += 'bind_key("' + map.session_dpms + '", dsp.dpms({ action = "toggle" }))\n\n'
 
         out += "-- Volume e música\n"
-        out += 'bind("' + map.volume_up + '", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+ && " .. qs .. "volume trigger"), repete)\n'
-        out += 'bind("' + map.volume_down + '", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%- && " .. qs .. "volume trigger"), repete)\n'
-        out += 'bind("' + map.volume_mute + '", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && " .. qs .. "volume trigger"), fixo)\n'
-        out += 'bind("' + map.mic_mute + '", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), fixo)\n'
-        out += 'bind("' + map.play_pause + '", dsp.exec_cmd("playerctl play-pause"), fixo)\n'
-        out += 'bind("' + map.media_next + '", dsp.exec_cmd("playerctl next"), fixo)\n'
-        out += 'bind("' + map.media_prev + '", dsp.exec_cmd("playerctl previous"), fixo)\n\n'
+        out += 'bind_key("' + map.volume_up + '", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+ && " .. qs .. "volume trigger"), repete)\n'
+        out += 'bind_key("' + map.volume_down + '", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%- && " .. qs .. "volume trigger"), repete)\n'
+        out += 'bind_key("' + map.volume_mute + '", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && " .. qs .. "volume trigger"), fixo)\n'
+        out += 'bind_key("' + map.mic_mute + '", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), fixo)\n'
+        out += 'bind_key("' + map.play_pause + '", dsp.exec_cmd("playerctl play-pause"), fixo)\n'
+        out += 'bind_key("' + map.media_next + '", dsp.exec_cmd("playerctl next"), fixo)\n'
+        out += 'bind_key("' + map.media_prev + '", dsp.exec_cmd("playerctl previous"), fixo)\n\n'
 
         out += "-- Suporte direto a knobs e teclas de mídia física do teclado\n"
         out += 'if "' + map.volume_up + '" ~= "XF86AudioRaiseVolume" then\n'
-        out += '    bind("XF86AudioRaiseVolume", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+ && " .. qs .. "volume trigger"), repete)\n'
+        out += '    bind_key("XF86AudioRaiseVolume", dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+ && " .. qs .. "volume trigger"), repete)\n'
         out += 'end\n'
         out += 'if "' + map.volume_down + '" ~= "XF86AudioLowerVolume" then\n'
-        out += '    bind("XF86AudioLowerVolume", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%- && " .. qs .. "volume trigger"), repete)\n'
+        out += '    bind_key("XF86AudioLowerVolume", dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%- && " .. qs .. "volume trigger"), repete)\n'
         out += 'end\n'
         out += 'if "' + map.volume_mute + '" ~= "XF86AudioMute" then\n'
-        out += '    bind("XF86AudioMute", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && " .. qs .. "volume trigger"), fixo)\n'
+        out += '    bind_key("XF86AudioMute", dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && " .. qs .. "volume trigger"), fixo)\n'
         out += 'end\n\n'
 
         out += "-- Capturas de tela\n"
-        out += 'bind("' + map.screenshot_area + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[g=$(slurp) && grim -g "$g" "$f"\']]))\n'
-        out += 'bind("' + map.screenshot_full + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[grim "$f"\']]))\n\n'
+        out += 'bind_key("' + map.screenshot_area + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[g=$(slurp) && grim -g "$g" "$f"\']]))\n'
+        out += 'bind_key("' + map.screenshot_full + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[grim "$f"\']]))\n\n'
 
         out += "-- Gerenciamento de Janelas\n"
-        out += 'bind("' + map.close_window + '", dsp.window.close())\n'
-        out += 'bind("' + map.toggle_maximize + '", dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))\n'
-        out += 'bind("' + map.toggle_fullscreen + '", dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))\n'
-        out += 'bind("' + map.toggle_floating + '", dsp.window.float({ action = "toggle" }))\n'
-        out += 'bind("' + map.toggle_group + '", dsp.group.toggle())\n'
-        out += 'bind("' + map.toggle_split + '", dsp.layout("togglesplit"))\n\n'
+        out += 'bind_key("' + map.close_window + '", dsp.window.close())\n'
+        out += 'bind_key("' + map.toggle_maximize + '", dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))\n'
+        out += 'bind_key("' + map.toggle_fullscreen + '", dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))\n'
+        out += 'bind_key("' + map.toggle_floating + '", dsp.window.float({ action = "toggle" }))\n'
+        out += 'bind_key("' + map.toggle_group + '", dsp.group.toggle())\n'
+        out += 'bind_key("' + map.toggle_split + '", dsp.layout("togglesplit"))\n\n'
 
         out += "-- Navegação e Foco\n"
-        out += 'bind("' + map.focus_left + '", dsp.focus({ direction = "l" }))\n'
-        out += 'bind("' + map.focus_right + '", dsp.focus({ direction = "r" }))\n'
-        out += 'bind("' + map.focus_up + '", dsp.focus({ direction = "u" }))\n'
-        out += 'bind("' + map.focus_down + '", dsp.focus({ direction = "d" }))\n'
-        out += 'bind("' + map.move_left + '", dsp.window.move({ direction = "l" }))\n'
-        out += 'bind("' + map.move_right + '", dsp.window.move({ direction = "r" }))\n'
-        out += 'bind("' + map.move_up + '", dsp.window.move({ direction = "u" }))\n'
-        out += 'bind("' + map.move_down + '", dsp.window.move({ direction = "d" }))\n\n'
+        out += 'bind_key("' + map.focus_left + '", dsp.focus({ direction = "l" }))\n'
+        out += 'bind_key("' + map.focus_right + '", dsp.focus({ direction = "r" }))\n'
+        out += 'bind_key("' + map.focus_up + '", dsp.focus({ direction = "u" }))\n'
+        out += 'bind_key("' + map.focus_down + '", dsp.focus({ direction = "d" }))\n'
+        out += 'bind_key("' + map.move_left + '", dsp.window.move({ direction = "l" }))\n'
+        out += 'bind_key("' + map.move_right + '", dsp.window.move({ direction = "r" }))\n'
+        out += 'bind_key("' + map.move_up + '", dsp.window.move({ direction = "u" }))\n'
+        out += 'bind_key("' + map.move_down + '", dsp.window.move({ direction = "d" }))\n\n'
 
         out += "-- Áreas de trabalho\n"
-        out += 'bind("' + map.ws_next + '", dsp.exec_cmd(ws .. "next"))\n'
-        out += 'bind("' + map.ws_prev + '", dsp.exec_cmd(ws .. "prev"))\n'
-        out += 'bind("' + map.ws_move_next + '", dsp.exec_cmd(ws .. "move-next"))\n'
-        out += 'bind("' + map.ws_move_prev + '", dsp.exec_cmd(ws .. "move-prev"))\n\n'
+        out += 'bind_key("' + map.ws_next + '", dsp.exec_cmd(ws .. "next"))\n'
+        out += 'bind_key("' + map.ws_prev + '", dsp.exec_cmd(ws .. "prev"))\n'
+        out += 'bind_key("' + map.ws_move_next + '", dsp.exec_cmd(ws .. "move-next"))\n'
+        out += 'bind_key("' + map.ws_move_prev + '", dsp.exec_cmd(ws .. "move-prev"))\n\n'
 
         out += "-- Mover e redimensionar janelas com mouse (Super + botão esquerdo/direito)\n"
-        out += 'bind("SUPER + mouse:272", dsp.window.drag(), { mouse = true, description = "Mover janela" })\n'
-        out += 'bind("SUPER + mouse:273", dsp.window.resize(), { mouse = true, description = "Redimensionar janela" })\n\n'
+        out += 'bind_key("SUPER + mouse:272", dsp.window.drag(), { mouse = true, description = "Mover janela" })\n'
+        out += 'bind_key("SUPER + mouse:273", dsp.window.resize(), { mouse = true, description = "Redimensionar janela" })\n\n'
 
         out += "-- Redimensionamento pelo teclado\n"
         out += "local r = { repeating = true }\n"
-        out += 'bind("SUPER + minus", dsp.window.resize({ x = -100, y = 0, relative = true }), r)\n'
-        out += 'bind("SUPER + equal", dsp.window.resize({ x = 100, y = 0, relative = true }), r)\n'
-        out += 'bind("SUPER + SHIFT + minus", dsp.window.resize({ x = 0, y = -100, relative = true }), r)\n'
-        out += 'bind("SUPER + SHIFT + equal", dsp.window.resize({ x = 0, y = 100, relative = true }), r)\n\n'
+        out += 'bind_key("SUPER + minus", dsp.window.resize({ x = -100, y = 0, relative = true }), r)\n'
+        out += 'bind_key("SUPER + equal", dsp.window.resize({ x = 100, y = 0, relative = true }), r)\n'
+        out += 'bind_key("SUPER + SHIFT + minus", dsp.window.resize({ x = 0, y = -100, relative = true }), r)\n'
+        out += 'bind_key("SUPER + SHIFT + equal", dsp.window.resize({ x = 0, y = 100, relative = true }), r)\n\n'
 
         out += "-- Áreas de trabalho diretas 1 a 9\n"
         for (let i = 1; i <= 9; i++) {
             let kFocus = (map && map["ws_" + i]) ? map["ws_" + i] : ("SUPER + " + i)
             let kMove = (map && map["ws_move_" + i]) ? map["ws_move_" + i] : ("SUPER + SHIFT + " + i)
-            out += 'bind("' + kFocus + '", dsp.exec_cmd(ws .. "focus ' + i + '"))\n'
-            out += 'bind("' + kMove + '", dsp.exec_cmd(ws .. "move ' + i + '"))\n'
+            out += 'bind_key("' + kFocus + '", dsp.exec_cmd(ws .. "focus ' + i + '"))\n'
+            out += 'bind_key("' + kMove + '", dsp.exec_cmd(ws .. "move ' + i + '"))\n'
         }
 
         return out
