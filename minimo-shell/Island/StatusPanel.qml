@@ -14,6 +14,7 @@ Item {
     onOpenChanged: {
         open ? SysStatus.acquire() : SysStatus.release()
         if (open) greetLater.restart()
+        if (!open) audioRow.menuOpen = false
     }
     Timer { id: greetLater; interval: 280; onTriggered: chr.react("greet") }
 
@@ -129,7 +130,127 @@ Item {
         Card {
             Repeater { model: root.d ? root.d.keyboards : []; Row2 { required property var modelData; icon: "keyboard"; label: "Teclado"; value: modelData } }
             Repeater { model: root.d ? root.d.mice : []; Row2 { required property var modelData; icon: "mouse"; label: "Mouse"; value: modelData } }
-            Row2 { visible: !!(root.d && root.d.audio); icon: "volume"; label: "Áudio"; value: root.d ? root.d.audio : "" }
+            // Áudio com seletor interativo
+            Column {
+                id: audioRow
+                visible: !!(root.d && (root.d.audio || (root.d.audioSinks && root.d.audioSinks.length > 0)))
+                width: parent ? parent.width : 0
+                property bool menuOpen: false
+                readonly property var sinks: (root.d && root.d.audioSinks) ? root.d.audioSinks : []
+                readonly property bool hasChoices: sinks.length > 1
+
+                // Cabeçalho da linha de áudio
+                Rectangle {
+                    width: parent.width
+                    height: 40
+                    radius: 12
+                    color: hArea.containsMouse && audioRow.hasChoices ? Theme.hover : "transparent"
+
+                    Icon {
+                        x: 14
+                        anchors.verticalCenter: parent.verticalCenter
+                        name: "volume"
+                        size: 18
+                        tone: "dark"
+                    }
+                    Text {
+                        x: 44
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Áudio"
+                        color: Theme.textPrimary
+                        font.family: Theme.font
+                        font.pixelSize: 14
+                    }
+                    Row {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 14
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 6
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: Math.min(implicitWidth, audioRow.width - 150)
+                            horizontalAlignment: Text.AlignRight
+                            elide: Text.ElideRight
+                            text: root.d ? (root.d.audio || (audioRow.sinks.length > 0 ? audioRow.sinks[0].name : "")) : ""
+                            color: Theme.textSecondary
+                            font.family: Theme.font
+                            font.pixelSize: 13
+                            font.features: { "tnum": 1 }
+                        }
+                        Icon {
+                            visible: audioRow.hasChoices
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: "chevron"
+                            size: 14
+                            tone: "dark"
+                            rotation: audioRow.menuOpen ? 180 : 0
+                            Behavior on rotation { NumberAnimation { duration: Theme.durFast } }
+                        }
+                    }
+
+                    MouseArea {
+                        id: hArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: audioRow.hasChoices ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: if (audioRow.hasChoices) audioRow.menuOpen = !audioRow.menuOpen
+                    }
+                }
+
+                // Lista de opções quando expandido
+                Column {
+                    id: sinksCol
+                    visible: audioRow.menuOpen && audioRow.hasChoices
+                    width: parent.width
+                    spacing: 2
+                    bottomPadding: 4
+
+                    Repeater {
+                        model: audioRow.menuOpen ? audioRow.sinks : []
+
+                        Rectangle {
+                            id: sinkItem
+                            required property var modelData
+                            width: parent.width - 24
+                            x: 12
+                            height: 34
+                            radius: 10
+                            color: sArea.containsMouse ? Theme.hover : (modelData.active ? Theme.raised : "transparent")
+
+                            Text {
+                                x: 14
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 44
+                                text: modelData.name
+                                color: Theme.textPrimary
+                                font.family: Theme.font
+                                font.pixelSize: 13
+                                font.weight: modelData.active ? Font.DemiBold : Font.Normal
+                                elide: Text.ElideRight
+                            }
+
+                            Icon {
+                                visible: !!modelData.active
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                name: "check"
+                                size: 14
+                                tone: "dark"
+                            }
+
+                            MouseArea {
+                                id: sArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: SysStatus.setAudioSink(sinkItem.modelData.id)
+                            }
+                        }
+                    }
+                }
+            }
             Repeater { model: root.d ? root.d.bluetooth : []; Row2 { required property var modelData; icon: "bluetooth"; label: "Bluetooth"; value: modelData } }
             Repeater { model: root.d ? root.d.usb : []; Row2 { required property var modelData; icon: "usb"; label: "USB"; value: modelData } }
             Row2 { visible: !root.d; icon: "info"; label: "Buscando…"; value: "" }

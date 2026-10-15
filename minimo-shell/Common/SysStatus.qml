@@ -30,6 +30,21 @@ Singleton {
 
     function gib(b) { return (b / 1073741824).toFixed(1).replace(".", ",") }
 
+    function setAudioSink(sinkId) {
+        Quickshell.execDetached(["pactl", "set-default-sink", sinkId])
+        if (root.dev && root.dev.audioSinks) {
+            let activeName = root.dev.audio
+            const list = root.dev.audioSinks.map(s => {
+                const item = Object.assign({}, s, { active: s.id === sinkId })
+                if (item.active) activeName = item.name
+                return item
+            })
+            root.dev = Object.assign({}, root.dev, { audioSinks: list, audio: activeName })
+        }
+        audioRefreshTimer.restart()
+    }
+    Timer { id: audioRefreshTimer; interval: 350; onTriggered: full.go() }
+
     Process {
         id: conn
         function go() { if (!running) running = true }

@@ -81,7 +81,7 @@ SKIP = ("virtual", "power-button", "sleep-button", "video-bus", "ydotool", "hotk
         "system-control", "avrcp", "pc-speaker", "lid-switch")
 
 def devices():
-    out = {"keyboards": [], "mice": [], "audio": "", "bluetooth": [], "usb": []}
+    out = {"keyboards": [], "mice": [], "audio": "", "audioSinks": [], "bluetooth": [], "usb": []}
     try:
         d = json.loads(run(["hyprctl", "devices", "-j"]) or "{}")
     except ValueError:
@@ -98,15 +98,33 @@ def devices():
         return seen
     out["keyboards"] = clean(d.get("keyboards", []), "mouse")
     out["mice"] = clean(d.get("mice", []), "keyboard")
-    sink = run(["pactl", "get-default-sink"]).strip()
-    if sink:
-        cur, desc, nick = None, "", ""
-        for l in run(["pactl", "list", "sinks"]).splitlines():
-            l = l.strip()
-            if l.startswith("Name:"): cur = l[5:].strip()
-            elif cur == sink and l.startswith("Description:"): desc = l[12:].strip()
-            elif cur == sink and l.startswith("node.nick = "): nick = l[12:].strip().strip('"')
-        out["audio"] = nick or desc or sink
+    default_sink = run(["pactl", "get-default-sink"]).strip()
+    sinks = []
+    cur_id = None
+    cur_desc = ""
+    cur_nick = ""
+    for l in run(["pactl", "list", "sinks"]).splitlines():
+        l = l.strip()
+        if l.startswith("Name:"):
+            if cur_id:
+                label = cur_desc or cur_nick or cur_id
+                sinks.append({"id": cur_id, "name": label, "active": cur_id == default_sink})
+            cur_id = l[5:].strip()
+            cur_desc = ""
+            cur_nick = ""
+        elif l.startswith("Description:"):
+            cur_desc = l[12:].strip()
+        elif l.startswith("node.nick = "):
+            cur_nick = l[12:].strip().strip('"')
+        elif l.startswith("device.description = "):
+            if not cur_desc:
+                cur_desc = l[21:].strip().strip('"')
+    if cur_id:
+        label = cur_desc or cur_nick or cur_id
+        sinks.append({"id": cur_id, "name": label, "active": cur_id == default_sink})
+    out["audioSinks"] = sinks
+    active_sink = next((s["name"] for s in sinks if s["active"]), "")
+    out["audio"] = active_sink or (sinks[0]["name"] if sinks else "")
     if shutil.which("bluetoothctl"):
         for l in run(["bluetoothctl", "devices", "Connected"], 2).splitlines():
             p = l.split(" ", 2)
