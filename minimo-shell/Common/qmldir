@@ -18,3 +18,4 @@ singleton Network 1.0 Network.qml
 singleton SysStatus 1.0 SysStatus.qml
 singleton Notifs 1.0 Notifs.qml
 singleton VolumeOSDState 1.0 VolumeOSDState.qml
+singleton ShortcutsManager 1.0 ShortcutsManager.qml
