@@ -45,7 +45,7 @@ O **Minimo OS** é uma configuração completa de ambiente de desktop para Arch 
 Manual (recomendado):
 
 ```bash
-git clone https://github.com/SEU_USUARIO/minimo-os.git ~/Projetos/minimo-os
+git clone https://github.com/Cl0udShifter/minimo-os.git ~/Projetos/minimo-os
 cd ~/Projetos/minimo-os
 ./install.sh
 ```
