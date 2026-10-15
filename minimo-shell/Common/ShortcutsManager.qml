@@ -17,6 +17,19 @@ Singleton {
     property string searchFilter: ""
     property var shortcutsList: []
 
+    IpcHandler {
+        target: "shortcuts"
+        function search(query: string) {
+            root.searchFilter = (query || "").trim().toLowerCase()
+        }
+        function save() {
+            root.saveChanges()
+        }
+        function reset() {
+            root.resetAllToDefaults()
+        }
+    }
+
     readonly property string stateDir: Quickshell.env("HOME") + "/.config/minimo-os"
     readonly property string jsonPath: stateDir + "/shortcuts.json"
     readonly property string atajosLuaPath: Quickshell.env("HOME") + "/.config/hypr/minimo/atajos.lua"
