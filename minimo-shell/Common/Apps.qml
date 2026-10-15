@@ -6,10 +6,20 @@ import Quickshell
 
 // Búsqueda de aplicaciones instaladas, compartida por la isla y el lanzador.
 Singleton {
-    // Devuelve hasta `limit` DesktopEntry ordenadas: empieza con > contiene > genérico/keywords.
-    function search(query, limit) {
+    // Devuelve aplicaciones ordenadas: empieza con > contiene > genérico/keywords.
+    // Si query está vacío y allowEmpty es true, devuelve todas las apps ordenadas alfabéticamente.
+    function search(query, limit, allowEmpty) {
         const q = (query || "").trim().toLowerCase()
-        if (q === "") return []
+        if (q === "") {
+            if (!allowEmpty) return []
+            const all = []
+            for (const e of DesktopEntries.applications.values) {
+                if (e.noDisplay) continue
+                all.push(e)
+            }
+            all.sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+            return limit && limit > 0 ? all.slice(0, limit) : all
+        }
         const out = []
         for (const e of DesktopEntries.applications.values) {
             if (e.noDisplay) continue
@@ -21,7 +31,8 @@ Singleton {
             if (score >= 0) out.push({ e: e, s: score, n: name })
         }
         out.sort((a, b) => a.s - b.s || a.n.localeCompare(b.n))
-        return out.slice(0, limit || 5).map(o => o.e)
+        const res = out.map(o => o.e)
+        return limit && limit > 0 ? res.slice(0, limit) : res
     }
 
     function iconFor(entry) {

@@ -6,13 +6,13 @@ import Quickshell
 import Quickshell.Wayland
 import "../Common"
 
-// Lanzador estilo Spotlight (Super+B): tarjeta blanca centrada, buscador grande,
-// resultados con iconos, navegación con teclado. Clic afuera o Escape cierra.
+// Lançador estilo Spotlight (Super+Espaço): cartão branco centralizado, buscador grande,
+// resultados com ícones, navegação com teclado (setas/tab). Clique fora, Escape ou Super+Espaço fecha.
 PanelWindow {
     id: win
     readonly property bool open: LauncherState.open
-    property real t: open ? 1 : 0          // progreso de la animación
-    Behavior on t { NumberAnimation { duration: 260; easing.type: Easing.OutQuint } }
+    property real t: open ? 1 : 0          // progresso da animação
+    Behavior on t { NumberAnimation { duration: win.open ? 80 : 60; easing.type: Easing.OutCubic } }
 
     visible: open || t > 0.01
     anchors { top: true; bottom: true; left: true; right: true }
@@ -22,14 +22,25 @@ PanelWindow {
     WlrLayershell.namespace: "minimo-launcher"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    property var results: Apps.search(field.text, 7)
+    property var results: Apps.search(field.text, 0, true)
     property int selected: 0
-    onResultsChanged: selected = 0
+    readonly property int visibleItems: Math.min(results.length, 3)
+
+    onResultsChanged: {
+        selected = 0
+        if (appList) appList.positionViewAtIndex(0, ListView.Beginning)
+    }
 
     onOpenChanged: {
-        if (open) { field.text = ""; focusLater.restart() }
+        if (open) {
+            field.text = ""
+            selected = 0
+            if (appList) appList.positionViewAtIndex(0, ListView.Beginning)
+            field.forceActiveFocus()
+            focusLater.restart()
+        }
     }
-    Timer { id: focusLater; interval: 60; onTriggered: field.forceActiveFocus() }
+    Timer { id: focusLater; interval: 10; onTriggered: field.forceActiveFocus() }
 
     function launch(entry) {
         if (!entry) return
@@ -37,7 +48,7 @@ PanelWindow {
         LauncherState.hide()
     }
 
-    // Velo muy sutil + clic afuera cierra.
+    // Velo muito sutil + clique fora fecha.
     Rectangle {
         anchors.fill: parent
         color: Qt.rgba(0, 0, 0, 0.08 * win.t)
@@ -52,7 +63,7 @@ PanelWindow {
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true; shadowColor: Theme.shadow
-            shadowBlur: 1.0; blurMax: 48; shadowVerticalOffset: 12; autoPaddingEnabled: true
+            shadowBlur: 1.0; blurMax: 24; shadowVerticalOffset: 8; autoPaddingEnabled: true
         }
     }
 
@@ -65,11 +76,11 @@ PanelWindow {
         radius: Math.min(height / 2, 32)
         color: Theme.card
         opacity: win.t
-        scale: 0.96 + 0.04 * win.t
+        scale: 0.98 + 0.02 * win.t
         clip: true
-        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on height { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
 
-        MouseArea { anchors.fill: parent }   // no cerrar al hacer clic dentro
+        MouseArea { anchors.fill: parent }   // não fechar ao clicar dentro
 
         Column {
             id: col
@@ -96,51 +107,108 @@ PanelWindow {
                     clip: true
                     Text { visible: !field.text; text: "Buscar aplicativos"; color: Theme.textSecondary; font: field.font }
                     Keys.onEscapePressed: LauncherState.hide()
-                    Keys.onDownPressed: win.selected = Math.min(win.selected + 1, win.results.length - 1)
-                    Keys.onUpPressed: win.selected = Math.max(win.selected - 1, 0)
-                    Keys.onTabPressed: win.selected = (win.selected + 1) % Math.max(1, win.results.length)
+                    Keys.onDownPressed: {
+                        if (win.results.length > 0) {
+                            win.selected = (win.selected + 1) % win.results.length
+                            appList.positionViewAtIndex(win.selected, ListView.Contain)
+                        }
+                    }
+                    Keys.onUpPressed: {
+                        if (win.results.length > 0) {
+                            win.selected = (win.selected - 1 + win.results.length) % win.results.length
+                            appList.positionViewAtIndex(win.selected, ListView.Contain)
+                        }
+                    }
+                    Keys.onTabPressed: {
+                        if (win.results.length > 0) {
+                            win.selected = (win.selected + 1) % win.results.length
+                            appList.positionViewAtIndex(win.selected, ListView.Contain)
+                        }
+                    }
                     Keys.onPressed: event => {
                         if (event.key === Qt.Key_Space && (event.modifiers & Qt.MetaModifier)) {
                             LauncherState.hide()
                             event.accepted = true
                         }
                     }
-                    onAccepted: win.launch(win.results[win.selected])
+                    onAccepted: {
+                        if (win.results.length > 0) {
+                            win.launch(win.results[win.selected])
+                        }
+                    }
                 }
             }
 
             Item { width: 1; height: 4; visible: win.results.length > 0 }
 
-            Repeater {
-                model: win.results
-                delegate: Rectangle {
-                    required property var modelData
-                    required property int index
-                    width: col.width; height: 52; radius: height / 2
-                    color: index === win.selected ? Theme.field : (rm.containsMouse ? Theme.subtle : "transparent")
-                    // Icono dentro de un "squircle" gris claro.
-                    Rectangle {
-                        id: ic
-                        x: 8; anchors.verticalCenter: parent.verticalCenter
-                        width: 38; height: 38; radius: 12
-                        color: index === win.selected ? Theme.raised : Theme.field
-                        Image {
-                            anchors.centerIn: parent
-                            width: 26; height: 26; sourceSize: Qt.size(52, 52)
-                            source: Apps.iconFor(modelData)
+            Item {
+                width: parent.width
+                height: win.visibleItems > 0 ? (win.visibleItems * 52 + (win.visibleItems - 1) * 4) : 0
+                visible: win.results.length > 0
+                clip: true
+
+                ListView {
+                    id: appList
+                    anchors.fill: parent
+                    spacing: 4
+                    clip: true
+                    model: win.results
+                    currentIndex: win.selected
+                    boundsBehavior: Flickable.StopAtBounds
+                    highlightMoveDuration: 60
+                    reuseItems: true
+
+                    delegate: Rectangle {
+                        required property var modelData
+                        required property int index
+                        width: appList.width; height: 52; radius: height / 2
+                        color: index === win.selected ? Theme.field : (rm.containsMouse ? Theme.subtle : "transparent")
+                        Behavior on color { ColorAnimation { duration: 60 } }
+
+                        // Ícone dentro de um "squircle"
+                        Rectangle {
+                            id: ic
+                            x: 8; anchors.verticalCenter: parent.verticalCenter
+                            width: 38; height: 38; radius: 12
+                            color: index === win.selected ? Theme.raised : Theme.field
+                            Image {
+                                anchors.centerIn: parent
+                                width: 26; height: 26; sourceSize: Qt.size(52, 52)
+                                source: Apps.iconFor(modelData)
+                            }
+                        }
+                        Column {
+                            anchors.left: ic.right; anchors.leftMargin: 14
+                            anchors.right: parent.right; anchors.rightMargin: 14
+                            anchors.verticalCenter: parent.verticalCenter
+                            Text { width: parent.width; elide: Text.ElideRight; text: modelData.name; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 15 }
+                            Text { width: parent.width; elide: Text.ElideRight; text: modelData.genericName || modelData.comment || ""; visible: text !== ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
+                        }
+                        MouseArea {
+                            id: rm
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onEntered: win.selected = index
+                            onClicked: win.launch(modelData)
                         }
                     }
-                    Column {
-                        anchors.left: ic.right; anchors.leftMargin: 14
-                        anchors.right: parent.right; anchors.rightMargin: 14
-                        anchors.verticalCenter: parent.verticalCenter
-                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.name; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 15 }
-                        Text { width: parent.width; elide: Text.ElideRight; text: modelData.genericName || modelData.comment || ""; visible: text !== ""; color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12 }
-                    }
-                    MouseArea {
-                        id: rm
-                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: win.launch(modelData)
+                }
+
+                // Indicador sutil de rolagem à direita se houver mais de 3 itens
+                Item {
+                    id: scrollTrack
+                    anchors.right: parent.right
+                    anchors.rightMargin: 4
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: 3
+                    visible: win.results.length > 3
+                    Rectangle {
+                        width: 3
+                        radius: 1.5
+                        color: Theme.textSecondary
+                        opacity: 0.35
+                        y: appList.visibleArea.yPosition * scrollTrack.height
+                        height: Math.max(16, appList.visibleArea.heightRatio * scrollTrack.height)
                     }
                 }
             }
