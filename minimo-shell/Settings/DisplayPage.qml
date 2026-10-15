@@ -33,7 +33,7 @@ Column {
     function modeOf(m) { return m.width + "x" + m.height + "@" + m.refreshRate.toFixed(2) }
     function posOf(m) { return m.x + "x" + m.y }
     function rule(name, cfg) {
-        return 'hl.monitor({ output = "' + name + '", mode = "' + cfg.mode + '", position = "' + cfg.pos + '", scale = ' + cfg.scale + ' })'
+        return 'hl.monitor({ output = [=[' + name + ']=], mode = [=[' + cfg.mode + ']=], position = [=[' + cfg.pos + ']=], scale = ' + cfg.scale + ' })'
     }
     function applyCfg(name, cfg) {
         Quickshell.execDetached(["hyprctl", "eval", rule(name, cfg)])
@@ -88,6 +88,7 @@ Column {
             id: mcard
             required property var modelData
             readonly property var m: modelData
+            readonly property var page: root
             property bool listOpen: false
             width: root.width
             height: mcol.implicitHeight + 32
@@ -135,20 +136,21 @@ Column {
                         model: mcard.listOpen ? mcard.m.availableModes : []   // sin delegados mientras está cerrada
                         boundsBehavior: Flickable.StopAtBounds
                         delegate: Rectangle {
+                            id: modeItem
                             required property string modelData
                             readonly property string mode: modelData.replace("Hz", "")
-                            readonly property bool cur: mode === root.modeOf(mcard.m)
+                            readonly property bool cur: mode === mcard.page.modeOf(mcard.m)
                             width: modes.width; height: 34; radius: 17
                             color: mm.containsMouse ? Theme.field : "transparent"
                             Text {
                                 x: 14; anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.replace("x", " × ").replace("@", "  ·  ").replace("Hz", " Hz")
                                 color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
-                                font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                font.weight: modeItem.cur ? Font.DemiBold : Font.Normal
                             }
-                            Icon { visible: parent.cur; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; name: "check"; size: 16 }
+                            Icon { visible: modeItem.cur; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; name: "check"; size: 16 }
                             MouseArea { id: mm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: { mcard.listOpen = false; root.request(mcard.m, parent.mode, mcard.m.scale) } }
+                                onClicked: { mcard.listOpen = false; mcard.page.request(mcard.m, modeItem.mode, mcard.m.scale) } }
                         }
                     }
                 }
@@ -168,7 +170,7 @@ Column {
                                 color: cur ? Theme.fill : (sm.containsMouse ? Theme.field : "transparent")
                                 Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
                                 MouseArea { id: sm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.request(mcard.m, root.modeOf(mcard.m), modelData) }
+                                    onClicked: mcard.page.request(mcard.m, mcard.page.modeOf(mcard.m), modelData) }
                             }
                         }
                     }

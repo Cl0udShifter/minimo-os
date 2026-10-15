@@ -25,7 +25,7 @@ Column {
         property var found: []
         command: ["sh", "-c",
             'mkdir -p "$HOME/Imagens/Wallpapers"; for f in "$@"; do [ -f "$f" ] && echo "$f" || echo "!$f"; done; ' +
-            'for d in "$HOME/Imagens/Wallpapers" "$HOME/Imagens/Fondos" "$HOME/Pictures/Wallpapers" "$HOME/Imágenes/Fondos"; do [ -d "$d" ] && find "$d" -maxdepth 1 -type f ! -name "minimo-*" \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done',
+            'for d in "$HOME/Imagens/Wallpapers" "$HOME/Imagens/Fondos" "$HOME/Pictures/Wallpapers" "$HOME/Imágenes/Fondos"; do [ -d "$d" ] && find "$d" -maxdepth 1 -type f \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | sort; done',
             "sh"].concat(DisplayState.wallpaper ? [DisplayState.wallpaper] : []).concat(DisplayState.wallpaperHistory)
         stdout: SplitParser { onRead: line => scan.found.push(line) }
         onStarted: found = []
