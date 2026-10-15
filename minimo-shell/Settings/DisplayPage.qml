@@ -88,7 +88,6 @@ Column {
             id: mcard
             required property var modelData
             readonly property var m: modelData
-            readonly property var page: root
             property bool listOpen: false
             width: root.width
             height: mcol.implicitHeight + 32
@@ -133,14 +132,21 @@ Column {
                     ListView {
                         id: modes
                         anchors.fill: parent; anchors.margins: 6
+                        readonly property string currentMode: root.modeOf(mcard.m)
                         model: mcard.listOpen ? mcard.m.availableModes : []   // sin delegados mientras está cerrada
                         boundsBehavior: Flickable.StopAtBounds
+
+                        function selectMode(newMode) {
+                            mcard.listOpen = false
+                            root.request(mcard.m, newMode, mcard.m.scale)
+                        }
+
                         delegate: Rectangle {
                             id: modeItem
                             required property string modelData
                             readonly property string mode: modelData.replace("Hz", "")
-                            readonly property bool cur: mode === mcard.page.modeOf(mcard.m)
-                            width: modes.width; height: 34; radius: 17
+                            readonly property bool cur: mode === ListView.view.currentMode
+                            width: ListView.view.width; height: 34; radius: 17
                             color: mm.containsMouse ? Theme.field : "transparent"
                             Text {
                                 x: 14; anchors.verticalCenter: parent.verticalCenter
@@ -150,7 +156,7 @@ Column {
                             }
                             Icon { visible: modeItem.cur; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; name: "check"; size: 16 }
                             MouseArea { id: mm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: { mcard.listOpen = false; mcard.page.request(mcard.m, modeItem.mode, mcard.m.scale) } }
+                                onClicked: ListView.view.selectMode(modeItem.mode) }
                         }
                     }
                 }
@@ -170,7 +176,7 @@ Column {
                                 color: cur ? Theme.fill : (sm.containsMouse ? Theme.field : "transparent")
                                 Text { anchors.centerIn: parent; text: "×" + modelData; color: parent.cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
                                 MouseArea { id: sm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: mcard.page.request(mcard.m, mcard.page.modeOf(mcard.m), modelData) }
+                                    onClicked: root.request(mcard.m, root.modeOf(mcard.m), modelData) }
                             }
                         }
                     }
