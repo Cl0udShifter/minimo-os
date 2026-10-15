@@ -39,8 +39,13 @@ Column {
             }
         }
     }
+    QtObject { id: saver; property bool armed: false }
 
     onMonitorsChanged: {
+        if (saver.armed) {
+            saver.armed = false
+            writeOutputs()
+        }
         if (!monitors || monitors.length === 0) {
             layoutList = []
             return
@@ -384,8 +389,7 @@ Column {
     Timer { id: tick; interval: 1000; repeat: true; onTriggered: { if (--root.countdown <= 0) root.revert() } }
     Timer { id: saveLater; interval: 500; onTriggered: { saver.armed = true; query.running = false; query.running = true } }
 
-    QtObject { id: saver; property bool armed: false }
-    onMonitorsChanged: if (saver.armed) { saver.armed = false; writeOutputs() }
+
     function writeOutputs() {
         let txt = "-- Monitores deste PC — escrito por Configurações › Tela do Minimo OS.\n\n"
         txt += 'hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })\n'
