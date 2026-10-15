@@ -118,6 +118,13 @@ PanelWindow {
                 // Volver arriba solo al cambiar de sección (no cuando la página crece al cargar).
                 Connections { target: SettingsState; function onSectionChanged() { flick.contentY = 0 } }
 
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    onWheel: event => {
+                        flick.contentY = Math.max(0, Math.min(Math.max(0, flick.contentHeight - flick.height), flick.contentY - event.angleDelta.y))
+                    }
+                }
+
                 PersonalizationPage {
                     id: personal
                     width: flick.width
