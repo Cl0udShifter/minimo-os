@@ -16,16 +16,13 @@ PanelWindow {
     Behavior on t { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
     visible: open || t > 0.01
-    anchors { bottom: true }
-    margins { bottom: 60 }
-    implicitWidth: 280
-    implicitHeight: 64
+    anchors { top: true; bottom: true; left: true; right: true }
+    exclusiveZone: -1
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "minimo-volume-osd"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-    exclusiveZone: -1
 
     // 100% click-through (não intercepta cliques do mouse)
     mask: Region {}
@@ -40,35 +37,40 @@ PanelWindow {
 
     Timer {
         id: hideTimer
-        interval: 1500
+        interval: 2000
         onTriggered: win.open = false
     }
 
-    // Sombra suave difusa
-    Rectangle {
-        id: shadowSrc
-        anchors.centerIn: card
-        width: card.width; height: card.height
-        radius: card.radius; color: Theme.card
-        opacity: win.t; scale: card.scale
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true; shadowColor: Theme.shadow
-            shadowBlur: 1.0; blurMax: 20; shadowVerticalOffset: 6; autoPaddingEnabled: true
-        }
-    }
-
-    Rectangle {
-        id: card
-        anchors.centerIn: parent
-        width: 240
-        height: 48
-        radius: height / 2
-        color: Theme.card
+    Item {
+        id: container
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Math.max(130, Math.round(parent.height * 0.14))
+        width: 250
+        height: 50
         opacity: win.t
         scale: 0.94 + 0.06 * win.t
         transform: Translate { y: (1 - win.t) * 12 }
-        clip: true
+
+        // Sombra suave difusa
+        Rectangle {
+            id: shadowSrc
+            anchors.fill: parent
+            radius: height / 2
+            color: Theme.card
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true; shadowColor: Theme.shadow
+                shadowBlur: 1.0; blurMax: 20; shadowVerticalOffset: 6; autoPaddingEnabled: true
+            }
+        }
+
+        Rectangle {
+            id: card
+            anchors.fill: parent
+            radius: height / 2
+            color: Theme.card
+            clip: true
 
         Row {
             anchors.centerIn: parent
@@ -113,4 +115,5 @@ PanelWindow {
             }
         }
     }
+}
 }
