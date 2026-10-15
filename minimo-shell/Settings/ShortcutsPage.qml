@@ -272,6 +272,7 @@ Column {
     }
 
     function openEditor(item) {
+        console.log("openEditor called for item:", item ? item.name : "null")
         root.editingItem = item
         root.setFromKeys(item.keys)
     }
