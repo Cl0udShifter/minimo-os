@@ -10,6 +10,7 @@ Row {
     property bool showing: false
     opacity: showing ? 1 : 0
     width: showing ? implicitWidth : 0
+    visible: showing || width > 0 || opacity > 0
     clip: true
     Behavior on opacity { NumberAnimation { duration: 220 } }
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
@@ -17,6 +18,7 @@ Row {
     Connections {
         target: Workspaces
         function onLastSwitchChanged() { root.showing = true; hideLater.restart() }
+        function onSwitched() { root.showing = true; hideLater.restart() }
     }
     Timer { id: hideLater; interval: 1100; onTriggered: root.showing = false }
 

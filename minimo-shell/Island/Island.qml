@@ -105,6 +105,23 @@ PanelWindow {
             else if (!win.hovered && !win.open) hideTimer.restart()
         }
     }
+
+    // Al cambiar de escritorio: mostrar la isla brevemente si estaba oculta para ver las bolinhas.
+    Connections {
+        target: Workspaces
+        function onSwitched() {
+            if (win.hideWanted) {
+                win.shown = true
+                hideTimer.stop()
+                wsHideTimer.restart()
+            }
+        }
+    }
+    Timer {
+        id: wsHideTimer
+        interval: 1400
+        onTriggered: if (win.hideWanted && !win.hovered && !win.open && !menu.searchFocused && Recorder.notice === "" && Notifs.current === null) win.shown = false
+    }
     // Cada isla suma/resta su hover (con varios monitores no se pisan entre sí).
     Component.onDestruction: if (hovered) Notifs.hovers = Math.max(0, Notifs.hovers - 1)
 

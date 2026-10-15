@@ -14,10 +14,36 @@ Singleton {
     property real lastSwitch: 0      // para el indicador de puntos
     property real lastWheel: 0
 
+    signal switched()
+    function triggerSwitch() {
+        lastSwitch = Date.now()
+        switched()
+    }
+
+    property bool ready: false
+    Component.onCompleted: Qt.callLater(() => { ready = true })
+
+    onActiveIdChanged: {
+        if (ready) triggerSwitch()
+    }
+
+    Connections {
+        target: Hyprland
+        function onRawEvent(ev) {
+            const n = ev.name
+            if (n === "workspace" || n === "workspacev2" || n === "focusedmon") {
+                Hyprland.refreshWorkspaces()
+                if (root.ready) root.triggerSwitch()
+            } else if (n === "createworkspace" || n === "createworkspacev2" || n === "destroyworkspace" || n === "destroyworkspacev2") {
+                Hyprland.refreshWorkspaces()
+            }
+        }
+    }
+
     function dispatchWs(target) {
         // Hyprland.dispatch() no entiende la sintaxis Lua: se usa hyprctl.
         Quickshell.execDetached(["sh", "-c", "hyprctl dispatch 'hl.dsp.focus({workspace=\"" + target + "\"})' >/dev/null 2>&1"])
-        lastSwitch = Date.now()
+        triggerSwitch()
     }
     // Una muesca de rueda = un workspace (con enfriamiento).
     function wheel(deltaY) {
@@ -34,7 +60,7 @@ Singleton {
         reorderProc.command = [Qt.resolvedUrl("../scripts/reorder-ws.py").toString().replace("file://", ""),
                                ids.join(","), order.join(","), String(activeId)]
         reorderProc.running = true
-        lastSwitch = Date.now()
+        triggerSwitch()
     }
     signal reordered()
     Process { id: reorderProc; onExited: { Hyprland.refreshWorkspaces(); Hyprland.refreshToplevels(); root.reordered() } }
