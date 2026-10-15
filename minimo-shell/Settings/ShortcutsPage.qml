@@ -19,6 +19,7 @@ Column {
     property bool modShift: false
     property bool modAlt: false
     property string mainKey: ""
+    property Item cardParent: null
 
     onVisibleChanged: {
         if (visible) {
@@ -268,7 +269,7 @@ Column {
     // Modal de Edição de Atalho (re-parented para o card central de configurações)
     Rectangle {
         id: modalOverlay
-        parent: card
+        parent: root.cardParent || root
         anchors.fill: parent
         color: Theme.scrim
         visible: root.editingItem !== null

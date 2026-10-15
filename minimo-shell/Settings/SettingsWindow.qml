@@ -152,6 +152,7 @@ PanelWindow {
                     id: shortcuts
                     width: flick.width
                     visible: SettingsState.section === "atalhos"
+                    cardParent: card
                 }
             }
         }
