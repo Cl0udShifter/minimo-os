@@ -19,3 +19,4 @@ singleton SysStatus 1.0 SysStatus.qml
 singleton Notifs 1.0 Notifs.qml
 singleton VolumeOSDState 1.0 VolumeOSDState.qml
 singleton ShortcutsManager 1.0 ShortcutsManager.qml
+singleton InputState 1.0 InputState.qml
