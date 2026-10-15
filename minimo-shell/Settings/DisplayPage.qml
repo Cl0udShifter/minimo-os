@@ -145,8 +145,9 @@ Column {
                             id: modeItem
                             required property string modelData
                             readonly property string mode: modelData.replace("Hz", "")
-                            readonly property bool cur: mode === ListView.view.currentMode
-                            width: ListView.view.width; height: 34; radius: 17
+                            readonly property var view: ListView.view
+                            readonly property bool cur: view ? (mode === view.currentMode) : false
+                            width: view ? view.width : 0; height: 34; radius: 17
                             color: mm.containsMouse ? Theme.field : "transparent"
                             Text {
                                 x: 14; anchors.verticalCenter: parent.verticalCenter
@@ -156,7 +157,7 @@ Column {
                             }
                             Icon { visible: modeItem.cur; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; name: "check"; size: 16 }
                             MouseArea { id: mm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: ListView.view.selectMode(modeItem.mode) }
+                                onClicked: if (modeItem.view) modeItem.view.selectMode(modeItem.mode) }
                         }
                     }
                 }
