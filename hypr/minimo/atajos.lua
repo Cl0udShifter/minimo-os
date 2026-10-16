@@ -72,6 +72,7 @@ end
 -- Aplicativos e shell
 bind_key("SUPER + space", dsp.exec_cmd(qs .. "launcher toggle"))
 bind_key("SUPER + comma", dsp.exec_cmd(qs .. "settings toggle"))
+bind_key("SUPER + V", dsp.exec_cmd(qs .. "clipboard toggle"), fixo)
 bind_key("SUPER + T", dsp.exec_cmd("ghostty"))
 bind_key("SUPER + X", dsp.exec_cmd(qs .. "island open"))
 bind_key("SUPER + SHIFT + R", dsp.exec_cmd(qs .. "recorder toggle"))

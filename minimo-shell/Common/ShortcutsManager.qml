@@ -40,6 +40,7 @@ Singleton {
         // 1. Aplicativos e Shell
         { id: "launcher", cat: "Aplicativos e Shell", name: "Lançador de Aplicativos", desc: "Abre a busca rápida e inicializador de apps estilo Spotlight", icon: "search", defaultKeys: "SUPER + space" },
         { id: "settings", cat: "Aplicativos e Shell", name: "Configurações", desc: "Abre o painel de configurações do Minimo OS", icon: "settings", defaultKeys: "SUPER + comma" },
+        { id: "clipboard", cat: "Aplicativos e Shell", name: "Área de Transferência", desc: "Abre o histórico flutuante de textos e códigos copiados", icon: "clipboard", defaultKeys: "SUPER + V" },
         { id: "terminal", cat: "Aplicativos e Shell", name: "Terminal", desc: "Abre o terminal acelerado por GPU", icon: "terminal", defaultKeys: "SUPER + T" },
         { id: "island", cat: "Aplicativos e Shell", name: "Menu da Ilha (Notch)", desc: "Expande a ilha dinâmica de controle e monitoramento", icon: "apps", defaultKeys: "SUPER + X" },
         { id: "recorder", cat: "Aplicativos e Shell", name: "Gravação de Tela", desc: "Inicia ou para a gravação da tela", icon: "record", defaultKeys: "SUPER + SHIFT + R" },
@@ -326,6 +327,9 @@ Singleton {
         out += "-- Aplicativos e shell\n"
         out += 'bind_key("' + map.launcher + '", dsp.exec_cmd(qs .. "launcher toggle"))\n'
         out += 'bind_key("' + map.settings + '", dsp.exec_cmd(qs .. "settings toggle"))\n'
+        if (map.clipboard) {
+            out += 'bind_key("' + map.clipboard + '", dsp.exec_cmd(qs .. "clipboard toggle"), fixo)\n'
+        }
         out += 'bind_key("' + map.terminal + '", dsp.exec_cmd("ghostty"))\n'
         out += 'bind_key("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
         out += 'bind_key("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'

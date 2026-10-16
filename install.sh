@@ -142,6 +142,7 @@ PKGS=(
     pipewire pipewire-pulse wireplumber                        # áudio (PipeWire na shell)
     cava playerctl                                             # níveis de áudio (dança), teclas multimídia
     ghostty grim slurp wf-recorder zenity                      # terminal, capturas, gravação, seletor de fundo
+    wl-clipboard cliphist                                      # área de transferência e histórico
     adwaita-fonts                                              # tipografia Adwaita Sans
     networkmanager                                             # Wi-Fi na ilha (nmcli)
     python                                                     # scripts da shell (cursor, status, workspaces)
@@ -244,6 +245,7 @@ step "Serviço da shell e polkit (systemd --user)"
 UNITS="$HOME/.config/systemd/user"
 link "$REPO/systemd/minimo-shell.service" "$UNITS/minimo-shell.service"
 link "$REPO/systemd/minimo-polkit.service" "$UNITS/minimo-polkit.service"
+link "$REPO/systemd/minimo-clipboard.service" "$UNITS/minimo-clipboard.service"
 link "$REPO/systemd/hyprland-session.target" "$UNITS/hyprland-session.target"
 if [ "$REPO" != "$DEST" ]; then
     warn "O repositório não está em $DEST: certifique-se de manter o caminho sincronizado."
@@ -251,10 +253,12 @@ fi
 run systemctl --user daemon-reload
 run systemctl --user enable minimo-shell.service
 run systemctl --user enable minimo-polkit.service
+run systemctl --user enable minimo-clipboard.service
 command -v gsettings >/dev/null && run gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
 if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     run systemctl --user restart minimo-shell.service
     run systemctl --user restart minimo-polkit.service
+    run systemctl --user restart minimo-clipboard.service
     run hyprctl reload
 else
     ok "Será iniciado automaticamente ao entrar no Hyprland"
