@@ -32,6 +32,8 @@ typedef struct {
     char *message;
     char *user_name;
     char *cookie;
+    PolkitIdentity *identity;
+    int attempt_count;
     gboolean is_completed;
     GSocketService *socket_service;
     char *sock_path;
@@ -39,6 +41,8 @@ typedef struct {
 
 static ActiveAuth *current_auth = NULL;
 static char *qs_path = NULL;
+
+static void initiate_session(ActiveAuth *auth);
 
 static void notify_quickshell(const char *cmd_target, const char *arg1, const char *arg2) {
     char *qs_bin = g_find_program_in_path("qs");
@@ -108,7 +112,6 @@ static gboolean on_incoming_connection(GSocketService *service,
     char *line = g_data_input_stream_read_line(data_in, &length, NULL, &err);
 
     if (line) {
-        // Parse simple JSON: {"action": "...", "password": "..."}
         if (strstr(line, "\"action\": \"cancel\"") || strstr(line, "\"action\":\"cancel\"")) {
             g_print("[minimo-polkit] Cancel received from UI\n");
             auth->is_completed = TRUE;
@@ -119,20 +122,18 @@ static gboolean on_incoming_connection(GSocketService *service,
                 g_task_return_new_error(auth->task,
                                         POLKIT_ERROR,
                                         POLKIT_ERROR_CANCELLED,
-                                        "Ação cancelada pelo usuário");
+                                        "Autenticação cancelada pelo usuário");
             }
             notify_quickshell("polkit", "close", NULL);
             stop_socket_service(auth);
         } else if (strstr(line, "\"action\": \"auth\"") || strstr(line, "\"action\":\"auth\"")) {
-            // Extract password
             char *p1 = strstr(line, "\"password\":");
             if (p1) {
                 p1 += 11;
                 while (*p1 == ' ' || *p1 == '"') p1++;
                 char *p2 = strrchr(p1, '"');
                 if (p2 && p2 >= p1) *p2 = '\0';
-                
-                // Unescape \" and \\ if present
+
                 GString *pw = g_string_new("");
                 for (char *c = p1; *c; c++) {
                     if (*c == '\\' && *(c+1)) {
@@ -193,20 +194,21 @@ static void on_request(PolkitAgentSession *session,
     ActiveAuth *auth = (ActiveAuth *)user_data;
     g_print("[minimo-polkit] Session request: prompt='%s', echo=%d\n", request, echo_on);
 
-    // Format JSON payload for Quickshell
-    char *esc_msg = escape_json_string(auth->message);
-    char *esc_act = escape_json_string(auth->action_id);
-    char *esc_usr = escape_json_string(auth->user_name);
+    if (auth->attempt_count == 0) {
+        char *esc_msg = escape_json_string(auth->message);
+        char *esc_act = escape_json_string(auth->action_id);
+        char *esc_usr = escape_json_string(auth->user_name);
 
-    char *json = g_strdup_printf("{\"actionId\":\"%s\",\"message\":\"%s\",\"user\":\"%s\",\"prompt\":\"%s\"}",
-                                 esc_act, esc_msg, esc_usr, request ? request : "Senha:");
+        char *json = g_strdup_printf("{\"actionId\":\"%s\",\"message\":\"%s\",\"user\":\"%s\",\"prompt\":\"%s\"}",
+                                     esc_act, esc_msg, esc_usr, request ? request : "Senha:");
 
-    notify_quickshell("polkit", "open", json);
+        notify_quickshell("polkit", "open", json);
 
-    g_free(esc_msg);
-    g_free(esc_act);
-    g_free(esc_usr);
-    g_free(json);
+        g_free(esc_msg);
+        g_free(esc_act);
+        g_free(esc_usr);
+        g_free(json);
+    }
 }
 
 static void on_completed(PolkitAgentSession *session,
@@ -223,13 +225,27 @@ static void on_completed(PolkitAgentSession *session,
         }
         stop_socket_service(auth);
     } else {
-        // Failed attempt: inform UI so it shakes and lets the user retry
-        notify_quickshell("polkit", "error", "Senha incorreta. Tente novamente.");
-        auth->is_completed = TRUE;
-        if (auth->task) {
-            g_task_return_boolean(auth->task, FALSE);
+        auth->attempt_count++;
+        if (auth->attempt_count < 3 && !auth->is_completed) {
+            g_print("[minimo-polkit] Auth attempt %d failed, allowing retry...\n", auth->attempt_count);
+            notify_quickshell("polkit", "error", "Senha incorreta. Tente novamente.");
+            if (auth->session) {
+                g_object_unref(auth->session);
+                auth->session = NULL;
+            }
+            initiate_session(auth);
+        } else {
+            g_print("[minimo-polkit] Auth attempts exceeded or cancelled\n");
+            auth->is_completed = TRUE;
+            notify_quickshell("polkit", "close", NULL);
+            if (auth->task) {
+                g_task_return_new_error(auth->task,
+                                        POLKIT_ERROR,
+                                        POLKIT_ERROR_FAILED,
+                                        "Muitas tentativas incorretas");
+            }
+            stop_socket_service(auth);
         }
-        stop_socket_service(auth);
     }
 }
 
@@ -238,6 +254,14 @@ static void on_show_error(PolkitAgentSession *session,
                           gpointer user_data) {
     g_print("[minimo-polkit] Session error: %s\n", text);
     notify_quickshell("polkit", "error", text);
+}
+
+static void initiate_session(ActiveAuth *auth) {
+    auth->session = polkit_agent_session_new(auth->identity, auth->cookie);
+    g_signal_connect(auth->session, "request", G_CALLBACK(on_request), auth);
+    g_signal_connect(auth->session, "completed", G_CALLBACK(on_completed), auth);
+    g_signal_connect(auth->session, "show-error", G_CALLBACK(on_show_error), auth);
+    polkit_agent_session_initiate(auth->session);
 }
 
 static void minimo_listener_initiate_authentication(PolkitAgentListener *listener,
@@ -258,6 +282,8 @@ static void minimo_listener_initiate_authentication(PolkitAgentListener *listene
     auth->action_id = g_strdup(action_id);
     auth->message = g_strdup(message);
     auth->cookie = g_strdup(cookie);
+    auth->attempt_count = 0;
+    auth->is_completed = FALSE;
 
     const char *user = "daniel";
     if (identities != NULL && identities->data != NULL) {
@@ -271,21 +297,12 @@ static void minimo_listener_initiate_authentication(PolkitAgentListener *listene
         }
     }
     auth->user_name = g_strdup(user ? user : "daniel");
+    auth->identity = (identities && identities->data) ? POLKIT_IDENTITY(identities->data) : NULL;
 
     current_auth = auth;
 
-    // Start local socket to receive password response from Quickshell
     start_socket_service(auth);
-
-    // Create session
-    PolkitIdentity *identity = identities ? POLKIT_IDENTITY(identities->data) : NULL;
-    auth->session = polkit_agent_session_new(identity, cookie);
-
-    g_signal_connect(auth->session, "request", G_CALLBACK(on_request), auth);
-    g_signal_connect(auth->session, "completed", G_CALLBACK(on_completed), auth);
-    g_signal_connect(auth->session, "show-error", G_CALLBACK(on_show_error), auth);
-
-    polkit_agent_session_initiate(auth->session);
+    initiate_session(auth);
 }
 
 static gboolean minimo_listener_initiate_authentication_finish(PolkitAgentListener *listener,
@@ -303,7 +320,6 @@ static void minimo_listener_class_init(MinimoListenerClass *klass) {
 static void minimo_listener_init(MinimoListener *listener) {}
 
 int main(int argc, char *argv[]) {
-    // Resolve quickshell config path
     const char *home = g_get_home_dir();
     qs_path = g_build_filename(home, "Projetos", "minimo-os", "minimo-shell", NULL);
 
