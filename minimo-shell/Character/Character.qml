@@ -148,9 +148,10 @@ Item {
         onTriggered: { interval = 3000 + Math.random() * 3000; c.doBlink(Math.random() < 0.15) }
     }
 
-    // Dormir: cuando toda la PC está inactiva (IdleState, ext-idle-notify), salvo si
-    // suena música (baila) o se está grabando. Al volver la actividad: estira y parpadea.
-    readonly property bool asleep: IdleState.sleeping && !Media.playing && !Recorder.recording
+    // Dormir: quando toda a PC está inactiva (IdleState, ext-idle-notify), salvo si
+    // suena música (baila) o se está grabando, o si hay un override manual (ej. lockscreen).
+    property var customAsleep: null
+    readonly property bool asleep: customAsleep !== null ? customAsleep : (IdleState.sleeping && !Media.playing && !Recorder.recording)
     property real sleepy: asleep ? 1 : 0
     // Se duerme despacio (2.4 s); al despertar abre los ojos con suavidad (0.7 s).
     Behavior on sleepy { NumberAnimation { duration: c.asleep ? 2400 : 700; easing.type: c.asleep ? Easing.InOutSine : Easing.OutCubic } }

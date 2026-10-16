@@ -9,6 +9,7 @@ import "Launcher"
 import "Settings"
 import "OSD"
 import "Dialogs"
+import "Lock"
 
 // Minimo OS shell root: papel de parede, ilha e OSD por monitor.
 ShellRoot {
@@ -29,6 +30,13 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
         delegate: VolumeOSD {
+            required property var modelData
+            screen: modelData
+        }
+    }
+    Variants {
+        model: Quickshell.screens
+        delegate: Lockscreen {
             required property var modelData
             screen: modelData
         }

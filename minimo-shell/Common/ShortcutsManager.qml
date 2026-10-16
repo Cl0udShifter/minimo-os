@@ -101,6 +101,7 @@ Singleton {
         { id: "ws_move_9", cat: "Áreas de Trabalho", name: "Mover Janela para Área 9", desc: "Leva a janela ativa para a área de trabalho 9", icon: "desktops", defaultKeys: "SUPER + SHIFT + 9" },
 
         // 7. Sessão
+        { id: "session_lock", cat: "Sessão", name: "Bloquear Tela", desc: "Bloqueia a sessão imediatamente", icon: "lock", defaultKeys: "SUPER + L" },
         { id: "session_exit", cat: "Sessão", name: "Encerrar Sessão", desc: "Sai do Minimo OS e retorna à tela de login", icon: "logout", defaultKeys: "SUPER + SHIFT + E" },
         { id: "session_dpms", cat: "Sessão", name: "Desligar / Suspender Telas", desc: "Alterna energia dos monitores", icon: "power", defaultKeys: "SUPER + SHIFT + P" }
     ]
@@ -334,6 +335,9 @@ Singleton {
         out += "\n"
 
         out += "-- Sessão\n"
+        if (map.session_lock) {
+            out += 'bind_key("' + map.session_lock + '", dsp.exec_cmd(qs .. "lock lock"), fixo)\n'
+        }
         out += 'bind_key("' + map.session_exit + '", dsp.exit())\n'
         out += 'bind_key("' + map.session_dpms + '", dsp.dpms({ action = "toggle" }))\n\n'
 

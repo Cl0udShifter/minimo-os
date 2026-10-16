@@ -22,3 +22,4 @@ singleton ShortcutsManager 1.0 ShortcutsManager.qml
 singleton InputState 1.0 InputState.qml
 singleton AppearanceState 1.0 AppearanceState.qml
 singleton PolkitState 1.0 PolkitState.qml
+singleton LockscreenState 1.0 LockscreenState.qml

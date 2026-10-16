@@ -78,6 +78,7 @@ bind_key("SUPER + SHIFT + R", dsp.exec_cmd(qs .. "recorder toggle"))
 bind_key("CTRL + SHIFT", dsp.exec_cmd(switch_kb), fixo)
 
 -- Sessão
+bind_key("SUPER + L", dsp.exec_cmd(qs .. "lock lock"), fixo)
 bind_key("SUPER + SHIFT + E", dsp.exit())
 bind_key("SUPER + SHIFT + P", dsp.dpms({ action = "toggle" }))
 
