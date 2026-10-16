@@ -81,12 +81,27 @@ PanelWindow {
                 Text { x: 12; text: "Configurações"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold; bottomPadding: 14 }
                 Repeater {
                     model: win.sections
-                    delegate: Rectangle {
+                    delegate: Item {
                         required property var modelData
                         readonly property bool cur: SettingsState.section === modelData.id
-                        width: parent.width; height: 42; radius: 21
-                        color: cur ? Theme.fill : (sbm.containsMouse ? Theme.hover : "transparent")
-                        Behavior on color { ColorAnimation { duration: 140 } }
+                        width: parent.width; height: 42
+
+                        // Fundo da seção ativa
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 21
+                            color: Theme.fill
+                            visible: parent.cur
+                        }
+
+                        // Fundo hover claro e sem transição escura ao tirar o mouse
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 21
+                            color: Theme.hover
+                            visible: !parent.cur && sbm.containsMouse
+                        }
+
                         Row {
                             x: 14; anchors.verticalCenter: parent.verticalCenter; spacing: 12
                             Icon { name: modelData.icon; size: 20; tone: cur ? "white" : "dark"; anchors.verticalCenter: parent.verticalCenter }

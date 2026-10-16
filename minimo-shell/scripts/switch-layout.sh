@@ -3,18 +3,15 @@
 # Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 # Alternância instantânea de layout de teclado para Minimo OS / Hyprland
 
-STATE_FILE="$HOME/.config/minimo-os/input.json"
-CURRENT=$(grep -o '"kbLayout": "[^"]*"' "$STATE_FILE" 2>/dev/null | cut -d'"' -f4)
-
-if [ "$CURRENT" = "br" ]; then
-    TARGET_IDX=1
-else
-    TARGET_IDX=0
-fi
-
+# 1. Garante a assinatura do Hyprland caso não esteja exportada no ambiente
 if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    SIG=$(ls -1t /run/user/$(id -u)/hypr 2>/dev/null | head -n1)
-    export HYPRLAND_INSTANCE_SIGNATURE="$SIG"
+    for d in /run/user/$(id -u)/hypr/*/; do
+        if [ -S "${d}.socket.sock" ]; then
+            export HYPRLAND_INSTANCE_SIGNATURE="$(basename "$d")"
+            break
+        fi
+    done
 fi
 
-hyprctl switchxkblayout all $TARGET_IDX >/dev/null 2>&1
+# 2. Alterna instantaneamente para o próximo layout em todas as entradas de teclado
+hyprctl switchxkblayout all next >/dev/null 2>&1

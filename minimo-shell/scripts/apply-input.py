@@ -82,6 +82,7 @@ def main():
     content += f'\t\tkb_layout = "{multi_layout}",\n'
     content += f'\t\tkb_variant = "{multi_variant}",\n'
     content += f'\t\tkb_model = "{kb_model}",\n'
+    content += '\t\tkb_options = "grp:ctrl_shift_toggle",\n'
     content += f"\t\tnumlock_by_default = {numlock_by_default},\n"
     content += f"\t\tfollow_mouse = {follow_mouse},\n"
     content += f"\t\tsensitivity = {sensitivity:.2f},\n"
@@ -125,6 +126,7 @@ def main():
         f'kb_layout = "{multi_layout}", '
         f'kb_variant = "{multi_variant}", '
         f'kb_model = "{kb_model}", '
+        f'kb_options = "grp:ctrl_shift_toggle", '
         f'numlock_by_default = {numlock_by_default}, '
         f'follow_mouse = {follow_mouse}, '
         f'sensitivity = {sensitivity:.2f}, '
