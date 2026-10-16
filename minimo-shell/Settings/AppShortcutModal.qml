@@ -140,12 +140,15 @@ Rectangle {
                 spacing: 14
 
                 // Cabeçalho do Modal
-                Row {
+                Item {
                     width: parent.width
-                    spacing: 12
+                    height: 42
+
                     Rectangle {
-                        width: 38; height: 38; radius: 12; color: Theme.field
+                        id: headerIconBox
+                        anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
+                        width: 38; height: 38; radius: 12; color: Theme.field
                         Icon {
                             anchors.centerIn: parent
                             name: "apps"
@@ -153,10 +156,31 @@ Rectangle {
                             tone: "dark"
                         }
                     }
+
+                    // Botão Fechar (X)
+                    Rectangle {
+                        id: closeBtn
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 28; height: 28; radius: 14
+                        color: closeMa.containsMouse ? Theme.hover : Theme.field
+                        Text { anchors.centerIn: parent; text: "✕"; color: Theme.textSecondary; font.pixelSize: 13 }
+                        MouseArea {
+                            id: closeMa
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: if (root.page) root.page.closeAppShortcutModal()
+                        }
+                    }
+
                     Column {
+                        anchors.left: headerIconBox.right
+                        anchors.leftMargin: 12
+                        anchors.right: closeBtn.left
+                        anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
-                        width: parent.width - 90
                         Text {
                             text: "Adicionar Atalho de Aplicativo"
                             color: Theme.textPrimary
@@ -171,20 +195,6 @@ Rectangle {
                             font.pixelSize: 11
                             elide: Text.ElideRight
                             width: parent.width
-                        }
-                    }
-                    // Botão Fechar (X)
-                    Rectangle {
-                        width: 28; height: 28; radius: 14
-                        color: closeMa.containsMouse ? Theme.hover : Theme.field
-                        anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "✕"; color: Theme.textSecondary; font.pixelSize: 13 }
-                        MouseArea {
-                            id: closeMa
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: if (root.page) root.page.closeAppShortcutModal()
                         }
                     }
                 }
@@ -368,23 +378,35 @@ Rectangle {
                         border.width: 1
                         border.color: Theme.fill
 
+                        PillButton {
+                            id: trocarBtn
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Trocar"
+                            outlined: true
+                            onClicked: root.selectedApp = null
+                        }
+
                         Row {
-                            anchors.fill: parent
-                            anchors.margins: 10
+                            anchors.left: parent.left
+                            anchors.leftMargin: 10
+                            anchors.right: trocarBtn.left
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
                             spacing: 12
 
                             Image {
                                 width: 34; height: 34
-                                anchors.verticalCenter: parent.verticalCenter
                                 source: root.selectedApp ? Apps.iconFor(root.selectedApp) : ""
                                 sourceSize: Qt.size(68, 68)
                                 fillMode: Image.PreserveAspectFit
                             }
 
                             Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - 130
+                                width: parent.width - 46
                                 spacing: 2
+                                anchors.verticalCenter: parent.verticalCenter
                                 Text {
                                     text: root.selectedApp ? (root.selectedApp.name || root.selectedApp.id) : ""
                                     color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13; font.weight: Font.DemiBold
@@ -395,13 +417,6 @@ Rectangle {
                                     color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
                                     elide: Text.ElideRight; width: parent.width
                                 }
-                            }
-
-                            PillButton {
-                                text: "Trocar"
-                                outlined: true
-                                anchors.verticalCenter: parent.verticalCenter
-                                onClicked: root.selectedApp = null
                             }
                         }
                     }
