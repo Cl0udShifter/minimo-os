@@ -93,6 +93,10 @@ PanelWindow {
             character.smile = 1
             character.hop()
         }
+        function onSubmitRequested(pwd) {
+            passInput.text = pwd
+            win.doUnlock()
+        }
     }
 
     Timer {
@@ -199,7 +203,7 @@ PanelWindow {
     // Hub Centralizado
     Column {
         anchors.centerIn: parent
-        spacing: 26
+        spacing: 34
         width: Math.min(parent.width - 40, 480)
         opacity: win.t
         scale: 0.95 + 0.05 * win.t
@@ -207,7 +211,7 @@ PanelWindow {
         // 1. Relógio Grande e Data
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 6
+            spacing: 8
 
             SystemClock {
                 id: clock
@@ -217,9 +221,9 @@ PanelWindow {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Qt.formatDateTime(clock.date, "HH:mm")
-                color: Theme.textPrimary
+                color: "#FFFFFF"
                 font.family: Theme.font
-                font.pixelSize: 76
+                font.pixelSize: 84
                 font.weight: Font.DemiBold
             }
 
@@ -229,9 +233,9 @@ PanelWindow {
                     const t = clock.date.toLocaleDateString(Qt.locale("pt_BR"), "dddd, d 'de' MMMM")
                     return t.charAt(0).toUpperCase() + t.slice(1)
                 }
-                color: Theme.textSecondary
+                color: Qt.rgba(1, 1, 1, 0.75)
                 font.family: Theme.font
-                font.pixelSize: 16
+                font.pixelSize: 17
                 font.weight: Font.Normal
             }
         }
@@ -255,9 +259,9 @@ PanelWindow {
 
             ZzzParticles {
                 anchors.left: parent.horizontalCenter
-                anchors.leftMargin: 18
+                anchors.leftMargin: 20
                 anchors.bottom: parent.verticalCenter
-                anchors.bottomMargin: 10
+                anchors.bottomMargin: 14
                 active: LockscreenState.asleep
             }
         }
@@ -273,9 +277,9 @@ PanelWindow {
                 width: 320
                 height: 48
                 radius: 24
-                color: Theme.field
+                color: Qt.rgba(0.12, 0.12, 0.14, 0.78)
                 border.width: 1
-                border.color: LockscreenState.errorMsg !== "" ? Theme.danger : (passInput.activeFocus ? Theme.textPrimary : Theme.track)
+                border.color: LockscreenState.errorMsg !== "" ? Theme.danger : (passInput.activeFocus ? "#FFFFFF" : Qt.rgba(1, 1, 1, 0.22))
 
                 Row {
                     anchors.fill: parent
@@ -286,7 +290,7 @@ PanelWindow {
                     Icon {
                         name: "lock"
                         size: 16
-                        tone: "gray"
+                        tone: "white"
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -297,18 +301,18 @@ PanelWindow {
                         verticalAlignment: TextInput.AlignVCenter
                         echoMode: TextInput.Password
                         passwordCharacter: "•"
-                        color: Theme.textPrimary
+                        color: "#FFFFFF"
                         font.family: Theme.font
                         font.pixelSize: 18
-                        selectionColor: Theme.track
-                        selectedTextColor: Theme.textPrimary
+                        selectionColor: Qt.rgba(1, 1, 1, 0.3)
+                        selectedTextColor: "#FFFFFF"
                         clip: true
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: !passInput.text
                             text: "Digite sua senha..."
-                            color: Theme.textSecondary
+                            color: Qt.rgba(1, 1, 1, 0.45)
                             font: passInput.font
                         }
 

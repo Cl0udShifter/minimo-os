@@ -92,6 +92,12 @@ Singleton {
         }
     }
 
+    signal submitRequested(string password)
+
+    function submitPassword(pwd) {
+        submitRequested(pwd)
+    }
+
     IpcHandler {
         target: "lock"
 
@@ -105,6 +111,14 @@ Singleton {
 
         function toggle(): void {
             root.toggle()
+        }
+
+        function wake(): void {
+            root.wake()
+        }
+
+        function submit(password: string): void {
+            root.submitPassword(password)
         }
 
         function status(): string {
