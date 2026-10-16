@@ -82,9 +82,22 @@ Rectangle {
         }
     }
 
-    function cleanExec(execStr) {
-        if (!execStr) return ""
-        return execStr.replace(/%[a-zA-Z]/g, "").trim()
+    function cleanExec(item) {
+        if (!item) return ""
+        if (typeof item === "string") {
+            return item.replace(/%[a-zA-Z]/g, "").trim()
+        }
+        let raw = ""
+        if (item.execString) {
+            raw = item.execString
+        } else if (item.command) {
+            raw = Array.isArray(item.command) ? item.command.join(" ") : String(item.command)
+        } else if (item.exec) {
+            raw = item.exec
+        } else if (item.id) {
+            raw = String(item.id).replace(/\.desktop$/, "")
+        }
+        return raw.replace(/%[a-zA-Z]/g, "").trim()
     }
 
     function submit() {
@@ -96,7 +109,10 @@ Rectangle {
 
         if (tabIndex === 0 && selectedApp) {
             name = selectedApp.name || selectedApp.id
-            exec = cleanExec(selectedApp.exec)
+            exec = cleanExec(selectedApp)
+            if (!exec && selectedApp.id) {
+                exec = String(selectedApp.id).replace(/\.desktop$/, "")
+            }
             icon = Apps.iconFor(selectedApp)
         } else {
             name = customName.trim()
@@ -343,7 +359,7 @@ Rectangle {
                                                 elide: Text.ElideRight; width: parent.width
                                             }
                                             Text {
-                                                text: root.cleanExec(modelData.exec)
+                                                text: root.cleanExec(modelData)
                                                 color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 10
                                                 elide: Text.ElideRight; width: parent.width
                                             }
@@ -413,7 +429,7 @@ Rectangle {
                                     elide: Text.ElideRight; width: parent.width
                                 }
                                 Text {
-                                    text: root.selectedApp ? ("Executa: " + root.cleanExec(root.selectedApp.exec)) : ""
+                                    text: root.selectedApp ? ("Executa: " + root.cleanExec(root.selectedApp)) : ""
                                     color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
                                     elide: Text.ElideRight; width: parent.width
                                 }
