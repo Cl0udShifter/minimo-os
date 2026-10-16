@@ -51,7 +51,7 @@ Rectangle {
                         visible: root.page && root.page.editingItem && root.page.editingItem.isCustomApp
                         anchors.centerIn: parent
                         width: 24; height: 24
-                        source: (root.page && root.page.editingItem) ? (root.page.editingItem.icon || "") : ""
+                        source: (root.page && root.page.editingItem && root.page.editingItem.isCustomApp && root.page.editingItem.icon) ? root.page.editingItem.icon : ""
                         sourceSize: Qt.size(48, 48)
                         fillMode: Image.PreserveAspectFit
                     }

@@ -227,10 +227,10 @@ Column {
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     Image {
-                                        visible: sRow.item.isCustomApp === true
+                                        visible: sRow.item && sRow.item.isCustomApp === true
                                         anchors.centerIn: parent
                                         width: 20; height: 20
-                                        source: sRow.item.icon || ""
+                                        source: (sRow.item && sRow.item.isCustomApp && sRow.item.icon) ? sRow.item.icon : ""
                                         sourceSize: Qt.size(40, 40)
                                         fillMode: Image.PreserveAspectFit
                                     }
