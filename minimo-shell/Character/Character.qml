@@ -27,13 +27,27 @@ Item {
     property real lookY: 0
     readonly property bool tracking: Cursor.ok && Cursor.x >= 0
     // Sigue el mouse solo si está visible y despierto (dormido no consulta el cursor).
-    readonly property bool followsMouse: active && !asleep
+    property bool directTracking: false
+    readonly property bool followsMouse: active && !asleep && !directTracking
     onFollowsMouseChanged: followsMouse ? Cursor.acquire() : Cursor.release()
     Component.onCompleted: if (followsMouse) Cursor.acquire()
     Component.onDestruction: { if (followsMouse) Cursor.release(); if (dancing) Media.release() }
 
     property real idleX: 0
     property real idleY: 0
+
+    function trackDirect(mx, my) {
+        if (!active || asleep) return
+        const p = c.mapToItem(null, width / 2, height / 2)
+        const dx = mx - p.x
+        const dy = my - p.y
+        const nx = dx / 380
+        const ny = dy / 380
+        const m = Math.sqrt(nx * nx + ny * ny)
+        const k = m > 1 ? 1 / m : 1
+        lookX = nx * k
+        lookY = ny * k
+    }
 
     function updateLook() {
         if (!active) return
@@ -103,8 +117,8 @@ Item {
     readonly property real fX: bX * (1 - gOn) + gX * gOn
     readonly property real fY: bY * (1 - gOn) + gY * gOn + 0.3 * squint
     // Resorte casi crítico: sacada rápida con un overshoot mínimo, sin temblor.
-    Behavior on eyeX { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
-    Behavior on eyeY { SpringAnimation { spring: c.asleep ? 0.8 : 2.8; damping: c.asleep ? 0.95 : 0.5; epsilon: 0.002 } }
+    Behavior on eyeX { SpringAnimation { spring: c.asleep ? 0.8 : (c.size > 40 ? 4.5 : 2.8); damping: c.asleep ? 0.95 : (c.size > 40 ? 0.65 : 0.5); epsilon: 0.001 } }
+    Behavior on eyeY { SpringAnimation { spring: c.asleep ? 0.8 : (c.size > 40 ? 4.5 : 2.8); damping: c.asleep ? 0.95 : (c.size > 40 ? 0.65 : 0.5); epsilon: 0.001 } }
 
     // ===== Geometría de la cara (proyección esférica) =====
     // Medidas tomadas de reference2 (esfera de diámetro D): ojo 0.149D x 0.3375D,

@@ -158,10 +158,12 @@ PanelWindow {
         pam.start()
     }
 
-    // Fundo: Wallpaper com Desfoque Profundo (MultiEffect)
+    // Fundo: Wallpaper com Desfoque Profundo (MultiEffect com cache de camada)
     Item {
         anchors.fill: parent
         opacity: win.t
+        layer.enabled: true
+        layer.smooth: true
 
         Image {
             id: bgWall
@@ -191,11 +193,27 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: idleGazeTimer
+        interval: 2200
+        repeat: false
+        onTriggered: {
+            if (!LockscreenState.asleep) {
+                character.gOn = 1
+            }
+        }
+    }
+
     // Área global de captura de clique e movimento do mouse
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-        onPositionChanged: LockscreenState.wake()
+        onPositionChanged: mouse => {
+            LockscreenState.wake()
+            idleGazeTimer.restart()
+            if (character.gOn !== 0) character.gOn = 0
+            character.trackDirect(mouse.x, mouse.y)
+        }
         onPressed: {
             LockscreenState.wake()
             passInput.forceActiveFocus()
@@ -254,9 +272,10 @@ PanelWindow {
                 size: 80
                 active: win.visible
                 customAsleep: LockscreenState.asleep
-                gOn: !LockscreenState.asleep ? 1 : 0
+                directTracking: true
                 gX: 0
-                gY: 0.85 // Olhar direcionado para baixo, para a pílula de senha!
+                gY: 0.85 // Olhar direcionado para baixo, para a pílula de senha
+                gOn: 0
             }
 
             ZzzParticles {
@@ -319,6 +338,7 @@ PanelWindow {
                         }
 
                         onTextEdited: {
+                            character.gOn = 1
                             LockscreenState.notifyKeystroke()
                         }
 
