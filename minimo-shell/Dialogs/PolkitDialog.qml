@@ -25,8 +25,6 @@ PanelWindow {
     WlrLayershell.namespace: "minimo-polkit"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    Keys.onEscapePressed: win.doCancel()
-
     property real shakeOffset: 0
 
     onOpenChanged: {
@@ -128,6 +126,8 @@ PanelWindow {
         clip: true
         border.width: 1
         border.color: PolkitState.errorMsg !== "" ? Theme.danger : Theme.track
+
+        Keys.onEscapePressed: win.doCancel()
 
         MouseArea { anchors.fill: parent } // absorve cliques
 

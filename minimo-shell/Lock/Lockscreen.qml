@@ -406,7 +406,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 Text {
-                    text: InputState.layoutBadge()
+                    text: InputState.activeBadgeText
                     color: Theme.textPrimary
                     font.family: Theme.font
                     font.pixelSize: 11
@@ -439,12 +439,26 @@ PanelWindow {
                 id: batRow
                 anchors.centerIn: parent
                 spacing: 6
-                Icon {
-                    name: "battery"
-                    size: 13
-                    tone: "gray"
+
+                Item {
+                    width: 18; height: 10
                     anchors.verticalCenter: parent.verticalCenter
+                    Rectangle {
+                        width: 16; height: 10; radius: 3
+                        color: "transparent"; border.width: 1; border.color: Theme.textSecondary
+                        Rectangle {
+                            x: 2; y: 2; height: 6
+                            width: Math.max(2, Math.min(12, 12 * (UPower.displayDevice.percentage || 1)))
+                            radius: 1.5
+                            color: (UPower.displayDevice.percentage < 0.2) ? Theme.danger : Theme.textPrimary
+                        }
+                    }
+                    Rectangle {
+                        x: 16; y: 3; width: 1.5; height: 4; radius: 0.5
+                        color: Theme.textSecondary
+                    }
                 }
+
                 Text {
                     text: Math.round(UPower.displayDevice.percentage * 100) + "%"
                     color: Theme.textPrimary
