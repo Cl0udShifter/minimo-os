@@ -94,6 +94,7 @@ PanelWindow {
             character.hop()
         }
         function onSubmitRequested(pwd) {
+            LockscreenState.wake()
             passInput.text = pwd
             win.doUnlock()
         }
@@ -107,7 +108,7 @@ PanelWindow {
 
     Timer {
         id: worryReset
-        interval: 2200
+        interval: 3500
         onTriggered: {
             if (character.mood === "worried") character.mood = ""
         }
@@ -145,6 +146,7 @@ PanelWindow {
     }
 
     function doUnlock() {
+        LockscreenState.wake()
         if (LockscreenState.authenticating) return
         if (passInput.text.length === 0) {
             LockscreenState.notifyWrongPassword("Digite sua senha para desbloquear.")

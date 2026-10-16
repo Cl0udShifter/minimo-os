@@ -68,14 +68,15 @@ Singleton {
     }
 
     function notifyWrongPassword(msg) {
+        wake()
         authenticating = false
         errorMsg = msg || "Senha incorreta. Tente novamente."
         shake()
         characterWorry()
-        wake()
     }
 
     function notifySuccess() {
+        wake()
         authenticating = false
         errorMsg = ""
         characterJoy()
@@ -85,7 +86,7 @@ Singleton {
     // Pequeno delay para exibir o hop e sorriso do boneco antes de fechar a tela
     Timer {
         id: unlockTimer
-        interval: 380
+        interval: 450
         repeat: false
         onTriggered: {
             root.unlock()
@@ -95,6 +96,7 @@ Singleton {
     signal submitRequested(string password)
 
     function submitPassword(pwd) {
+        wake()
         submitRequested(pwd)
     }
 
