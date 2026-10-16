@@ -7,12 +7,13 @@ local function mosaico(classe) hl.window_rule({ match = { class = classe }, tile
 
 -- Utilitários pequenos que ficam melhores em modo flutuante.
 for _, c in ipairs({
-	"^(org\\.gnome\\.Calculator)$", "^(gnome-calculator)$", "^(galculator)$",
-	"^(blueman-manager)$", "^(org\\.gnome\\.Nautilus)$", "^(xdg-desktop-portal)$", "^(zoom)$",
+	"^(blueman-manager)$", "^(xdg-desktop-portal)$", "^(zoom)$",
 }) do flutuar(c) end
 
--- Painéis de configuração e terminais que convém organizar em mosaico (tiling).
+-- Gerenciadores de arquivos, utilitários e painéis que convém organizar em mosaico (tiling).
 for _, c in ipairs({
+	"^(org\\.gnome\\.Nautilus)$", "^(nautilus)$",
+	"^(org\\.gnome\\.Calculator)$", "^(gnome-calculator)$", "^(galculator)$",
 	"^(org\\.wezfurlong\\.wezterm)$", "^(gnome-control-center)$", "^(pavucontrol)$", "^(nm-connection-editor)$",
 }) do mosaico(c) end
 

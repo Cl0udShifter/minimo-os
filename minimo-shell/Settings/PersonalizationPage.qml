@@ -14,8 +14,14 @@ Column {
 
     readonly property string mainDir: Quickshell.env("HOME") + "/Imagens/Wallpapers"
     property var images: []
+    property bool cursorDrawerOpen: false
+    property bool iconDrawerOpen: false
 
-    function refresh() { scan.running = false; scan.running = true }
+    function refresh() {
+        scan.running = false
+        scan.running = true
+        ThemeState.refresh()
+    }
     Component.onCompleted: refresh()
 
     // Apenas papéis de parede reais: o atual, os escolhidos antes e os que o usuário adicionou
@@ -116,12 +122,20 @@ Column {
         height: ap.implicitHeight
         radius: 20
         color: Theme.field
+
         Column {
             id: ap
             width: parent.width
+
+            // 1. Modo de Cor (Claro / Escuro)
             Item {
                 width: parent.width; height: 56
-                Text { anchors.left: parent.left; anchors.leftMargin: 18; anchors.verticalCenter: parent.verticalCenter; text: "Aparência"; color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14 }
+                Text {
+                    anchors.left: parent.left; anchors.leftMargin: 18
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Modo do sistema"
+                    color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                }
                 Rectangle {
                     anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
                     width: 184; height: 32; radius: 16; color: Theme.raised
@@ -134,8 +148,341 @@ Column {
                                 readonly property bool cur: DisplayState.theme === modelData.id
                                 width: parent.width / 2; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (thm.containsMouse ? Theme.field : "transparent")
-                                Text { anchors.centerIn: parent; text: modelData.label; color: parent.cur ? Theme.onAccent : Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: parent.cur ? Font.DemiBold : Font.Normal }
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData.label
+                                    color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                    font.family: Theme.font; font.pixelSize: 12
+                                    font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                }
                                 MouseArea { id: thm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: DisplayState.setTheme(modelData.id) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+            // 2. Tema do Cursor do Mouse
+            Item {
+                width: parent.width
+                height: Math.max(64, cursorTextCol.implicitHeight + 20)
+
+                Column {
+                    id: cursorTextCol
+                    anchors.left: parent.left; anchors.leftMargin: 18
+                    anchors.right: cursorPill.left; anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Tema do cursor do mouse"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: {
+                            const cur = ThemeState.cursorThemes.find(t => t.id === ThemeState.currentCursor)
+                            return cur ? cur.name : ThemeState.currentCursor
+                        }
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
+                }
+
+                Rectangle {
+                    id: cursorPill
+                    anchors.right: parent.right; anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: cursorBtnRow.implicitWidth + 24; height: 32; radius: 16
+                    color: cursorMouse.containsMouse ? Theme.hover : Theme.raised
+                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                    Row {
+                        id: cursorBtnRow
+                        anchors.centerIn: parent
+                        spacing: 6
+                        Text {
+                            text: root.cursorDrawerOpen ? "Fechar" : "Alterar..."
+                            color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium
+                        }
+                        Icon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: "chevron"
+                            size: 14
+                            rotation: root.cursorDrawerOpen ? 90 : 0
+                            Behavior on rotation { NumberAnimation { duration: 180 } }
+                        }
+                    }
+
+                    MouseArea {
+                        id: cursorMouse
+                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.cursorDrawerOpen = !root.cursorDrawerOpen
+                            if (root.cursorDrawerOpen) root.iconDrawerOpen = false
+                        }
+                    }
+                }
+            }
+
+            // Gaveta de seleção de temas de cursor
+            Column {
+                id: cursorDrawer
+                width: parent.width
+                height: root.cursorDrawerOpen ? implicitHeight : 0
+                visible: height > 0 || root.cursorDrawerOpen
+                clip: true
+                Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+                Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+                Repeater {
+                    model: ThemeState.cursorThemes
+                    delegate: Rectangle {
+                        required property var modelData
+                        readonly property bool isSelected: ThemeState.currentCursor === modelData.id
+                        width: parent.width
+                        height: 52
+                        color: cItemMouse.containsMouse ? Theme.hover : "transparent"
+                        Behavior on color { ColorAnimation { duration: 100 } }
+
+                        Row {
+                            anchors.left: parent.left; anchors.leftMargin: 24
+                            anchors.right: parent.right; anchors.rightMargin: 24
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 12
+
+                            Rectangle {
+                                width: 8; height: 8; radius: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: parent.parent.isSelected ? Theme.fill : "transparent"
+                            }
+
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 50
+                                spacing: 2
+
+                                Text {
+                                    text: modelData.name || modelData.id
+                                    color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
+                                    font.weight: parent.parent.isSelected ? Font.Bold : Font.Normal
+                                }
+                                Text {
+                                    visible: (modelData.comment || "") !== ""
+                                    text: modelData.comment || ""
+                                    color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
+                                    elide: Text.ElideRight; width: parent.width
+                                }
+                            }
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: parent.parent.isSelected
+                                text: "Ativo"
+                                color: Theme.fill; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Bold
+                            }
+                        }
+
+                        MouseArea {
+                            id: cItemMouse
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                ThemeState.setCursorTheme(modelData.id)
+                                root.cursorDrawerOpen = false
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+            // 3. Tamanho do Cursor
+            Item {
+                width: parent.width
+                height: 56
+
+                Column {
+                    anchors.left: parent.left; anchors.leftMargin: 18
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+                    Text {
+                        text: "Tamanho do cursor"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        text: "Dimensão em pixels"
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
+                }
+
+                Rectangle {
+                    anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
+                    width: 240; height: 32; radius: 16; color: Theme.raised
+                    Row {
+                        anchors.fill: parent; anchors.margins: 3
+                        Repeater {
+                            model: [24, 28, 32, 48]
+                            delegate: Rectangle {
+                                required property int modelData
+                                readonly property bool cur: ThemeState.currentCursorSize === modelData
+                                width: parent.width / 4; height: parent.height; radius: height / 2
+                                color: cur ? Theme.fill : (cszMouse.containsMouse ? Theme.field : "transparent")
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData + " px"
+                                    color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                    font.family: Theme.font; font.pixelSize: 11
+                                    font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                }
+                                MouseArea {
+                                    id: cszMouse
+                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: ThemeState.setCursorSize(modelData)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+            // 4. Tema de Ícones
+            Item {
+                width: parent.width
+                height: Math.max(64, iconTextCol.implicitHeight + 20)
+
+                Column {
+                    id: iconTextCol
+                    anchors.left: parent.left; anchors.leftMargin: 18
+                    anchors.right: iconPill.left; anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: "Tema de ícones"
+                        color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 14; font.weight: Font.Medium
+                    }
+                    Text {
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        text: {
+                            const cur = ThemeState.iconThemes.find(t => t.id === ThemeState.currentIcon)
+                            return cur ? cur.name : ThemeState.currentIcon
+                        }
+                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+                    }
+                }
+
+                Rectangle {
+                    id: iconPill
+                    anchors.right: parent.right; anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: iconBtnRow.implicitWidth + 24; height: 32; radius: 16
+                    color: iconMouse.containsMouse ? Theme.hover : Theme.raised
+                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                    Row {
+                        id: iconBtnRow
+                        anchors.centerIn: parent
+                        spacing: 6
+                        Text {
+                            text: root.iconDrawerOpen ? "Fechar" : "Alterar..."
+                            color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Medium
+                        }
+                        Icon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: "chevron"
+                            size: 14
+                            rotation: root.iconDrawerOpen ? 90 : 0
+                            Behavior on rotation { NumberAnimation { duration: 180 } }
+                        }
+                    }
+
+                    MouseArea {
+                        id: iconMouse
+                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.iconDrawerOpen = !root.iconDrawerOpen
+                            if (root.iconDrawerOpen) root.cursorDrawerOpen = false
+                        }
+                    }
+                }
+            }
+
+            // Gaveta de seleção de temas de ícones
+            Column {
+                id: iconDrawer
+                width: parent.width
+                height: root.iconDrawerOpen ? implicitHeight : 0
+                visible: height > 0 || root.iconDrawerOpen
+                clip: true
+                Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+                Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+                Repeater {
+                    model: ThemeState.iconThemes
+                    delegate: Rectangle {
+                        required property var modelData
+                        readonly property bool isSelected: ThemeState.currentIcon === modelData.id
+                        width: parent.width
+                        height: 52
+                        color: iItemMouse.containsMouse ? Theme.hover : "transparent"
+                        Behavior on color { ColorAnimation { duration: 100 } }
+
+                        Row {
+                            anchors.left: parent.left; anchors.leftMargin: 24
+                            anchors.right: parent.right; anchors.rightMargin: 24
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 12
+
+                            Rectangle {
+                                width: 8; height: 8; radius: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: parent.parent.isSelected ? Theme.fill : "transparent"
+                            }
+
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 50
+                                spacing: 2
+
+                                Text {
+                                    text: modelData.name || modelData.id
+                                    color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 13
+                                    font.weight: parent.parent.isSelected ? Font.Bold : Font.Normal
+                                }
+                                Text {
+                                    visible: (modelData.comment || "") !== ""
+                                    text: modelData.comment || ""
+                                    color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
+                                    elide: Text.ElideRight; width: parent.width
+                                }
+                            }
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: parent.parent.isSelected
+                                text: "Ativo"
+                                color: Theme.fill; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Bold
+                            }
+                        }
+
+                        MouseArea {
+                            id: iItemMouse
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                ThemeState.setIconTheme(modelData.id)
+                                root.iconDrawerOpen = false
                             }
                         }
                     }
