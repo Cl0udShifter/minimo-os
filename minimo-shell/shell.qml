@@ -8,6 +8,7 @@ import "Wallpaper"
 import "Launcher"
 import "Settings"
 import "OSD"
+import "Dialogs"
 
 // Minimo OS shell root: papel de parede, ilha e OSD por monitor.
 ShellRoot {
@@ -34,4 +35,6 @@ ShellRoot {
     }
     Launcher {}
     SettingsWindow {}
+    PolkitDialog {}
 }
+
