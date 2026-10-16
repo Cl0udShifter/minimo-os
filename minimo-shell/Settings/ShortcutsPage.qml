@@ -21,6 +21,9 @@ Column {
     property bool modAlt: false
     property string mainKey: ""
 
+    property bool addingAppShortcut: false
+    function openAppShortcutModal() { addingAppShortcut = true }
+    function closeAppShortcutModal() { addingAppShortcut = false }
 
     onVisibleChanged: {
         if (visible) {
@@ -35,7 +38,7 @@ Column {
 
         // Campo de Busca
         Rectangle {
-            width: root.width - (ShortcutsManager.dirty ? 290 : 170)
+            width: root.width - (ShortcutsManager.dirty ? 410 : 290)
             height: 38
             radius: 19
             color: Theme.field
@@ -74,6 +77,13 @@ Column {
                     }
                 }
             }
+        }
+
+        // Botão Novo Atalho de Aplicativo
+        PillButton {
+            text: "+ Novo Atalho"
+            outlined: true
+            onClicked: root.openAppShortcutModal()
         }
 
         // Botão Restaurar Padrões
@@ -122,6 +132,7 @@ Column {
     // Lista de Categorias e Atalhos
     Repeater {
         model: [
+            "Aplicativos Personalizados",
             "Aplicativos e Shell",
             "Janelas",
             "Navegação",
@@ -145,13 +156,43 @@ Column {
                     s.keys.toLowerCase().includes(filter)
                 )
             }
-            visible: items.length > 0
+            visible: items.length > 0 || (catName === "Aplicativos Personalizados" && ShortcutsManager.searchFilter === "")
             width: root.width
             spacing: 10
 
             SectionTitle { text: catCol.catName }
 
+            // Card informativo quando não houver nenhum app personalizado cadastrado
             Rectangle {
+                visible: catCol.items.length === 0 && catCol.catName === "Aplicativos Personalizados"
+                width: root.width
+                height: 64
+                radius: 20
+                color: Theme.field
+
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 14
+
+                    Text {
+                        text: "Nenhum atalho de aplicativo cadastrado."
+                        color: Theme.textSecondary
+                        font.family: Theme.font
+                        font.pixelSize: 13
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    PillButton {
+                        text: "+ Criar Atalho"
+                        outlined: true
+                        anchors.verticalCenter: parent.verticalCenter
+                        onClicked: root.openAppShortcutModal()
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: catCol.items.length > 0
                 width: root.width
                 height: rowsCol.implicitHeight + 16
                 radius: 20
@@ -184,7 +225,18 @@ Column {
                                     width: 32; height: 32; radius: 10
                                     color: Theme.raised
                                     anchors.verticalCenter: parent.verticalCenter
+
+                                    Image {
+                                        visible: sRow.item.isCustomApp === true
+                                        anchors.centerIn: parent
+                                        width: 20; height: 20
+                                        source: sRow.item.icon || ""
+                                        sourceSize: Qt.size(40, 40)
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+
                                     Icon {
+                                        visible: !sRow.item.isCustomApp
                                         anchors.centerIn: parent
                                         name: sRow.item.icon || "keyboard"
                                         size: 16
@@ -211,12 +263,12 @@ Column {
                                 }
                             }
 
-                            // Lado Direito: Teclas e Botão Editar
+                            // Lado Direito: Teclas, Botão Editar e Botão Remover (se custom app)
                             Row {
                                 anchors.right: parent.right
                                 anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: 10
+                                spacing: 8
 
                                 // Badges de teclas estilo keycaps
                                 Row {
@@ -250,6 +302,14 @@ Column {
                                     outlined: true
                                     anchors.verticalCenter: parent.verticalCenter
                                     onClicked: root.openEditor(sRow.item)
+                                }
+
+                                PillButton {
+                                    visible: sRow.item.isCustomApp === true
+                                    text: "Remover"
+                                    outlined: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    onClicked: ShortcutsManager.removeAppShortcut(sRow.item.id)
                                 }
                             }
 
@@ -318,50 +378,6 @@ Column {
     }
 
     function keyToHypr(key, text) {
-        switch (key) {
-            case Qt.Key_Space: return "space"
-            case Qt.Key_Comma: return "comma"
-            case Qt.Key_Period: return "period"
-            case Qt.Key_Minus: return "minus"
-            case Qt.Key_Equal: return "equal"
-            case Qt.Key_BracketLeft: return "bracketleft"
-            case Qt.Key_BracketRight: return "bracketright"
-            case Qt.Key_Slash: return "slash"
-            case Qt.Key_Backslash: return "backslash"
-            case Qt.Key_Semicolon: return "semicolon"
-            case Qt.Key_Apostrophe: return "apostrophe"
-            case Qt.Key_Print: return "Print"
-            case Qt.Key_PageUp: return "Page_Up"
-            case Qt.Key_PageDown: return "Page_Down"
-            case Qt.Key_Home: return "Home"
-            case Qt.Key_End: return "End"
-            case Qt.Key_Left: return "left"
-            case Qt.Key_Right: return "right"
-            case Qt.Key_Up: return "up"
-            case Qt.Key_Down: return "down"
-            case Qt.Key_Return: case Qt.Key_Enter: return "Return"
-            case Qt.Key_Tab: return "Tab"
-            case Qt.Key_Backspace: return "BackSpace"
-            case Qt.Key_Delete: return "Delete"
-            case Qt.Key_Insert: return "Insert"
-            case Qt.Key_Escape: return "Escape"
-            case Qt.Key_F1: return "F1"
-            case Qt.Key_F2: return "F2"
-            case Qt.Key_F3: return "F3"
-            case Qt.Key_F4: return "F4"
-            case Qt.Key_F5: return "F5"
-            case Qt.Key_F6: return "F6"
-            case Qt.Key_F7: return "F7"
-            case Qt.Key_F8: return "F8"
-            case Qt.Key_F9: return "F9"
-            case Qt.Key_F10: return "F10"
-            case Qt.Key_F11: return "F11"
-            case Qt.Key_F12: return "F12"
-            default:
-                if (key >= Qt.Key_0 && key <= Qt.Key_9) return String.fromCharCode(key)
-                if (key >= Qt.Key_A && key <= Qt.Key_Z) return String.fromCharCode(key)
-                if (text && text.length === 1 && text.trim() !== "") return text
-                return ""
-        }
+        return ShortcutsManager.keyToHypr(key, text)
     }
 }

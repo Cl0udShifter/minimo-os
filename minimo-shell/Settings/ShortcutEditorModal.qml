@@ -47,7 +47,16 @@ Rectangle {
                 Rectangle {
                     width: 38; height: 38; radius: 12; color: Theme.field
                     anchors.verticalCenter: parent.verticalCenter
+                    Image {
+                        visible: root.page && root.page.editingItem && root.page.editingItem.isCustomApp
+                        anchors.centerIn: parent
+                        width: 24; height: 24
+                        source: (root.page && root.page.editingItem) ? (root.page.editingItem.icon || "") : ""
+                        sourceSize: Qt.size(48, 48)
+                        fillMode: Image.PreserveAspectFit
+                    }
                     Icon {
+                        visible: !root.page || !root.page.editingItem || !root.page.editingItem.isCustomApp
                         anchors.centerIn: parent
                         name: (root.page && root.page.editingItem) ? (root.page.editingItem.icon || "keyboard") : "keyboard"
                         size: 20
@@ -412,6 +421,7 @@ Rectangle {
                 spacing: 10
 
                 PillButton {
+                    visible: root.page && root.page.editingItem && !root.page.editingItem.isCustomApp
                     text: "Restaurar Padrão"
                     outlined: true
                     onClicked: {

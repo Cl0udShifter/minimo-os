@@ -122,20 +122,44 @@ Singleton {
         onLoaded: {
             try {
                 const saved = JSON.parse(text())
-                root.initList(saved)
+                if (saved && saved.shortcuts) {
+                    root.initList(saved.shortcuts, saved.appShortcuts || [])
+                } else {
+                    root.initList(saved || {}, [])
+                }
             } catch (e) {
-                root.initList({})
+                root.initList({}, [])
             }
             root.loaded = true
         }
         onLoadFailed: {
-            root.initList({})
+            root.initList({}, [])
             root.loaded = true
         }
     }
 
-    function initList(customMap) {
+    function initList(customMap, appShortcuts) {
         let list = []
+
+        // 1. Aplicativos personalizados do usuário
+        if (appShortcuts && Array.isArray(appShortcuts)) {
+            for (let a = 0; a < appShortcuts.length; a++) {
+                let item = appShortcuts[a]
+                list.push({
+                    id: item.id,
+                    cat: "Aplicativos Personalizados",
+                    name: item.name,
+                    desc: item.desc || ("Executa: " + item.exec),
+                    exec: item.exec,
+                    icon: item.icon || "apps",
+                    isCustomApp: true,
+                    defaultKeys: "",
+                    keys: item.keys
+                })
+            }
+        }
+
+        // 2. Atalhos padrão do sistema
         for (let i = 0; i < defaultDefinitions.length; i++) {
             let def = defaultDefinitions[i]
             let assignedKeys = (customMap && customMap[def.id]) ? customMap[def.id] : def.defaultKeys
@@ -145,12 +169,41 @@ Singleton {
                 name: def.name,
                 desc: def.desc,
                 icon: def.icon,
+                isCustomApp: false,
                 defaultKeys: def.defaultKeys,
                 keys: assignedKeys
             })
         }
         root.shortcutsList = list
         root.dirty = false
+    }
+
+    // Adiciona um novo atalho de aplicativo personalizado
+    function addAppShortcut(name, exec, icon, keys) {
+        const cleanExecCmd = (exec || "").replace(/%[a-zA-Z]/g, "").trim()
+        const normKeys = normalizeKeys(keys)
+        const newId = "app_" + Date.now().toString(36) + "_" + Math.random().toString(36).substr(2, 4)
+        const newItem = {
+            id: newId,
+            cat: "Aplicativos Personalizados",
+            name: name || cleanExecCmd,
+            desc: "Executa: " + cleanExecCmd,
+            exec: cleanExecCmd,
+            icon: icon || "apps",
+            isCustomApp: true,
+            defaultKeys: "",
+            keys: normKeys
+        }
+        root.shortcutsList = [newItem].concat(root.shortcutsList)
+        root.dirty = true
+        saveChanges()
+    }
+
+    // Remove um atalho de aplicativo personalizado
+    function removeAppShortcut(id) {
+        root.shortcutsList = root.shortcutsList.filter(s => s.id !== id)
+        root.dirty = true
+        saveChanges()
     }
 
     // Normalização das teclas para garantir ordem consistente (SUPER + CTRL + SHIFT + ALT + KEY)
@@ -213,8 +266,10 @@ Singleton {
                     cat: s.cat,
                     name: s.name,
                     desc: s.desc,
+                    exec: s.exec,
                     icon: s.icon,
-                    defaultKeys: s.defaultKeys,
+                    isCustomApp: s.isCustomApp || false,
+                    defaultKeys: s.defaultKeys || "",
                     keys: normalized
                 })
             } else {
@@ -238,6 +293,12 @@ Singleton {
     // Restaura todos os atalhos para os valores padrão
     function resetAllToDefaults() {
         let list = []
+        // Preserva atalhos de aplicativos personalizados
+        for (let j = 0; j < root.shortcutsList.length; j++) {
+            if (root.shortcutsList[j].isCustomApp) {
+                list.push(root.shortcutsList[j])
+            }
+        }
         for (let i = 0; i < defaultDefinitions.length; i++) {
             let def = defaultDefinitions[i]
             list.push({
@@ -246,6 +307,7 @@ Singleton {
                 name: def.name,
                 desc: def.desc,
                 icon: def.icon,
+                isCustomApp: false,
                 defaultKeys: def.defaultKeys,
                 keys: def.defaultKeys
             })
@@ -255,7 +317,7 @@ Singleton {
     }
 
     // Gerador de código Lua para o Hyprland
-    function generateLuaScript(map) {
+    function generateLuaScript(map, appShortcuts) {
         let out = "-- SPDX-License-Identifier: MIT\n"
         out += "-- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS\n"
         out += "-- Atalhos de teclado do Minimo OS.\n"
@@ -338,6 +400,18 @@ Singleton {
         }
         out += "\n"
 
+        // Aplicativos personalizados adicionados pelo usuário
+        if (appShortcuts && appShortcuts.length > 0) {
+            out += "-- Aplicativos personalizados\n"
+            for (let a = 0; a < appShortcuts.length; a++) {
+                let app = appShortcuts[a]
+                if (app.keys && app.keys.trim() !== "" && app.exec && app.exec.trim() !== "") {
+                    out += 'bind_key("' + app.keys + '", dsp.exec_cmd([=[' + app.exec + ']=]))\n'
+                }
+            }
+            out += "\n"
+        }
+
         out += "-- Sessão\n"
         if (map.session_lock) {
             out += 'bind_key("' + map.session_lock + '", dsp.exec_cmd(qs .. "lock lock"), fixo)\n'
@@ -418,16 +492,32 @@ Singleton {
     // Salva as alterações nos arquivos e recarrega o Hyprland
     function saveChanges() {
         let map = {}
+        let appShortcuts = []
         for (let i = 0; i < root.shortcutsList.length; i++) {
             let s = root.shortcutsList[i]
-            map[s.id] = s.keys
+            if (s.isCustomApp) {
+                appShortcuts.push({
+                    id: s.id,
+                    name: s.name,
+                    desc: s.desc,
+                    exec: s.exec,
+                    icon: s.icon,
+                    keys: s.keys
+                })
+            } else {
+                map[s.id] = s.keys
+            }
         }
 
-        // Salva shortcuts.json
-        file.setText(JSON.stringify(map, null, 2))
+        // Salva shortcuts.json com a estrutura combinada
+        let payload = {
+            shortcuts: map,
+            appShortcuts: appShortcuts
+        }
+        file.setText(JSON.stringify(payload, null, 2))
 
         // Gera o script atajos.lua
-        let luaContent = generateLuaScript(map)
+        let luaContent = generateLuaScript(map, appShortcuts)
 
         // Escreve os arquivos e recarrega o Hyprland
         saveProc.command = [
@@ -445,6 +535,55 @@ Singleton {
         root.dirty = false
         root.saveSuccess = true
         successTimer.restart()
+    }
+
+    // Conversor auxiliar de teclas Qt para símbolos Hyprland
+    function keyToHypr(key, text) {
+        switch (key) {
+            case Qt.Key_Space: return "space"
+            case Qt.Key_Comma: return "comma"
+            case Qt.Key_Period: return "period"
+            case Qt.Key_Minus: return "minus"
+            case Qt.Key_Equal: return "equal"
+            case Qt.Key_BracketLeft: return "bracketleft"
+            case Qt.Key_BracketRight: return "bracketright"
+            case Qt.Key_Slash: return "slash"
+            case Qt.Key_Backslash: return "backslash"
+            case Qt.Key_Semicolon: return "semicolon"
+            case Qt.Key_Apostrophe: return "apostrophe"
+            case Qt.Key_Print: return "Print"
+            case Qt.Key_PageUp: return "Page_Up"
+            case Qt.Key_PageDown: return "Page_Down"
+            case Qt.Key_Home: return "Home"
+            case Qt.Key_End: return "End"
+            case Qt.Key_Left: return "left"
+            case Qt.Key_Right: return "right"
+            case Qt.Key_Up: return "up"
+            case Qt.Key_Down: return "down"
+            case Qt.Key_Return: case Qt.Key_Enter: return "Return"
+            case Qt.Key_Tab: return "Tab"
+            case Qt.Key_Backspace: return "BackSpace"
+            case Qt.Key_Delete: return "Delete"
+            case Qt.Key_Insert: return "Insert"
+            case Qt.Key_Escape: return "Escape"
+            case Qt.Key_F1: return "F1"
+            case Qt.Key_F2: return "F2"
+            case Qt.Key_F3: return "F3"
+            case Qt.Key_F4: return "F4"
+            case Qt.Key_F5: return "F5"
+            case Qt.Key_F6: return "F6"
+            case Qt.Key_F7: return "F7"
+            case Qt.Key_F8: return "F8"
+            case Qt.Key_F9: return "F9"
+            case Qt.Key_F10: return "F10"
+            case Qt.Key_F11: return "F11"
+            case Qt.Key_F12: return "F12"
+            default:
+                if (key >= Qt.Key_0 && key <= Qt.Key_9) return String.fromCharCode(key)
+                if (key >= Qt.Key_A && key <= Qt.Key_Z) return String.fromCharCode(key)
+                if (text && text.length === 1 && text.trim() !== "") return text
+                return ""
+        }
     }
 
     Timer {

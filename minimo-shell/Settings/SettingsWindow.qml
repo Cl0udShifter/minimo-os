@@ -217,5 +217,10 @@ PanelWindow {
         ShortcutEditorModal {
             page: shortcuts
         }
+
+        // Modal de Novo Atalho de Aplicativo
+        AppShortcutModal {
+            page: shortcuts
+        }
     }
 }
