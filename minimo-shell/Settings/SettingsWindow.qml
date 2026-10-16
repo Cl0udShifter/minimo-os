@@ -28,6 +28,7 @@ PanelWindow {
         { id: "personalizacion", label: "Personalização", icon: "brush" },
         { id: "pantalla", label: "Tela", icon: "display" },
         { id: "janelas", label: "Janelas", icon: "desktops" },
+        { id: "efeitos", label: "Efeitos", icon: "sun" },
         { id: "entrada", label: "Mouse e Teclado", icon: "mouse" },
         { id: "atalhos", label: "Atalhos", icon: "keyboard" },
         { id: "minimo", label: "Minimo OS", icon: "info" }
@@ -106,7 +107,7 @@ PanelWindow {
             Text {
                 id: heading
                 x: 36; y: 26
-                text: SettingsState.section === "pantalla" ? "Tela" : SettingsState.section === "janelas" ? "Janelas e Espaçamento" : SettingsState.section === "entrada" ? "Mouse e Teclado" : SettingsState.section === "atalhos" ? "Atalhos" : SettingsState.section === "minimo" ? "Sobre" : "Personalização"
+                text: SettingsState.section === "pantalla" ? "Tela" : SettingsState.section === "janelas" ? "Janelas e Espaçamento" : SettingsState.section === "efeitos" ? "Animações e Efeitos Visuais" : SettingsState.section === "entrada" ? "Mouse e Teclado" : SettingsState.section === "atalhos" ? "Atalhos" : SettingsState.section === "minimo" ? "Sobre" : "Personalização"
                 color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold
             }
             Flickable {
@@ -114,10 +115,10 @@ PanelWindow {
                 anchors.top: heading.bottom; anchors.topMargin: 18
                 anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
                 anchors.leftMargin: 36; anchors.rightMargin: 36
-                contentHeight: (SettingsState.section === "pantalla" ? display.implicitHeight : SettingsState.section === "janelas" ? windowsPage.implicitHeight : SettingsState.section === "entrada" ? inputPage.implicitHeight : SettingsState.section === "atalhos" ? shortcuts.implicitHeight : SettingsState.section === "minimo" ? about.implicitHeight : personal.implicitHeight) + 32
+                contentHeight: (SettingsState.section === "pantalla" ? display.implicitHeight : SettingsState.section === "janelas" ? windowsPage.implicitHeight : SettingsState.section === "efeitos" ? effectsPage.implicitHeight : SettingsState.section === "entrada" ? inputPage.implicitHeight : SettingsState.section === "atalhos" ? shortcuts.implicitHeight : SettingsState.section === "minimo" ? about.implicitHeight : personal.implicitHeight) + 32
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                // Volver arriba solo al cambiar de sección (no cuando la página crece al cargar).
+                // Volver arriba solo al cambiar de sección (no quando la página crece al cargar).
                 Connections { target: SettingsState; function onSectionChanged() { flick.contentY = 0 } }
 
                 WheelHandler {
@@ -148,6 +149,11 @@ PanelWindow {
                     id: windowsPage
                     width: flick.width
                     visible: SettingsState.section === "janelas"
+                }
+                EffectsPage {
+                    id: effectsPage
+                    width: flick.width
+                    visible: SettingsState.section === "efeitos"
                 }
                 InputPage {
                     id: inputPage

@@ -11,7 +11,7 @@ import Quickshell.Io
 Singleton {
     id: root
     property bool open: false
-    property string section: "personalizacion"   // "personalizacion" | "pantalla" | "janelas" | "entrada" | "atalhos" | "minimo"
+    property string section: "personalizacion"   // "personalizacion" | "pantalla" | "janelas" | "efeitos" | "entrada" | "atalhos" | "minimo"
     function toggle() { open = !open }
     function show() { open = true }
     function hide() { open = false }

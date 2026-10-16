@@ -55,11 +55,61 @@ def main():
     inactive_opacity = max(0.70, min(1.00, float(cfg.get("inactiveOpacity", 1.0))))
     resize_on_border = "true" if cfg.get("resizeOnBorder", False) else "false"
 
+    anim_preset = cfg.get("animPreset", "smooth")
+    if anim_preset not in ["smooth", "fast", "instant", "disabled"]:
+        anim_preset = "smooth"
+    anim_enabled = "false" if anim_preset == "disabled" else "true"
+
+    blur_enabled = "true" if cfg.get("blurEnabled", True) else "false"
+    blur_size = max(3, min(14, int(round(cfg.get("blurSize", 8)))))
+    blur_passes = 3 if blur_size >= 11 else (2 if blur_size >= 6 else 1)
+
+    shadow_enabled = "true" if cfg.get("shadowEnabled", True) else "false"
+    shadow_range = max(10, min(60, int(round(cfg.get("shadowRange", 30)))))
+
+    # Presets de animação
+    if anim_preset == "disabled":
+        anim_lua_block = "-- Animações desativadas.\n"
+        anim_eval_block = ""
+    elif anim_preset == "instant":
+        anim_lua_block = (
+            "-- Animações instantâneas (mínimas).\n"
+            "for leaf, speed in pairs({ windowsIn = 0.8, windowsOut = 0.8, windowsMove = 1.0, workspaces = 1.2, fade = 0.8, border = 0.8 }) do\n"
+            "\thl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = \"default\" })\n"
+            "end\n"
+        )
+        anim_eval_block = (
+            "for leaf, speed in pairs({ windowsIn = 0.8, windowsOut = 0.8, windowsMove = 1.0, workspaces = 1.2, fade = 0.8, border = 0.8 }) do "
+            "hl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = 'default' }) end "
+        )
+    elif anim_preset == "fast":
+        anim_lua_block = (
+            "-- Animações rápidas e ágeis.\n"
+            "for leaf, speed in pairs({ windowsIn = 1.8, windowsOut = 1.8, windowsMove = 2.2, workspaces = 2.8, fade = 1.8, border = 1.8 }) do\n"
+            "\thl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = \"default\" })\n"
+            "end\n"
+        )
+        anim_eval_block = (
+            "for leaf, speed in pairs({ windowsIn = 1.8, windowsOut = 1.8, windowsMove = 2.2, workspaces = 2.8, fade = 1.8, border = 1.8 }) do "
+            "hl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = 'default' }) end "
+        )
+    else:  # "smooth"
+        anim_lua_block = (
+            "-- Animações suaves com a curva padrão do Minimo OS.\n"
+            "for leaf, speed in pairs({ windowsIn = 3, windowsOut = 3, windowsMove = 4, workspaces = 5, fade = 3, border = 3 }) do\n"
+            "\thl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = \"default\" })\n"
+            "end\n"
+        )
+        anim_eval_block = (
+            "for leaf, speed in pairs({ windowsIn = 3, windowsOut = 3, windowsMove = 4, workspaces = 5, fade = 3, border = 3 }) do "
+            "hl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = 'default' }) end "
+        )
+
     # 1. Persistir no arquivo ~/.config/hypr/minimo/apariencia.lua e repo
     content = "-- SPDX-License-Identifier: MIT\n"
     content += "-- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS\n"
-    content += f"-- Aparência: janelas com cantos de {rounding} px, espaçamento {gaps_in}/{gaps_out} px, borda {border_size} px e sombra suave.\n"
-    content += "-- Gerado automaticamente por Configurações › Janelas e Espaçamento do Minimo OS.\n\n"
+    content += f"-- Aparência: janelas com cantos de {rounding} px, espaçamento {gaps_in}/{gaps_out} px, borda {border_size} px, blur {blur_size} px e sombras.\n"
+    content += "-- Gerado automaticamente por Configurações do Minimo OS.\n\n"
     content += 'local acento = "rgb(9aa38f)"    -- verde acinzentado\n'
     content += 'local apagado = "rgb(807f7c)"\n'
     content += 'local bloqueado = "rgb(ff7568)"\n\n'
@@ -77,12 +127,23 @@ def main():
     content += f"\t\tactive_opacity = {active_opacity:.2f},\n"
     content += f"\t\tinactive_opacity = {inactive_opacity:.2f},\n"
     content += "\t\tshadow = {\n"
-    content += "\t\t\tenabled = true,\n"
-    content += "\t\t\trange = 30,\n"
+    content += f"\t\t\tenabled = {shadow_enabled},\n"
+    content += f"\t\t\trange = {shadow_range},\n"
     content += "\t\t\trender_power = 5,\n"
     content += '\t\t\toffset = "0 5",\n'
     content += '\t\t\tcolor = "rgba(00000070)",\n'
     content += "\t\t},\n"
+    content += "\t\tblur = {\n"
+    content += f"\t\t\tenabled = {blur_enabled},\n"
+    content += f"\t\t\tsize = {blur_size},\n"
+    content += f"\t\t\tpasses = {blur_passes},\n"
+    content += "\t\t\tnew_optimizations = true,\n"
+    content += "\t\t\txray = false,\n"
+    content += "\t\t\tignore_opacity = true,\n"
+    content += "\t\t},\n"
+    content += "\t},\n"
+    content += "\tanimations = {\n"
+    content += f"\t\tenabled = {anim_enabled},\n"
     content += "\t},\n"
     content += "\tgroup = {\n"
     content += "\t\tcol = {\n"
@@ -102,10 +163,7 @@ def main():
     content += "\t\tdisable_splash_rendering = true,\n"
     content += "\t},\n"
     content += "})\n\n"
-    content += "-- Animações curtas com a curva padrão.\n"
-    content += 'for leaf, speed in pairs({ windowsIn = 3, windowsOut = 3, windowsMove = 4, workspaces = 5, fade = 3, border = 3 }) do\n'
-    content += '\thl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = "default" })\n'
-    content += "end\n"
+    content += anim_lua_block
 
     target_paths = [
         os.path.expanduser("~/.config/hypr/minimo/apariencia.lua"),
@@ -121,7 +179,7 @@ def main():
 
     # 2. Aplicar dinamicamente ao Hyprland via eval
     lua_eval = (
-        f'return hl.config({{ '
+        f'hl.config({{ '
         f'general = {{ '
         f'gaps_in = {gaps_in}, '
         f'gaps_out = {gaps_out}, '
@@ -131,9 +189,23 @@ def main():
         f'decoration = {{ '
         f'rounding = {rounding}, '
         f'active_opacity = {active_opacity:.2f}, '
-        f'inactive_opacity = {inactive_opacity:.2f} '
+        f'inactive_opacity = {inactive_opacity:.2f}, '
+        f'shadow = {{ '
+        f'enabled = {shadow_enabled}, '
+        f'range = {shadow_range} '
+        f'}}, '
+        f'blur = {{ '
+        f'enabled = {blur_enabled}, '
+        f'size = {blur_size}, '
+        f'passes = {blur_passes} '
         f'}} '
-        f'}})'
+        f'}}, '
+        f'animations = {{ '
+        f'enabled = {anim_enabled} '
+        f'}} '
+        f'}}) '
+        f'{anim_eval_block}'
+        f'return "ok"'
     )
     send_hypr(f"eval {lua_eval}\n")
     send_hypr('eval package.loaded["minimo.apariencia"] = nil\n')
