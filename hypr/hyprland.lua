@@ -13,18 +13,19 @@ hl.config({
 	},
 })
 
+local function reload_module(name)
+	package.loaded[name] = nil
+	return require(name)
+end
+
 -- Ao iniciar: exportar o ambiente para o systemd e iniciar a sessão (minimo-shell.service e minimo-polkit.service).
 hl.on("hyprland.start", function()
 	hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 	hl.exec_cmd("systemctl --user start hyprland-session.target")
 	hl.exec_cmd("systemctl --user start minimo-polkit.service")
 	hl.exec_cmd("systemctl --user start minimo-clipboard.service")
+	pcall(function() reload_module("minimo.autostart") end)
 end)
-
-local function reload_module(name)
-	package.loaded[name] = nil
-	return require(name)
-end
 
 reload_module("minimo.apariencia")   -- espaçamento, bordas, cantos, sombras, animações, cores
 reload_module("minimo.entrada")      -- teclado, mouse, touchpad, gestos
@@ -34,5 +35,4 @@ reload_module("minimo.reglas")       -- regras de janelas e camadas
 reload_module("minimo.atajos")       -- atalhos de teclado
 reload_module("minimo")              -- atalhos da shell (Super+B, etc.)
 pcall(function() reload_module("minimo.cursor") end) -- tema e tamanho do cursor
-pcall(function() reload_module("minimo.autostart") end) -- aplicativos de inicialização
 
