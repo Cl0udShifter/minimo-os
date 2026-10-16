@@ -15,6 +15,10 @@ if [ ! -x "$DIR/minimo-polkit-agent" ] || [ "$DIR/minimo-polkit-agent.c" -nt "$D
     fi
 fi
 
+if [ "${1:-}" = "--build" ] || [ "${1:-}" = "--compile" ]; then
+    [ -x "$DIR/minimo-polkit-agent" ] && exit 0 || exit 1
+fi
+
 if [ -x "$DIR/minimo-polkit-agent" ]; then
     exec "$DIR/minimo-polkit-agent"
 elif [ -x /usr/lib/hyprpolkitagent/hyprpolkitagent ]; then

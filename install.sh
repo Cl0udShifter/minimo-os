@@ -10,7 +10,7 @@
 # É idempotente: pode ser executado novamente sem quebrar nada.
 set -euo pipefail
 
-REPO_SLUG="Diegolede/minimo-os"
+REPO_SLUG="Cl0udShifter/minimo-os"
 REPO_URL="https://github.com/$REPO_SLUG.git"
 DEST="$HOME/Projetos/minimo-os"
 TS=$(date +%Y%m%d-%H%M%S)
@@ -146,7 +146,7 @@ PKGS=(
     adwaita-fonts                                              # tipografia Adwaita Sans
     networkmanager                                             # Wi-Fi na ilha (nmcli)
     python                                                     # scripts da shell (cursor, status, workspaces)
-    git
+    git gcc pkgconf polkit                                     # controle de versão e compilação do agente polkit nativo
 )
 OPTIONAL=(wl-clipboard github-cli)
 step "Pacotes"
@@ -242,6 +242,10 @@ add_hello "$HOME/.bashrc" bash
 add_hello "$HOME/.zshrc" zsh
 
 step "Serviço da shell e polkit (systemd --user)"
+if [ -f "$REPO/minimo-shell/scripts/minimo-polkit-agent.c" ]; then
+    substep "Compilando agente de autenticação Polkit do Minimo"
+    run bash "$REPO/minimo-shell/scripts/polkit-agent.sh" --build || warn "Não foi possível compilar o agente nativo do Polkit; usando fallback do sistema."
+fi
 UNITS="$HOME/.config/systemd/user"
 link "$REPO/systemd/minimo-shell.service" "$UNITS/minimo-shell.service"
 link "$REPO/systemd/minimo-polkit.service" "$UNITS/minimo-polkit.service"
