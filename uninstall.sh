@@ -12,7 +12,8 @@ run() { if [ "$DRY" = 1 ]; then printf '  %s[dry-run]%s %s\n' "$D" "$N" "$*"; el
 
 printf '%s==>%s Serviço\n' "$C" "$N"
 run systemctl --user disable --now minimo-shell.service || true
-for u in minimo-shell.service hyprland-session.target; do
+run systemctl --user disable --now minimo-polkit.service || true
+for u in minimo-shell.service minimo-polkit.service hyprland-session.target; do
     [ -L "$HOME/.config/systemd/user/$u" ] && run rm -f "$HOME/.config/systemd/user/$u"
 done
 run systemctl --user daemon-reload

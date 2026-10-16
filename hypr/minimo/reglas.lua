@@ -20,6 +20,22 @@ hl.window_rule({ match = { class = "^(org\\.gnome\\.)" }, rounding = 12 })
 hl.window_rule({ match = { class = "^(firefox)$", title = "^(Picture-in-Picture)$" }, float = true })
 hl.window_rule({ match = { class = "^(steam)$", title = "^(notificationtoasts)" }, no_initial_focus = true, pin = true })
 
+-- Diálogos de autenticação e elevação de privilégios (Polkit)
+for _, c in ipairs({
+	"^(polkit-gnome-authentication-agent-1)$",
+	"^(hyprpolkitagent)$",
+	"^(org\\.kde\\.polkit-kde-authentication-agent-1)$",
+}) do
+	hl.window_rule({
+		match = { class = c },
+		float = true,
+		center = true,
+		stay_focused = true,
+		dim_around = true,
+		rounding = 16,
+	})
+end
+
 -- Camadas da shell do Minimo: sem animação do Hyprland (a própria shell se anima).
 hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^minimo-.*" }, no_anim = true })
