@@ -29,6 +29,13 @@ Singleton {
         function reset() {
             root.resetDefaults()
         }
+        function setGapsIn(v: int) { root.setGapsIn(v) }
+        function setGapsOut(v: int) { root.setGapsOut(v) }
+        function setRounding(v: int) { root.setRounding(v) }
+        function setBorderSize(v: int) { root.setBorderSize(v) }
+        function setActiveOpacity(v: real) { root.setActiveOpacity(v) }
+        function setInactiveOpacity(v: real) { root.setInactiveOpacity(v) }
+        function setResizeOnBorder(v: bool) { root.setResizeOnBorder(v) }
     }
 
     function setGapsIn(v) {
