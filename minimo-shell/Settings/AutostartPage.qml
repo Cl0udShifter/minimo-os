@@ -200,7 +200,7 @@ Column {
 
             Repeater {
                 model: AutostartManager.autostartApps
-                delegate: Item {
+                delegate: Column {
                     id: appRow
                     required property var modelData
                     required property int index
@@ -209,20 +209,15 @@ Column {
                     readonly property int ws: modelData.workspace || 0
 
                     width: parent.width
-                    height: rowContainer.implicitHeight
 
-                    Column {
-                        id: rowContainer
-                        width: parent.width
-
-                        // Divisor entre itens
-                        Rectangle {
-                            width: parent.width - 32
-                            height: 1
-                            x: 16
-                            color: Theme.track
-                            visible: index > 0
-                        }
+                    // Divisor entre itens
+                    Rectangle {
+                        width: parent.width - 32
+                        height: 1
+                        x: 16
+                        color: Theme.track
+                        visible: index > 0
+                    }
 
                         // Linha principal do aplicativo
                         Item {
@@ -499,7 +494,6 @@ Column {
                                         }
                                     }
                                 }
-                            }
                         }
                     }
                 }
