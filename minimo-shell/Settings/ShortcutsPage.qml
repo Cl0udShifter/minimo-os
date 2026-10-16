@@ -216,6 +216,15 @@ Column {
                             color: rowArea.containsMouse ? Theme.hover : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
 
+                            // Background MouseArea para abrir o editor ao clicar na linha
+                            MouseArea {
+                                id: rowArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.openEditor(sRow.item)
+                            }
+
                             Row {
                                 x: 12
                                 anchors.verticalCenter: parent.verticalCenter
@@ -265,6 +274,7 @@ Column {
 
                             // Lado Direito: Teclas, Botão Editar e Botão Remover (se custom app)
                             Row {
+                                z: 2
                                 anchors.right: parent.right
                                 anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
@@ -311,14 +321,6 @@ Column {
                                     anchors.verticalCenter: parent.verticalCenter
                                     onClicked: ShortcutsManager.removeAppShortcut(sRow.item.id)
                                 }
-                            }
-
-                            MouseArea {
-                                id: rowArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.openEditor(sRow.item)
                             }
                         }
                     }
