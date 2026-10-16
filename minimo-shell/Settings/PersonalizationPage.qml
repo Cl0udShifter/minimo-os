@@ -148,7 +148,6 @@ Column {
                                 readonly property bool cur: DisplayState.theme === modelData.id
                                 width: parent.width / 2; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (thm.containsMouse ? Theme.field : "transparent")
-                                Behavior on color { ColorAnimation { duration: 120 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
@@ -248,7 +247,6 @@ Column {
                         width: parent.width
                         height: 52
                         color: cItemMouse.containsMouse ? Theme.hover : "transparent"
-                        Behavior on color { ColorAnimation { duration: 100 } }
 
                         Row {
                             anchors.left: parent.left; anchors.leftMargin: 24
@@ -333,7 +331,6 @@ Column {
                                 readonly property bool cur: ThemeState.currentCursorSize === modelData
                                 width: parent.width / 4; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (cszMouse.containsMouse ? Theme.field : "transparent")
-                                Behavior on color { ColorAnimation { duration: 120 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData + " px"
@@ -437,7 +434,6 @@ Column {
                         width: parent.width
                         height: 52
                         color: iItemMouse.containsMouse ? Theme.hover : "transparent"
-                        Behavior on color { ColorAnimation { duration: 100 } }
 
                         Row {
                             anchors.left: parent.left; anchors.leftMargin: 24

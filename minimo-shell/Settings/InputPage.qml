@@ -70,7 +70,6 @@ Column {
                                 readonly property bool cur: InputState.followMouse === modelData.id
                                 width: parent.width / 2; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (fpm.containsMouse ? Theme.field : "transparent")
-                                Behavior on color { ColorAnimation { duration: 120 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
@@ -135,7 +134,6 @@ Column {
                                 readonly property bool cur: InputState.accelProfile === modelData.id
                                 width: parent.width / 2; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (apm.containsMouse ? Theme.field : "transparent")
-                                Behavior on color { ColorAnimation { duration: 120 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
@@ -359,7 +357,6 @@ Column {
                         width: parent.width
                         height: 52
                         color: layMouse.containsMouse ? Theme.hover : "transparent"
-                        Behavior on color { ColorAnimation { duration: 100 } }
 
                         Row {
                             anchors.left: parent.left; anchors.leftMargin: 20

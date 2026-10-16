@@ -472,7 +472,6 @@ Column {
                                             readonly property bool cur: (appDelegate.rule.mode || "default") === modelData.id
                                             width: parent.width / 3; height: parent.height; radius: height / 2
                                             color: cur ? Theme.fill : (mMouse.containsMouse ? Theme.field : "transparent")
-                                            Behavior on color { ColorAnimation { duration: 120 } }
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: modelData.label
@@ -499,7 +498,6 @@ Column {
                             Rectangle {
                                 width: wsBtnRow.implicitWidth + 20; height: 32; radius: 16
                                 color: (appDelegate.rule.workspace && appDelegate.rule.workspace > 0) ? Theme.fill : (wsMouse.containsMouse ? Theme.hover : Theme.raised)
-                                Behavior on color { ColorAnimation { duration: 120 } }
 
                                 Row {
                                     id: wsBtnRow

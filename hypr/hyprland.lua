@@ -34,4 +34,5 @@ reload_module("minimo.reglas")       -- regras de janelas e camadas
 reload_module("minimo.atajos")       -- atalhos de teclado
 reload_module("minimo")              -- atalhos da shell (Super+B, etc.)
 pcall(function() reload_module("minimo.cursor") end) -- tema e tamanho do cursor
+pcall(function() reload_module("minimo.autostart") end) -- aplicativos de inicialização
 

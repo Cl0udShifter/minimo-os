@@ -214,7 +214,6 @@ Column {
                             height: 52
                             radius: 14
                             color: rowArea.containsMouse ? Theme.hover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
 
                             // Background MouseArea para abrir o editor ao clicar na linha
                             MouseArea {

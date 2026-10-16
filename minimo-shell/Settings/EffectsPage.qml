@@ -75,7 +75,6 @@ Column {
                                 readonly property bool cur: AppearanceState.animPreset === modelData.id
                                 width: parent.width / 4; height: parent.height; radius: height / 2
                                 color: cur ? Theme.fill : (apm.containsMouse ? Theme.field : "transparent")
-                                Behavior on color { ColorAnimation { duration: 120 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
