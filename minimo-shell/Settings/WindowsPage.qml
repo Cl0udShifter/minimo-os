@@ -6,7 +6,7 @@ import "../Common"
 // Página de configurações de Janelas e Espaçamento (gaps, bordas, arredondamento e opacidade).
 Column {
     id: root
-    spacing: 20
+    spacing: 16
     width: parent ? parent.width : 500
 
     // =========================================================================
@@ -27,7 +27,7 @@ Column {
             // Gaps interno (entre janelas)
             Item {
                 width: parent.width
-                height: Math.max(72, gapsInCol.implicitHeight + 20)
+                height: Math.max(66, gapsInCol.implicitHeight + 16)
 
                 Column {
                     id: gapsInCol
@@ -69,7 +69,7 @@ Column {
             // Gaps externo (bordas da tela)
             Item {
                 width: parent.width
-                height: Math.max(72, gapsOutCol.implicitHeight + 20)
+                height: Math.max(66, gapsOutCol.implicitHeight + 16)
 
                 Column {
                     id: gapsOutCol
@@ -126,7 +126,7 @@ Column {
             // Arredondamento (rounding)
             Item {
                 width: parent.width
-                height: Math.max(72, roundCol.implicitHeight + 20)
+                height: Math.max(66, roundCol.implicitHeight + 16)
 
                 Column {
                     id: roundCol
@@ -168,7 +168,7 @@ Column {
             // Espessura da borda (border_size)
             Item {
                 width: parent.width
-                height: Math.max(72, borderCol.implicitHeight + 20)
+                height: Math.max(66, borderCol.implicitHeight + 16)
 
                 Column {
                     id: borderCol
@@ -236,7 +236,7 @@ Column {
             // Janela ativa
             Item {
                 width: parent.width
-                height: Math.max(72, activeOpCol.implicitHeight + 20)
+                height: Math.max(66, activeOpCol.implicitHeight + 16)
 
                 Column {
                     id: activeOpCol
@@ -278,7 +278,7 @@ Column {
             // Janelas inativas
             Item {
                 width: parent.width
-                height: Math.max(72, inactOpCol.implicitHeight + 20)
+                height: Math.max(66, inactOpCol.implicitHeight + 16)
 
                 Column {
                     id: inactOpCol
