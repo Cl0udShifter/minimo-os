@@ -3,6 +3,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 // Gerenciador central do estado da Tela de Bloqueio (Lockscreen) do Minimo OS.
 Singleton {
