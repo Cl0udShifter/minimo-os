@@ -42,9 +42,10 @@ hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^minimo-.*" }, no_anim = true })
 
 -- Regras personalizadas definidas pelo usuário através das Configurações
-pcall(function()
-	package.loaded["minimo.regras_usuario"] = nil
-	require("minimo.regras_usuario")
-end)
+local user_rules = (os.getenv("HOME") or "") .. "/.config/hypr/minimo/regras_usuario.lua"
+local chunk, err = loadfile(user_rules)
+if chunk then
+	pcall(chunk)
+end
 
 

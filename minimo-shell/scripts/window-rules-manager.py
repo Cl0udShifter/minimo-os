@@ -41,7 +41,7 @@ def reload_hyprland():
     """Recarrega a configuração do Hyprland."""
     env = get_hypr_env()
     try:
-        subprocess.run(["hyprctl", "reload"], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["hyprctl", "reload"], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2.0)
     except Exception:
         pass
 
@@ -86,7 +86,7 @@ def build_lua_content(rules):
 
         lines.append(f"-- {name} ({app_id})")
 
-        rule_kwargs = [f'match = {{ class = "{app_class}" }}']
+        rule_kwargs = [f'match = {{ class = [=[{app_class}]=] }}']
 
         if mode == "tile":
             rule_kwargs.append("tile = true")
