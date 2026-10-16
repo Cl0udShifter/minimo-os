@@ -192,12 +192,10 @@ def set_cursor(theme_id, size=None):
         with open(CURSOR_LUA, "w", encoding="utf-8") as f:
             f.write(f"""-- SPDX-License-Identifier: MIT
 -- Configuração de cursor do Minimo OS gerada automaticamente
-hl.env({{
-	XCURSOR_THEME = "{theme}",
-	XCURSOR_SIZE = "{size}",
-	HYPRCURSOR_THEME = "{theme}",
-	HYPRCURSOR_SIZE = "{size}",
-}})
+hl.env("XCURSOR_THEME", "{theme}")
+hl.env("XCURSOR_SIZE", "{size}")
+hl.env("HYPRCURSOR_THEME", "{theme}")
+hl.env("HYPRCURSOR_SIZE", "{size}")
 """)
     except Exception:
         pass
