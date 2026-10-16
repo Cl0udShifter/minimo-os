@@ -125,12 +125,12 @@ PanelWindow {
             spacing: 12
 
             // 1. Cabeçalho com Título, Contador e Botão Limpar Tudo
-            Row {
+            Item {
                 width: parent.width
                 height: 32
-                spacing: 8
 
                 Row {
+                    anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
@@ -168,12 +168,6 @@ PanelWindow {
                             font.weight: Font.Medium
                         }
                     }
-                }
-
-                Item {
-                    // Espaçador flexível
-                    width: Math.max(0, parent.width - 240 - clearBtn.width)
-                    height: 1
                 }
 
                 // Botão 'Limpar Tudo'
@@ -337,109 +331,111 @@ PanelWindow {
 
                         Behavior on color { ColorAnimation { duration: 80 } }
 
-                        Row {
-                            anchors.fill: parent
+                        // Distintivo de tipo (Código vs Texto)
+                        Rectangle {
+                            id: typeBadge
+                            anchors.left: parent.left
                             anchors.leftMargin: 12
-                            anchors.rightMargin: 10
-                            spacing: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 28
+                            height: 28
+                            radius: 8
+                            color: itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.18) : (modelData.isCode ? Qt.rgba(0.2, 0.6, 1.0, 0.12) : Qt.rgba(0, 0, 0, 0.05))
 
-                            // Distintivo de tipo (Código vs Texto)
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData.isCode ? "{ }" : "Aa"
+                                color: itemRow.isSelected ? Theme.onFill : (modelData.isCode ? "#007AFF" : Theme.textSecondary)
+                                font.family: modelData.isCode ? "JetBrains Mono" : Theme.font
+                                font.pixelSize: modelData.isCode ? 11 : 12
+                                font.weight: Font.Bold
+                            }
+                        }
+
+                        // Botões de Ação na Direita
+                        Row {
+                            id: actionRow
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 4
+
+                            // Botão Copiar
                             Rectangle {
-                                anchors.verticalCenter: parent.verticalCenter
                                 width: 28
                                 height: 28
-                                radius: 8
-                                color: itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.18) : (modelData.isCode ? Qt.rgba(0.2, 0.6, 1.0, 0.12) : Qt.rgba(0, 0, 0, 0.05))
+                                radius: 14
+                                color: itemCopyMouse.containsMouse ? (itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.25) : Theme.track) : "transparent"
 
-                                Text {
+                                Icon {
                                     anchors.centerIn: parent
-                                    text: modelData.isCode ? "{ }" : "Aa"
-                                    color: itemRow.isSelected ? Theme.onFill : (modelData.isCode ? "#007AFF" : Theme.textSecondary)
-                                    font.family: modelData.isCode ? "JetBrains Mono" : Theme.font
-                                    font.pixelSize: modelData.isCode ? 11 : 12
-                                    font.weight: Font.Bold
+                                    name: "copy"
+                                    tone: itemRow.isSelected ? "white" : "gray"
+                                    size: 14
+                                }
+
+                                MouseArea {
+                                    id: itemCopyMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: ClipboardState.copyItem(modelData.id)
                                 }
                             }
 
-                            // Texto e informações
-                            Column {
-                                id: itemTextCol
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - 92
-                                spacing: 3
+                            // Botão Deletar Item
+                            Rectangle {
+                                width: 28
+                                height: 28
+                                radius: 14
+                                color: itemDelMouse.containsMouse ? (itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.25) : Theme.track) : "transparent"
 
-                                Text {
-                                    width: parent.width
-                                    text: modelData.preview || ""
-                                    color: itemRow.isSelected ? Theme.onFill : Theme.textPrimary
-                                    font.family: modelData.isCode ? "JetBrains Mono" : Theme.font
-                                    font.pixelSize: modelData.isCode ? 12 : 13
-                                    font.weight: Font.Normal
-                                    elide: Text.ElideRight
-                                    maximumLineCount: 2
-                                    wrapMode: Text.WrapAnywhere
+                                Icon {
+                                    anchors.centerIn: parent
+                                    name: "trash"
+                                    tone: itemRow.isSelected ? "white" : (itemDelMouse.containsMouse ? "dark" : "gray")
+                                    size: 14
                                 }
 
-                                Row {
-                                    spacing: 8
-                                    Text {
-                                        text: (modelData.isCode ? "Código" : "Texto") + " • " + (modelData.length || 0) + " caracteres"
-                                        color: itemRow.isSelected ? Qt.rgba(Theme.onFill.r, Theme.onFill.g, Theme.onFill.b, 0.7) : Theme.textSecondary
-                                        font.family: Theme.font
-                                        font.pixelSize: 11
-                                    }
+                                MouseArea {
+                                    id: itemDelMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: ClipboardState.deleteItem(modelData.id)
                                 }
                             }
+                        }
 
-                            // Botões de Ação na Direita
+                        // Texto e informações
+                        Column {
+                            id: itemTextCol
+                            anchors.left: typeBadge.right
+                            anchors.leftMargin: 12
+                            anchors.right: actionRow.left
+                            anchors.rightMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 3
+
+                            Text {
+                                width: parent.width
+                                text: modelData.preview || ""
+                                color: itemRow.isSelected ? Theme.onFill : Theme.textPrimary
+                                font.family: modelData.isCode ? "JetBrains Mono" : Theme.font
+                                font.pixelSize: modelData.isCode ? 12 : 13
+                                font.weight: Font.Normal
+                                elide: Text.ElideRight
+                                maximumLineCount: 2
+                                wrapMode: Text.WrapAnywhere
+                            }
+
                             Row {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: 4
-
-                                // Botão Copiar
-                                Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: itemCopyMouse.containsMouse ? (itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.25) : Theme.track) : "transparent"
-
-                                    Icon {
-                                        anchors.centerIn: parent
-                                        name: "copy"
-                                        tone: itemRow.isSelected ? "white" : "gray"
-                                        size: 14
-                                    }
-
-                                    MouseArea {
-                                        id: itemCopyMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: ClipboardState.copyItem(modelData.id)
-                                    }
-                                }
-
-                                // Botão Deletar Item
-                                Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: itemDelMouse.containsMouse ? (itemRow.isSelected ? Qt.rgba(1, 1, 1, 0.25) : Theme.track) : "transparent"
-
-                                    Icon {
-                                        anchors.centerIn: parent
-                                        name: "trash"
-                                        tone: itemRow.isSelected ? "white" : (itemDelMouse.containsMouse ? "dark" : "gray")
-                                        size: 14
-                                    }
-
-                                    MouseArea {
-                                        id: itemDelMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: ClipboardState.deleteItem(modelData.id)
-                                    }
+                                spacing: 8
+                                Text {
+                                    text: (modelData.isCode ? "Código" : "Texto") + " • " + (modelData.length || 0) + " caracteres"
+                                    color: itemRow.isSelected ? Qt.rgba(Theme.onFill.r, Theme.onFill.g, Theme.onFill.b, 0.7) : Theme.textSecondary
+                                    font.family: Theme.font
+                                    font.pixelSize: 11
                                 }
                             }
                         }
