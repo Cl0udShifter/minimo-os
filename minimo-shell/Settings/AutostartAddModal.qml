@@ -399,7 +399,7 @@ Item {
                     Rectangle {
                         width: parent.width; height: 38; radius: 12; color: Theme.field
                         border.width: nameInput.activeFocus ? 1 : 0; border.color: Theme.fill
-                        Row {
+                        Item {
                             anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                             TextInput {
                                 id: nameInput
@@ -421,7 +421,7 @@ Item {
                     Rectangle {
                         width: parent.width; height: 38; radius: 12; color: Theme.field
                         border.width: execInput.activeFocus ? 1 : 0; border.color: Theme.fill
-                        Row {
+                        Item {
                             anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                             TextInput {
                                 id: execInput

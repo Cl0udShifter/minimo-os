@@ -246,7 +246,7 @@ Column {
                                     Icon {
                                         visible: !sRow.item.isCustomApp
                                         anchors.centerIn: parent
-                                        name: sRow.item.icon || "keyboard"
+                                        name: (!sRow.item.isCustomApp && sRow.item.icon) ? sRow.item.icon : "keyboard"
                                         size: 16
                                         tone: "dark"
                                     }
