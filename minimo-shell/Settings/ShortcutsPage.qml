@@ -21,16 +21,6 @@ Column {
     property bool modAlt: false
     property string mainKey: ""
 
-    IpcHandler {
-        target: "shortcutEditor"
-        function edit(id: string) {
-            let item = ShortcutsManager.shortcutsList.find(s => s.id === id)
-            if (item) root.openEditor(item)
-        }
-        function close() {
-            root.closeEditor()
-        }
-    }
 
     onVisibleChanged: {
         if (visible) {

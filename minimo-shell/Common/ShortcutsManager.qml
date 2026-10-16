@@ -261,6 +261,7 @@ Singleton {
         out += "local bind, dsp = hl.bind, hl.dsp\n"
         out += 'local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "\n'
         out += 'local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "\n'
+        out += 'local switch_kb = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/switch-layout.sh"\n'
         out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n"
         out += 'local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]\n\n'
         out += "local mod_syms = {\n"
@@ -328,7 +329,7 @@ Singleton {
         out += 'bind_key("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
         out += 'bind_key("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'
         if (map.toggle_kb_layout) {
-            out += 'bind_key("' + map.toggle_kb_layout + '", dsp.exec_cmd(qs .. "keyboard toggle"))\n'
+            out += 'bind_key("' + map.toggle_kb_layout + '", dsp.exec_cmd(switch_kb), fixo)\n'
         }
         out += "\n"
 

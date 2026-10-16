@@ -5,6 +5,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
+import Quickshell.Hyprland
+
 // Gerenciador central de configurações de Mouse, Teclado e Touchpad do Minimo OS.
 // Persiste configurações em ~/.config/minimo-os/input.json
 // e aplica dinamicamente ao Hyprland, regravando hypr/minimo/entrada.lua.
@@ -43,6 +45,43 @@ Singleton {
 
     signal layoutSwitched()
 
+    Connections {
+        target: Hyprland
+        function onRawEvent(ev) {
+            if (ev.name === "activelayout") {
+                const parts = (ev.data || "").split(",")
+                if (parts.length >= 2) {
+                    const desc = parts.slice(1).join(",").toLowerCase()
+                    let detected = ""
+                    if (desc.includes("portuguese") || desc.includes("brazil") || desc.includes("abnt2")) {
+                        detected = "br"
+                    } else if (desc.includes("english") || desc.includes("us") || desc.includes("intl") || desc.includes("united states")) {
+                        detected = "us"
+                    } else if (desc.includes("spanish") || desc.includes("espanhol")) {
+                        detected = "es"
+                    } else if (desc.includes("german") || desc.includes("deutsch")) {
+                        detected = "de"
+                    } else if (desc.includes("french") || desc.includes("français")) {
+                        detected = "fr"
+                    }
+                    if (detected && detected !== root.kbLayout) {
+                        root.kbLayout = detected
+                        if (detected === "br") root.kbVariant = "abnt2"
+                        else if (detected === "us") root.kbVariant = "intl"
+                        root.layoutSwitched()
+                        root.saveJsonState()
+                    }
+                }
+            }
+        }
+    }
+
+    function saveJsonState() {
+        if (!root.loaded) return
+        const data = root.getConfigObject()
+        file.setText(JSON.stringify(data, null, 2))
+    }
+
     readonly property string activeBadgeText: {
         if (kbLayout === "br") return "BR"
         if (kbLayout === "us") return "US"
@@ -63,11 +102,7 @@ Singleton {
     }
 
     function toggleKbLayout() {
-        if (kbLayout === "br") {
-            setKbLayout("us", "intl")
-        } else {
-            setKbLayout("br", "abnt2")
-        }
+        Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", "next"])
     }
 
     function setKbLayout(layout, variant) {

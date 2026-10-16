@@ -50,6 +50,18 @@ def main():
     kb_layout = cfg.get("kbLayout", "br")
     kb_variant = cfg.get("kbVariant", "abnt2")
     kb_model = cfg.get("kbModel", "")
+
+    # Suporte a múltiplos layouts nativos do XKB para alternância instantânea sem recarga de mapa
+    if kb_layout == "br":
+        multi_layout = "br,us"
+        multi_variant = f"{kb_variant or 'abnt2'},intl"
+    elif kb_layout == "us":
+        multi_layout = "us,br"
+        multi_variant = f"{kb_variant or 'intl'},abnt2"
+    else:
+        multi_layout = f"{kb_layout},us"
+        multi_variant = f"{kb_variant},intl"
+
     numlock_by_default = "true" if cfg.get("numlockByDefault", True) else "false"
     follow_mouse = int(cfg.get("followMouse", 1))
     sensitivity = float(cfg.get("sensitivity", 0.0))
@@ -67,8 +79,8 @@ def main():
     content += "-- Gerado automaticamente por Configurações › Mouse e Teclado do Minimo OS.\n\n"
     content += "hl.config({\n"
     content += "\tinput = {\n"
-    content += f'\t\tkb_layout = "{kb_layout}",\n'
-    content += f'\t\tkb_variant = "{kb_variant}",\n'
+    content += f'\t\tkb_layout = "{multi_layout}",\n'
+    content += f'\t\tkb_variant = "{multi_variant}",\n'
     content += f'\t\tkb_model = "{kb_model}",\n'
     content += f"\t\tnumlock_by_default = {numlock_by_default},\n"
     content += f"\t\tfollow_mouse = {follow_mouse},\n"
@@ -103,8 +115,8 @@ def main():
     lua_eval = (
         f'return hl.config({{ '
         f'input = {{ '
-        f'kb_layout = "{kb_layout}", '
-        f'kb_variant = "{kb_variant}", '
+        f'kb_layout = "{multi_layout}", '
+        f'kb_variant = "{multi_variant}", '
         f'kb_model = "{kb_model}", '
         f'numlock_by_default = {numlock_by_default}, '
         f'follow_mouse = {follow_mouse}, '

@@ -5,8 +5,8 @@
 
 hl.config({
 	input = {
-		kb_layout = "br",
-		kb_variant = "abnt2",
+		kb_layout = "br,us",
+		kb_variant = "abnt2,intl",
 		kb_model = "",
 		numlock_by_default = true,
 		follow_mouse = 1,
