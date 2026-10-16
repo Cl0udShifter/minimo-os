@@ -20,3 +20,4 @@ singleton Notifs 1.0 Notifs.qml
 singleton VolumeOSDState 1.0 VolumeOSDState.qml
 singleton ShortcutsManager 1.0 ShortcutsManager.qml
 singleton InputState 1.0 InputState.qml
+singleton AppearanceState 1.0 AppearanceState.qml
