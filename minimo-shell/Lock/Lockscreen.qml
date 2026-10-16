@@ -23,8 +23,6 @@ import "../Character"
 // - Autenticação nativa com PAM (Quickshell.Services.Pam).
 PanelWindow {
     id: win
-    required property var screen
-    screen: win.screen
 
     readonly property bool locked: LockscreenState.locked
     property real t: locked ? 1 : 0
@@ -148,13 +146,14 @@ PanelWindow {
     function doUnlock() {
         LockscreenState.wake()
         if (LockscreenState.authenticating) return
-        if (passInput.text.length === 0) {
+        const pwd = LockscreenState.currentPassword || passInput.text
+        if (pwd.length === 0) {
             LockscreenState.notifyWrongPassword("Digite sua senha para desbloquear.")
             return
         }
         LockscreenState.authenticating = true
         LockscreenState.errorMsg = ""
-        win.pendingPassword = passInput.text
+        win.pendingPassword = pwd
         pam.start()
     }
 
@@ -328,6 +327,7 @@ PanelWindow {
                         selectionColor: Qt.rgba(1, 1, 1, 0.3)
                         selectedTextColor: "#FFFFFF"
                         clip: true
+                        text: LockscreenState.currentPassword
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
@@ -338,6 +338,7 @@ PanelWindow {
                         }
 
                         onTextEdited: {
+                            LockscreenState.currentPassword = passInput.text
                             character.gOn = 1
                             LockscreenState.notifyKeystroke()
                         }

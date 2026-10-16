@@ -229,6 +229,8 @@ if [ -e "$GCONF" ] && ! { [ -L "$GCONF" ] && [ "$(readlink -f "$GCONF")" = "$(re
     ok "Backup do Ghostty criado: $GCONF.bak-$TS"
 fi
 link "$REPO/terminal/ghostty/config" "$GCONF"
+GTHEMES="$HOME/.config/ghostty/themes"
+link "$REPO/terminal/ghostty/themes" "$GTHEMES"
 add_hello() {
     local rc=$1 parent=$2
     [ -f "$rc" ] || { [ "$rc" = "$HOME/.bashrc" ] || return 0; }

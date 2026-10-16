@@ -14,6 +14,7 @@ Singleton {
     property string user: Quickshell.env("USER") || "daniel"
     property string errorMsg: ""
     property bool authenticating: false
+    property string currentPassword: ""
 
     signal shake()
     signal characterSquint()
@@ -43,6 +44,7 @@ Singleton {
 
     function lock() {
         errorMsg = ""
+        currentPassword = ""
         authenticating = false
         asleep = true
         locked = true
@@ -53,6 +55,7 @@ Singleton {
     function unlock() {
         sleepTimer.stop()
         errorMsg = ""
+        currentPassword = ""
         authenticating = false
         locked = false
     }
@@ -69,6 +72,7 @@ Singleton {
 
     function notifyWrongPassword(msg) {
         wake()
+        currentPassword = ""
         authenticating = false
         errorMsg = msg || "Senha incorreta. Tente novamente."
         shake()

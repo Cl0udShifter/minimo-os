@@ -93,6 +93,12 @@ def main():
     content += f"\t\t\tscroll_factor = {touchpad_scroll_factor:.2f},\n"
     content += "\t\t},\n"
     content += "\t},\n"
+    content += "\tcursor = {\n"
+    content += "\t\tno_warps = false,\n"
+    content += "\t\tinactive_timeout = 0,\n"
+    content += "\t\thide_on_key_press = false,\n"
+    content += "\t\thide_on_touch = false,\n"
+    content += "\t},\n"
     content += "})\n\n"
 
     if gestures:
@@ -128,6 +134,12 @@ def main():
         f'natural_scroll = {touchpad_natural}, '
         f'scroll_factor = {touchpad_scroll_factor:.2f} '
         f'}} '
+        f'}}, '
+        f'cursor = {{ '
+        f'no_warps = false, '
+        f'inactive_timeout = 0, '
+        f'hide_on_key_press = false, '
+        f'hide_on_touch = false '
         f'}} '
         f'}})'
     )

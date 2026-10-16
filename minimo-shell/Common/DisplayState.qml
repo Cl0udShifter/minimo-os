@@ -38,8 +38,15 @@ Singleton {
         save()
         Quickshell.execDetached([Qt.resolvedUrl("../scripts/update-workspaces.py").toString().replace("file://", "")])
     }
-    // Empuja el tema al singleton Theme (sin dependencia inversa: evita init cíclico).
-    onThemeChanged: Theme.dark = theme === "dark"
+    function applyColorScheme(t) {
+        const scheme = t === "dark" ? "prefer-dark" : "default"
+        Quickshell.execDetached(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", scheme])
+    }
+    // Empuja el tema al singleton Theme e informa a las aplicaciones via gsettings (Ghostty, GTK, etc.).
+    onThemeChanged: {
+        Theme.dark = theme === "dark"
+        applyColorScheme(theme)
+    }
     function save() {
         file.setText(JSON.stringify({ saturation: root.saturation, brightness: root.brightness, wallpaper: root.wallpaper, wallpaperHistory: root.wallpaperHistory,
                                      islandAutoHide: root.islandAutoHide, islandSmartHide: root.islandSmartHide, characterAnimated: root.characterAnimated,
@@ -84,6 +91,7 @@ Singleton {
                 root.characterAnimated = s.characterAnimated ?? true
                 root.sleepMinutes = s.sleepMinutes ?? 1
                 root.theme = s.theme === "dark" ? "dark" : "light"
+                root.applyColorScheme(root.theme)
                 root.splitWorkspaces = s.splitWorkspaces ?? true
                 root.set(s.saturation ?? 1.0, s.brightness ?? 1.0)
             } catch (e) {}

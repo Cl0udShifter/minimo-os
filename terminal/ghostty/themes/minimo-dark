@@ -1,0 +1,23 @@
+# Minimo OS — Dark Theme for Ghostty
+background = #161618
+foreground = #f5f5f7
+cursor-color = #f5f5f7
+selection-background = #3a3a3c
+selection-foreground = #ffffff
+
+palette = 0=#1c1c1e
+palette = 1=#ff453a
+palette = 2=#32d74b
+palette = 3=#ffd60a
+palette = 4=#0a84ff
+palette = 5=#bf5af2
+palette = 6=#64d2ff
+palette = 7=#f5f5f7
+palette = 8=#636366
+palette = 9=#ff6961
+palette = 10=#30d158
+palette = 11=#ff9f0a
+palette = 12=#409cff
+palette = 13=#da8fff
+palette = 14=#70d7ff
+palette = 15=#ffffff

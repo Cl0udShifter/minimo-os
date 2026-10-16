@@ -19,6 +19,12 @@ hl.config({
 			scroll_factor = 1.00,
 		},
 	},
+	cursor = {
+		no_warps = false,
+		inactive_timeout = 0,
+		hide_on_key_press = false,
+		hide_on_touch = false,
+	},
 })
 
 -- Três dedos na horizontal: alternar área de trabalho.
