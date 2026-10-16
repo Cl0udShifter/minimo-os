@@ -25,6 +25,8 @@ PanelWindow {
     WlrLayershell.namespace: "minimo-polkit"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
+    Keys.onEscapePressed: win.doCancel()
+
     property real shakeOffset: 0
 
     onOpenChanged: {

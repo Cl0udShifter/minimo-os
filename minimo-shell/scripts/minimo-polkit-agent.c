@@ -118,7 +118,7 @@ static gboolean on_incoming_connection(GSocketService *service,
             if (auth->session) {
                 polkit_agent_session_cancel(auth->session);
             }
-            if (auth->task) {
+            if (auth->task && !g_task_get_completed(auth->task)) {
                 g_task_return_new_error(auth->task,
                                         POLKIT_ERROR,
                                         POLKIT_ERROR_CANCELLED,
@@ -220,13 +220,17 @@ static void on_completed(PolkitAgentSession *session,
     if (gained_authorization) {
         auth->is_completed = TRUE;
         notify_quickshell("polkit", "success", NULL);
-        if (auth->task) {
+        if (auth->task && !g_task_get_completed(auth->task)) {
             g_task_return_boolean(auth->task, TRUE);
         }
         stop_socket_service(auth);
     } else {
+        if (auth->is_completed) {
+            // Requisição já finalizada (ex: cancelada pelo usuário)
+            return;
+        }
         auth->attempt_count++;
-        if (auth->attempt_count < 3 && !auth->is_completed) {
+        if (auth->attempt_count < 3) {
             g_print("[minimo-polkit] Auth attempt %d failed, allowing retry...\n", auth->attempt_count);
             notify_quickshell("polkit", "error", "Senha incorreta. Tente novamente.");
             if (auth->session) {
@@ -235,10 +239,10 @@ static void on_completed(PolkitAgentSession *session,
             }
             initiate_session(auth);
         } else {
-            g_print("[minimo-polkit] Auth attempts exceeded or cancelled\n");
+            g_print("[minimo-polkit] Auth attempts exceeded\n");
             auth->is_completed = TRUE;
             notify_quickshell("polkit", "close", NULL);
-            if (auth->task) {
+            if (auth->task && !g_task_get_completed(auth->task)) {
                 g_task_return_new_error(auth->task,
                                         POLKIT_ERROR,
                                         POLKIT_ERROR_FAILED,
@@ -308,7 +312,23 @@ static void minimo_listener_initiate_authentication(PolkitAgentListener *listene
 static gboolean minimo_listener_initiate_authentication_finish(PolkitAgentListener *listener,
                                                                GAsyncResult *res,
                                                                GError **error) {
-    return g_task_propagate_boolean(G_TASK(res), error);
+    gboolean ret = g_task_propagate_boolean(G_TASK(res), error);
+    if (current_auth) {
+        if (current_auth->session) {
+            g_clear_object(&current_auth->session);
+        }
+        if (current_auth->task) {
+            g_clear_object(&current_auth->task);
+        }
+        g_free(current_auth->action_id);
+        g_free(current_auth->message);
+        g_free(current_auth->user_name);
+        g_free(current_auth->cookie);
+        g_free(current_auth->sock_path);
+        g_free(current_auth);
+        current_auth = NULL;
+    }
+    return ret;
 }
 
 static void minimo_listener_class_init(MinimoListenerClass *klass) {
