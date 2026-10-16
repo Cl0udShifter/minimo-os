@@ -5,16 +5,18 @@ import Quickshell
 import "../Common"
 
 // Modal para adicionar um aplicativo ou comando à Inicialização Automática.
-Item {
+Rectangle {
     id: root
 
     property var page: null
     readonly property bool open: page ? page.addModalOpen : false
 
     anchors.fill: parent
-    visible: opacity > 0.001
-    opacity: open ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+    color: Theme.scrim
+    visible: open
+    opacity: visible ? 1 : 0
+    Behavior on opacity { NumberAnimation { duration: 150 } }
+    z: 999
 
     property int tabIndex: 0 // 0: Aplicativo Instalado, 1: Comando Personalizado
     property var selectedApp: null
@@ -78,14 +80,10 @@ Item {
         if (root.page) root.page.addModalOpen = false
     }
 
-    // Fundo escuro (scrim)
-    Rectangle {
+    // Clique fora fecha o modal
+    MouseArea {
         anchors.fill: parent
-        color: Theme.scrim
-        MouseArea {
-            anchors.fill: parent
-            onClicked: if (root.page) root.page.addModalOpen = false
-        }
+        onClicked: if (root.page) root.page.addModalOpen = false
     }
 
     // Cartão central do Modal
