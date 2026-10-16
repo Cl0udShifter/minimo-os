@@ -1,6 +1,7 @@
 -- SPDX-License-Identifier: MIT
 -- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
--- Aparência: janelas com cantos de 12 px, espaçamento fino, sem bordas e sombra suave.
+-- Aparência: janelas com cantos de 12 px, espaçamento 4/4 px, borda 0 px, blur 8 px e sombras.
+-- Gerado automaticamente por Configurações do Minimo OS.
 
 local acento = "rgb(9aa38f)"    -- verde acinzentado
 local apagado = "rgb(807f7c)"
@@ -17,8 +18,8 @@ hl.config({
 	},
 	decoration = {
 		rounding = 12,
-		active_opacity = 1.0,
-		inactive_opacity = 1.0,
+		active_opacity = 1.00,
+		inactive_opacity = 1.00,
 		shadow = {
 			enabled = true,
 			range = 30,
@@ -26,6 +27,17 @@ hl.config({
 			offset = "0 5",
 			color = "rgba(00000070)",
 		},
+		blur = {
+			enabled = true,
+			size = 8,
+			passes = 2,
+			new_optimizations = true,
+			xray = false,
+			ignore_opacity = true,
+		},
+	},
+	animations = {
+		enabled = true,
 	},
 	group = {
 		col = {
@@ -46,8 +58,7 @@ hl.config({
 	},
 })
 
--- Animações curtas com a curva padrão.
+-- Animações suaves com a curva padrão do Minimo OS.
 for leaf, speed in pairs({ windowsIn = 3, windowsOut = 3, windowsMove = 4, workspaces = 5, fade = 3, border = 3 }) do
 	hl.animation({ leaf = leaf, enabled = true, speed = speed, bezier = "default" })
 end
-
