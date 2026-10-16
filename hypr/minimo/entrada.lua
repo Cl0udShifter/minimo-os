@@ -24,6 +24,7 @@ hl.config({
 		inactive_timeout = 0,
 		hide_on_key_press = false,
 		hide_on_touch = false,
+		no_hardware_cursors = true,
 	},
 })
 

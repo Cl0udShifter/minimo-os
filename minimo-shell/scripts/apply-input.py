@@ -98,6 +98,7 @@ def main():
     content += "\t\tinactive_timeout = 0,\n"
     content += "\t\thide_on_key_press = false,\n"
     content += "\t\thide_on_touch = false,\n"
+    content += "\t\tno_hardware_cursors = true,\n"
     content += "\t},\n"
     content += "})\n\n"
 
@@ -139,7 +140,8 @@ def main():
         f'no_warps = false, '
         f'inactive_timeout = 0, '
         f'hide_on_key_press = false, '
-        f'hide_on_touch = false '
+        f'hide_on_touch = false, '
+        f'no_hardware_cursors = true '
         f'}} '
         f'}})'
     )

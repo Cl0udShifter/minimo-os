@@ -16,4 +16,4 @@ shell-integration-features = no-cursor
 background-opacity = 0.97
 
 # Tema sincronizado com a aparência do Minimo OS (Claro / Escuro)
-theme = dark:minimo-dark,light:minimo-light
+theme = dark:Adwaita Dark,light:Adwaita
