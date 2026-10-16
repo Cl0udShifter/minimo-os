@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import QtQuick
+import Quickshell
 import "../Common"
 
 // Página de configurações de Janelas e Espaçamento (gaps, bordas, arredondamento e opacidade).
@@ -8,6 +9,10 @@ Column {
     id: root
     spacing: 16
     width: parent ? parent.width : 500
+
+    property string appFilter: ""
+    property string expandedAppId: ""
+    readonly property var appsList: Apps.search(appFilter, 0, true)
 
     // =========================================================================
     // SEÇÃO 1: ESPAÇAMENTO
@@ -317,6 +322,352 @@ Column {
         }
     }
 
+    // =========================================================================
+    // SEÇÃO 4: REGRAS POR APLICATIVO
+    // =========================================================================
+    SectionTitle { text: "Regras por Aplicativo" }
+
+    // Barra de busca rápida de aplicativos
+    Rectangle {
+        width: parent.width
+        height: 42
+        radius: 21
+        color: Theme.field
+        border.width: appSearchInput.activeFocus ? 1 : 0
+        border.color: Theme.fill
+
+        Row {
+            anchors.fill: parent
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            spacing: 10
+
+            Icon {
+                name: "search"
+                size: 16
+                anchors.verticalCenter: parent.verticalCenter
+                tone: "gray"
+            }
+
+            TextInput {
+                id: appSearchInput
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - 32
+                color: Theme.textPrimary
+                font.family: Theme.font
+                font.pixelSize: 13
+                text: root.appFilter
+                onTextChanged: root.appFilter = text
+                clip: true
+
+                Text {
+                    anchors.fill: parent
+                    text: "Pesquisar aplicativo (ex: Nautilus, Calculadora, Firefox)..."
+                    color: Theme.textSecondary
+                    font.family: Theme.font
+                    font.pixelSize: 13
+                    visible: appSearchInput.text === "" && !appSearchInput.activeFocus
+                }
+            }
+        }
+    }
+
+    // Card com lista de aplicativos e regras
+    Rectangle {
+        width: parent.width
+        height: appsCol.implicitHeight
+        radius: 20
+        color: Theme.field
+
+        Column {
+            id: appsCol
+            width: parent.width
+
+            Repeater {
+                model: root.appsList.slice(0, 50)
+                delegate: Column {
+                    id: appDelegate
+                    required property var modelData
+                    required property int index
+                    readonly property var rule: WindowRulesState.getRule(modelData.id)
+                    readonly property bool isExpanded: root.expandedAppId === modelData.id
+                    readonly property string appClass: WindowRulesState.deriveClass(modelData)
+
+                    width: parent.width
+
+                    Rectangle {
+                        x: 18
+                        width: parent.width - 36
+                        height: 1
+                        color: Theme.track
+                        visible: appDelegate.index > 0
+                    }
+
+                    Item {
+                        width: parent.width
+                        height: 64
+
+                        // Ícone + Nome + ID/Classe
+                        Row {
+                            anchors.left: parent.left; anchors.leftMargin: 18
+                            anchors.right: controlsRow.left; anchors.rightMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 12
+
+                            Image {
+                                width: 32; height: 32
+                                anchors.verticalCenter: parent.verticalCenter
+                                source: Apps.iconFor(appDelegate.modelData)
+                                sourceSize: Qt.size(64, 64)
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 44
+                                spacing: 2
+
+                                Text {
+                                    text: appDelegate.modelData.name || appDelegate.modelData.id
+                                    color: Theme.textPrimary
+                                    font.family: Theme.font
+                                    font.pixelSize: 13
+                                    font.weight: Font.Medium
+                                    elide: Text.ElideRight
+                                    width: parent.width
+                                }
+                                Text {
+                                    text: (appDelegate.modelData.id || "").replace(/\.desktop$/, "")
+                                    color: Theme.textSecondary
+                                    font.family: Theme.font
+                                    font.pixelSize: 11
+                                    elide: Text.ElideRight
+                                    width: parent.width
+                                }
+                            }
+                        }
+
+                        // Controles à direita: Modo (Padrão/Mosaico/Flutuante) + Área de Trabalho
+                        Row {
+                            id: controlsRow
+                            anchors.right: parent.right; anchors.rightMargin: 16
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 8
+
+                            // Pílula segmentada para o modo
+                            Rectangle {
+                                width: 195; height: 32; radius: 16
+                                color: Theme.raised
+
+                                Row {
+                                    anchors.fill: parent; anchors.margins: 3
+                                    Repeater {
+                                        model: [
+                                            { id: "default", label: "Padrão" },
+                                            { id: "tile", label: "Mosaico" },
+                                            { id: "float", label: "Flutuante" }
+                                        ]
+                                        delegate: Rectangle {
+                                            required property var modelData
+                                            readonly property bool cur: (appDelegate.rule.mode || "default") === modelData.id
+                                            width: parent.width / 3; height: parent.height; radius: height / 2
+                                            color: cur ? Theme.fill : (mMouse.containsMouse ? Theme.field : "transparent")
+                                            Behavior on color { ColorAnimation { duration: 120 } }
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: modelData.label
+                                                color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                                font.family: Theme.font; font.pixelSize: 11
+                                                font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                            }
+                                            MouseArea {
+                                                id: mMouse
+                                                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    WindowRulesState.setMode(appDelegate.modelData.id,
+                                                                            appDelegate.modelData.name,
+                                                                            appDelegate.appClass,
+                                                                            modelData.id)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Botão de área de trabalho
+                            Rectangle {
+                                width: wsBtnRow.implicitWidth + 20; height: 32; radius: 16
+                                color: (appDelegate.rule.workspace && appDelegate.rule.workspace > 0) ? Theme.fill : (wsMouse.containsMouse ? Theme.hover : Theme.raised)
+                                Behavior on color { ColorAnimation { duration: 120 } }
+
+                                Row {
+                                    id: wsBtnRow
+                                    anchors.centerIn: parent
+                                    spacing: 4
+                                    Text {
+                                        text: {
+                                            const w = appDelegate.rule.workspace || 0
+                                            if (w === 0) return "Área: Livre"
+                                            if (w >= 11 && w <= 19) return "Mon 2: Área " + (w - 10)
+                                            return "Área " + w
+                                        }
+                                        color: (appDelegate.rule.workspace && appDelegate.rule.workspace > 0) ? Theme.onAccent : Theme.textPrimary
+                                        font.family: Theme.font; font.pixelSize: 11
+                                        font.weight: (appDelegate.rule.workspace && appDelegate.rule.workspace > 0) ? Font.DemiBold : Font.Normal
+                                    }
+                                    Icon {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        name: "chevron"
+                                        size: 12
+                                        rotation: appDelegate.isExpanded ? 90 : 0
+                                        tone: (appDelegate.rule.workspace && appDelegate.rule.workspace > 0) ? "white" : "gray"
+                                        Behavior on rotation { NumberAnimation { duration: 180 } }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: wsMouse
+                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (root.expandedAppId === appDelegate.modelData.id) {
+                                            root.expandedAppId = ""
+                                        } else {
+                                            root.expandedAppId = appDelegate.modelData.id
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Gaveta de seleção de workspace
+                    Column {
+                        id: wsDrawer
+                        width: parent.width
+                        height: appDelegate.isExpanded ? implicitHeight : 0
+                        visible: height > 0 || appDelegate.isExpanded
+                        clip: true
+                        spacing: 8
+                        Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+                        Rectangle { x: 18; width: parent.width - 36; height: 1; color: Theme.track }
+
+                        Text {
+                            x: 20
+                            text: "Abrir automaticamente na área de trabalho:"
+                            color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
+                        }
+
+                        Flow {
+                            x: 20
+                            width: parent.width - 40
+                            spacing: 6
+
+                            // Livre (Sem fixar)
+                            Rectangle {
+                                width: 70; height: 28; radius: 14
+                                color: (appDelegate.rule.workspace || 0) === 0 ? Theme.fill : (freeMouse.containsMouse ? Theme.raised : Theme.field)
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Livre"
+                                    color: (appDelegate.rule.workspace || 0) === 0 ? Theme.onAccent : Theme.textPrimary
+                                    font.family: Theme.font; font.pixelSize: 11
+                                    font.weight: (appDelegate.rule.workspace || 0) === 0 ? Font.DemiBold : Font.Normal
+                                }
+                                MouseArea {
+                                    id: freeMouse
+                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        WindowRulesState.setWorkspace(appDelegate.modelData.id,
+                                                                    appDelegate.modelData.name,
+                                                                    appDelegate.appClass,
+                                                                    0)
+                                        root.expandedAppId = ""
+                                    }
+                                }
+                            }
+
+                            // Workspaces do Monitor 1 (1 a 5)
+                            Repeater {
+                                model: [1, 2, 3, 4, 5]
+                                delegate: Rectangle {
+                                    required property int modelData
+                                    readonly property bool cur: (appDelegate.rule.workspace || 0) === modelData
+                                    width: 52; height: 28; radius: 14
+                                    color: cur ? Theme.fill : (w1Mouse.containsMouse ? Theme.raised : Theme.field)
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (Quickshell.screens.length > 1 ? "M1: " : "Área ") + modelData
+                                        color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                        font.family: Theme.font; font.pixelSize: 11
+                                        font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                    }
+                                    MouseArea {
+                                        id: w1Mouse
+                                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            WindowRulesState.setWorkspace(appDelegate.modelData.id,
+                                                                        appDelegate.modelData.name,
+                                                                        appDelegate.appClass,
+                                                                        modelData)
+                                            root.expandedAppId = ""
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Workspaces do Monitor 2 (se conectado: 11 a 15)
+                            Repeater {
+                                model: Quickshell.screens.length > 1 ? [11, 12, 13, 14, 15] : []
+                                delegate: Rectangle {
+                                    required property int modelData
+                                    readonly property bool cur: (appDelegate.rule.workspace || 0) === modelData
+                                    width: 52; height: 28; radius: 14
+                                    color: cur ? Theme.fill : (w2Mouse.containsMouse ? Theme.raised : Theme.field)
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "M2: " + (modelData - 10)
+                                        color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                        font.family: Theme.font; font.pixelSize: 11
+                                        font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                    }
+                                    MouseArea {
+                                        id: w2Mouse
+                                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            WindowRulesState.setWorkspace(appDelegate.modelData.id,
+                                                                        appDelegate.modelData.name,
+                                                                        appDelegate.appClass,
+                                                                        modelData)
+                                            root.expandedAppId = ""
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Item { width: 1; height: 6 }
+                    }
+                }
+            }
+
+            // Estado vazio quando não encontra nenhum app na busca
+            Item {
+                width: parent.width
+                height: 60
+                visible: root.appsList.length === 0
+                Text {
+                    anchors.centerIn: parent
+                    text: "Nenhum aplicativo encontrado."
+                    color: Theme.textSecondary
+                    font.family: Theme.font
+                    font.pixelSize: 13
+                }
+            }
+        }
+    }
+
     // Botão de restaurar padrões
     Item {
         width: parent.width
@@ -325,7 +676,7 @@ Column {
         PillButton {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: "Restaurar Padrões"
+            text: "Restaurar Padrões de Janelas"
             outlined: true
             onClicked: AppearanceState.resetDefaults()
         }
@@ -333,3 +684,4 @@ Column {
 
     Item { width: 1; height: 10 }
 }
+

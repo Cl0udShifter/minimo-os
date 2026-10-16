@@ -41,4 +41,10 @@ end
 hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^minimo-.*" }, no_anim = true })
 
+-- Regras personalizadas definidas pelo usuário através das Configurações
+pcall(function()
+	package.loaded["minimo.regras_usuario"] = nil
+	require("minimo.regras_usuario")
+end)
+
 

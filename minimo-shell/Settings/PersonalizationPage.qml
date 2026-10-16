@@ -491,6 +491,15 @@ Column {
         }
     }
 
+    Row {
+        spacing: 6
+        Icon { name: "folder"; size: 13; tone: "gray"; anchors.verticalCenter: parent.verticalCenter }
+        Text {
+            text: "Onde instalar temas: ~/.icons ou ~/.local/share/icons (ou pacotes pacman/AUR)"
+            color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
+        }
+    }
+
     SectionTitle { text: "Ilha dinâmica" }
     Rectangle {
         width: parent.width

@@ -22,7 +22,7 @@ PanelWindow {
     WlrLayershell.namespace: "minimo-settings"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    onOpenChanged: if (open) { card.forceActiveFocus(); personal.refresh(); display.refresh(); flick.contentY = 0 }
+    onOpenChanged: if (open) { card.forceActiveFocus(); personal.refresh(); display.refresh(); WindowRulesState.refresh(); flick.contentY = 0 }
 
     readonly property var sections: [
         { id: "personalizacion", label: "Personalização", icon: "brush" },

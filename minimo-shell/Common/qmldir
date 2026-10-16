@@ -25,3 +25,4 @@ singleton PolkitState 1.0 PolkitState.qml
 singleton LockscreenState 1.0 LockscreenState.qml
 singleton ClipboardState 1.0 ClipboardState.qml
 singleton ThemeState 1.0 ThemeState.qml
+singleton WindowRulesState 1.0 WindowRulesState.qml
