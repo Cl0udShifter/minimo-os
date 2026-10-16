@@ -1,3 +1,5 @@
 *.vsix
 __pycache__/
 *.bak
+hypr/minimo/cursor.lua
+hypr/minimo/regras_usuario.lua
