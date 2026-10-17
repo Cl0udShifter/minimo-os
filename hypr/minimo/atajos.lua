@@ -6,8 +6,8 @@
 local bind, dsp = hl.bind, hl.dsp
 local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "
 local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "
-local shot = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/screenshot.sh"
 local fixo, repete = { locked = true }, { locked = true, repeating = true }
+local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; fn="captura-$(date +%Y%m%d-%H%M%S).png"; f="$d/$fn"; ]]
 
 local mod_syms = {
     SUPER = { "Super_L", "Super_R" },
@@ -103,8 +103,8 @@ if "SUPER + F10" ~= "XF86AudioMute" then
 end
 
 -- Capturas de tela
-bind_key("Print", dsp.exec_cmd(shot .. " area"))
-bind_key("CTRL + Print", dsp.exec_cmd(shot .. " full"))
+bind_key("Print", dsp.exec_cmd([[sh -c ']] .. dir .. [[g=$(slurp) && grim -g "$g" "$f" && wl-copy < "$f" 2>/dev/null; notify-send -a "Captura de Tela" -i "$f" "Captura salva" "$fn em $d"']]))
+bind_key("CTRL + Print", dsp.exec_cmd([[sh -c ']] .. dir .. [[grim "$f" && wl-copy < "$f" 2>/dev/null; notify-send -a "Captura de Tela" -i "$f" "Captura salva" "$fn em $d"']]))
 
 -- Gerenciamento de Janelas
 bind_key("SUPER + Q", dsp.window.close())

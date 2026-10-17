@@ -325,8 +325,8 @@ Singleton {
         out += "local bind, dsp = hl.bind, hl.dsp\n"
         out += 'local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "\n'
         out += 'local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "\n'
-        out += 'local shot = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/screenshot.sh"\n'
-        out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n\n"
+        out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n"
+        out += 'local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; fn="captura-$(date +%Y%m%d-%H%M%S).png"; f="$d/$fn"; ]]\n\n'
         out += "local mod_syms = {\n"
         out += '    SUPER = { "Super_L", "Super_R" },\n'
         out += '    CTRL = { "Control_L", "Control_R" },\n'
@@ -439,8 +439,8 @@ Singleton {
         out += 'end\n\n'
 
         out += "-- Capturas de tela\n"
-        out += 'bind_key("' + map.screenshot_area + '", dsp.exec_cmd(shot .. " area"))\n'
-        out += 'bind_key("' + map.screenshot_full + '", dsp.exec_cmd(shot .. " full"))\n\n'
+        out += 'bind_key("' + map.screenshot_area + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[g=$(slurp) && grim -g "$g" "$f" && wl-copy < "$f" 2>/dev/null; notify-send -a "Captura de Tela" -i "$f" "Captura salva" "$fn em $d"\']]))\n'
+        out += 'bind_key("' + map.screenshot_full + '", dsp.exec_cmd([[sh -c \']] .. dir .. [[grim "$f" && wl-copy < "$f" 2>/dev/null; notify-send -a "Captura de Tela" -i "$f" "Captura salva" "$fn em $d"\']]))\n\n'
 
         out += "-- Gerenciamento de Janelas\n"
         out += 'bind_key("' + map.close_window + '", dsp.window.close())\n'
