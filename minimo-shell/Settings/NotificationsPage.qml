@@ -21,9 +21,8 @@ Column {
 
         // 1. Aplicativos com arquivos .desktop no sistema
         try {
-            const list = DesktopEntries.list || []
-            for (let i = 0; i < list.length; ++i) {
-                const e = list[i]
+            const values = DesktopEntries.applications.values || []
+            for (const e of values) {
                 if (!e || !e.id || e.noDisplay) continue
                 const cleanId = (e.id || "").replace(".desktop", "").toLowerCase().trim()
                 if (!cleanId) continue
