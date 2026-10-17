@@ -100,29 +100,62 @@ Item {
                     }
                 }
 
-                // Botão de Calendário no topo direito do Notch
-                Rectangle {
-                    id: calBtn
+                // Botões de Ação no topo direito do Notch: Não Perturbe e Calendário
+                Row {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 38; height: 38; radius: 19
-                    color: calMouse.containsMouse ? Theme.hover : Theme.field
-                    scale: calMouse.pressed ? 0.92 : 1
-                    Behavior on color { ColorAnimation { duration: Theme.durFast } }
-                    Behavior on scale { NumberAnimation { duration: 100 } }
+                    spacing: 8
 
-                    Icon {
-                        anchors.centerIn: parent
-                        name: "calendar"
-                        size: 18
+                    // Botão de Não Perturbe (DND)
+                    Rectangle {
+                        id: dndBtn
+                        width: 38; height: 38; radius: 19
+                        readonly property bool active: NotificationFilterState.dnd
+                        color: active
+                            ? (dndMouse.containsMouse ? Theme.fillHover : Theme.fill)
+                            : (dndMouse.containsMouse ? Theme.hover : Theme.field)
+                        scale: dndMouse.pressed ? 0.92 : 1
+                        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+                        Behavior on scale { NumberAnimation { duration: 100 } }
+
+                        Icon {
+                            anchors.centerIn: parent
+                            name: dndBtn.active ? "bell-off" : "bell"
+                            size: 18
+                            tone: dndBtn.active ? "white" : "dark"
+                        }
+
+                        MouseArea {
+                            id: dndMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: NotificationFilterState.setDnd(!NotificationFilterState.dnd)
+                        }
                     }
 
-                    MouseArea {
-                        id: calMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.page = "calendar"
+                    // Botão de Calendário
+                    Rectangle {
+                        id: calBtn
+                        width: 38; height: 38; radius: 19
+                        color: calMouse.containsMouse ? Theme.hover : Theme.field
+                        scale: calMouse.pressed ? 0.92 : 1
+                        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+                        Behavior on scale { NumberAnimation { duration: 100 } }
+
+                        Icon {
+                            anchors.centerIn: parent
+                            name: "calendar"
+                            size: 18
+                        }
+
+                        MouseArea {
+                            id: calMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.page = "calendar"
+                        }
                     }
                 }
             }

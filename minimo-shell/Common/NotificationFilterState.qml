@@ -138,4 +138,11 @@ Singleton {
             root.loaded = true
         }
     }
+
+    IpcHandler {
+        target: "notifications"
+        function toggleDnd(): void { root.setDnd(!root.dnd) }
+        function setDnd(val: bool): void { root.setDnd(val) }
+        function getDnd(): bool { return root.dnd }
+    }
 }

@@ -155,7 +155,7 @@ Column {
 
                     Icon {
                         anchors.centerIn: parent
-                        name: "bell"
+                        name: NotificationFilterState.dnd ? "bell-off" : "bell"
                         size: 18
                         tone: NotificationFilterState.dnd ? "white" : "dark"
                     }
