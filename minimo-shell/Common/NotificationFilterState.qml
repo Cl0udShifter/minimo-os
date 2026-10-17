@@ -15,6 +15,10 @@ Singleton {
     property var knownApps: ({})
     property bool loaded: false
 
+    signal configChanged()
+    onMutedAppsChanged: configChanged()
+    onDndChanged: configChanged()
+
     readonly property string managerScript: Qt.resolvedUrl("../scripts/notification-filter-manager.py").toString().replace("file://", "")
 
     // Verifica se um aplicativo está silenciado

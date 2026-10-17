@@ -136,7 +136,13 @@ PanelWindow {
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 // Volver arriba solo al cambiar de sección (no quando la página crece al cargar).
-                Connections { target: SettingsState; function onSectionChanged() { flick.contentY = 0 } }
+                Connections {
+                    target: SettingsState
+                    function onSectionChanged() {
+                        flick.contentY = 0
+                        if (SettingsState.section === "notificacoes") NotificationFilterState.refresh()
+                    }
+                }
 
                 WheelHandler {
                     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad

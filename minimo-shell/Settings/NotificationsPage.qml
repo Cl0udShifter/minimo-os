@@ -14,9 +14,18 @@ Column {
 
     property string searchText: ""
     property string activeTab: "all" // "all" | "muted" | "allowed"
+    property int updateTick: 0
+
+    Connections {
+        target: NotificationFilterState
+        function onConfigChanged() { root.updateTick++ }
+    }
+
+    Component.onCompleted: NotificationFilterState.refresh()
 
     // Constrói a lista consolidada de aplicativos conhecidos (instalados + histórico)
     readonly property var allAppsList: {
+        const _tick = root.updateTick
         const map = new Map()
 
         // 1. Aplicativos com arquivos .desktop no sistema
@@ -78,6 +87,7 @@ Column {
 
     // Lista filtrada por busca e aba ativa
     readonly property var filteredApps: {
+        const _tick = root.updateTick
         const query = root.searchText.trim().toLowerCase()
         const tab = root.activeTab
         const list = root.allAppsList
@@ -102,6 +112,7 @@ Column {
     }
 
     readonly property int totalMutedCount: {
+        const _tick = root.updateTick
         let count = 0
         const list = root.allAppsList
         for (let i = 0; i < list.length; ++i) {
@@ -368,7 +379,10 @@ Column {
                     radius: Theme.radiusField
                     color: itemMouse.containsMouse ? Theme.hover : Theme.field
 
-                    readonly property bool isMuted: NotificationFilterState.isMuted(modelData.id, modelData.name)
+                    readonly property bool isMuted: {
+                        const _tick = root.updateTick
+                        return NotificationFilterState.isMuted(modelData.id, modelData.name)
+                    }
 
                     Row {
                         anchors.left: parent.left
