@@ -22,7 +22,7 @@ PanelWindow {
     WlrLayershell.namespace: "minimo-settings"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    onOpenChanged: if (open) { card.forceActiveFocus(); personal.refresh(); display.refresh(); WindowRulesState.refresh(); AutostartManager.refresh(); flick.contentY = 0 }
+    onOpenChanged: if (open) { card.forceActiveFocus(); personal.refresh(); display.refresh(); WindowRulesState.refresh(); AutostartManager.refresh(); NotificationFilterState.refresh(); flick.contentY = 0 }
 
     readonly property var sections: [
         { id: "personalizacion", label: "Personalização", icon: "brush" },
@@ -32,6 +32,7 @@ PanelWindow {
         { id: "entrada", label: "Mouse e Teclado", icon: "mouse" },
         { id: "atalhos", label: "Atalhos", icon: "keyboard" },
         { id: "autostart", label: "Inicialização", icon: "play" },
+        { id: "notificacoes", label: "Notificações", icon: "bell" },
         { id: "minimo", label: "Minimo OS", icon: "info" }
     ]
 
@@ -123,7 +124,7 @@ PanelWindow {
             Text {
                 id: heading
                 x: 36; y: 26
-                text: SettingsState.section === "pantalla" ? "Tela" : SettingsState.section === "janelas" ? "Janelas e Espaçamento" : SettingsState.section === "efeitos" ? "Animações e Efeitos Visuais" : SettingsState.section === "entrada" ? "Mouse e Teclado" : SettingsState.section === "atalhos" ? "Atalhos" : SettingsState.section === "autostart" ? "Inicialização" : SettingsState.section === "minimo" ? "Sobre" : "Personalização"
+                text: SettingsState.section === "pantalla" ? "Tela" : SettingsState.section === "janelas" ? "Janelas e Espaçamento" : SettingsState.section === "efeitos" ? "Animações e Efeitos Visuais" : SettingsState.section === "entrada" ? "Mouse e Teclado" : SettingsState.section === "atalhos" ? "Atalhos" : SettingsState.section === "autostart" ? "Inicialização" : SettingsState.section === "notificacoes" ? "Notificações" : SettingsState.section === "minimo" ? "Sobre" : "Personalização"
                 color: Theme.textPrimary; font.family: Theme.font; font.pixelSize: 22; font.weight: Font.DemiBold
             }
             Flickable {
@@ -131,7 +132,7 @@ PanelWindow {
                 anchors.top: heading.bottom; anchors.topMargin: 18
                 anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
                 anchors.leftMargin: 36; anchors.rightMargin: 36
-                contentHeight: (SettingsState.section === "pantalla" ? display.implicitHeight : SettingsState.section === "janelas" ? windowsPage.implicitHeight : SettingsState.section === "efeitos" ? effectsPage.implicitHeight : SettingsState.section === "entrada" ? inputPage.implicitHeight : SettingsState.section === "atalhos" ? shortcuts.implicitHeight : SettingsState.section === "autostart" ? autostartPage.implicitHeight : SettingsState.section === "minimo" ? about.implicitHeight : personal.implicitHeight) + 32
+                contentHeight: (SettingsState.section === "pantalla" ? display.implicitHeight : SettingsState.section === "janelas" ? windowsPage.implicitHeight : SettingsState.section === "efeitos" ? effectsPage.implicitHeight : SettingsState.section === "entrada" ? inputPage.implicitHeight : SettingsState.section === "atalhos" ? shortcuts.implicitHeight : SettingsState.section === "autostart" ? autostartPage.implicitHeight : SettingsState.section === "notificacoes" ? notificationsPage.implicitHeight : SettingsState.section === "minimo" ? about.implicitHeight : personal.implicitHeight) + 32
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 // Volver arriba solo al cambiar de sección (no quando la página crece al cargar).
@@ -185,6 +186,11 @@ PanelWindow {
                     id: autostartPage
                     width: flick.width
                     visible: SettingsState.section === "autostart"
+                }
+                NotificationsPage {
+                    id: notificationsPage
+                    width: flick.width
+                    visible: SettingsState.section === "notificacoes"
                 }
             }
         }

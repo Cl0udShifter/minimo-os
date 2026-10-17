@@ -67,7 +67,14 @@ Singleton {
         persistenceSupported: false
         onNotification: n => {
             const critical = n.urgency === NotificationUrgency.Critical
-            if (root.dnd && !critical) { n.expire(); return }
+            NotificationFilterState.recordNotification(n.desktopEntry || "", n.appName || "", root.iconOf(n))
+
+            if ((root.dnd || NotificationFilterState.dnd) && !critical) { n.expire(); return }
+            if (NotificationFilterState.isMuted(n.desktopEntry, n.appName) && !critical) {
+                n.expire()
+                return
+            }
+
             if (root.queue.indexOf(n) >= 0) return          // reemplazo de una ya en cola: se actualiza sola
             n.tracked = true
             // Si la app cierra/reemplaza la notificación, sale de la cola.

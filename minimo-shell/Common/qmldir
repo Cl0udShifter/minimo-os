@@ -27,3 +27,4 @@ singleton ClipboardState 1.0 ClipboardState.qml
 singleton ThemeState 1.0 ThemeState.qml
 singleton WindowRulesState 1.0 WindowRulesState.qml
 singleton AutostartManager 1.0 AutostartManager.qml
+singleton NotificationFilterState 1.0 NotificationFilterState.qml
