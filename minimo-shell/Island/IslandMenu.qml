@@ -11,6 +11,7 @@ Item {
     id: root
     signal done()
     property bool open: false
+    property var screen: null
     readonly property bool searchFocused: search.hasFocus
     property alias character: chr
     property string page: "menu"   // "menu" | "desks" | "calendar"
@@ -60,7 +61,7 @@ Item {
                     spacing: 12
 
                     Character {
-                        id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
+                        id: chr; size: 44; screen: root.screen; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
                         // Clic en el personaje: guiño, risita… (4+ clics rápidos: caricias)
                         MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) }
                     }

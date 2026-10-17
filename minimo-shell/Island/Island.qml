@@ -260,6 +260,7 @@ PanelWindow {
 
         IslandMenu {
             id: menu
+            screen: win.screen
             width: Theme.expandedW
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top

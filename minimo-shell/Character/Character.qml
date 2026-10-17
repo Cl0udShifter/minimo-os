@@ -16,6 +16,7 @@ Item {
     id: c
     property int size: 22
     property bool active: true          // anima solo si está visible
+    property var screen: null           // tela associada para suporte multi-monitor preciso
     width: size; height: size
 
     readonly property real s: size
@@ -54,18 +55,29 @@ Item {
         if (asleep) { lookX = 0; lookY = 0.75; return }
         const idle = !tracking || Date.now() - Cursor.lastMove > 4000
         if (idle) { lookX = idleX; lookY = idleY; return }
-        const win = c.Window.window
+
+        // Localizar a tela e a posição do monitor no espaço global do compositor
+        const sc = c.screen || (Window.window ? Window.window.screen : null)
+        const mon = sc ? Hyprland.monitorFor(sc) : null
+        let sx = 0, sy = 0
+        if (mon && typeof mon.x !== "undefined") {
+            sx = mon.x
+            sy = mon.y
+        } else if (sc && sc.name) {
+            const found = Hyprland.monitors.values.find(m => m.name === sc.name)
+            if (found && typeof found.x !== "undefined") {
+                sx = found.x
+                sy = found.y
+            }
+        }
+
         const p = c.mapToItem(null, width / 2, height / 2)
-        const mon = (win && win.screen) ? Hyprland.monitorFor(win.screen) : null
-        const sx = mon ? mon.x : ((win && win.screen && typeof win.screen.x !== "undefined") ? win.screen.x : 0)
-        const sy = mon ? mon.y : ((win && win.screen && typeof win.screen.y !== "undefined") ? win.screen.y : 0)
         const dx = Cursor.x - (sx + p.x), dy = Cursor.y - (sy + p.y)
-        // Escala anisotrópica: la isla está pegada al borde superior, así que hacia
-        // arriba hay poco recorrido; se normaliza con la distancia al borde.
+        // Escala anisotrópica: a ilha está colada na borda superior
         const nx = dx / 320
         const ny = dy < 0 ? dy / Math.max(24, sy + p.y) : dy / 320
         const m = Math.sqrt(nx * nx + ny * ny)
-        const k = m > 1 ? 1 / m : 1             // cerca = te mira de frente
+        const k = m > 1 ? 1 / m : 1             // perto = olha de frente
         lookX = nx * k; lookY = ny * k
     }
     Connections {

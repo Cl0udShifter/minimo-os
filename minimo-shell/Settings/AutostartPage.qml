@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import "../Common"
 
 // Página de Aplicativos de Inicialização Automática (Autostart) nas Configurações.
@@ -10,6 +11,15 @@ Column {
 
     property bool addModalOpen: false
     property string expandedAppId: ""
+
+    readonly property var sortedMonitors: {
+        const mons = (Hyprland.monitors ? Hyprland.monitors.values : []).slice().filter(m => !m.disabled).sort((a, b) => {
+            const ax = a.x || 0, bx = b.x || 0
+            if (ax !== bx) return ax - bx
+            return (a.y || 0) - (b.y || 0)
+        })
+        return mons
+    }
 
     width: parent ? parent.width : 500
     spacing: 18
@@ -307,6 +317,16 @@ Column {
                                             text: {
                                                 const w = appRow.ws
                                                 if (w === 0) return "Área: Livre"
+                                                if (root.sortedMonitors.length > 1) {
+                                                    if (w >= 1 && w <= 9) {
+                                                        const name = root.sortedMonitors[0] ? root.sortedMonitors[0].name : "M1"
+                                                        return name + ": Área " + w
+                                                    }
+                                                    if (w >= 11 && w <= 19) {
+                                                        const name = root.sortedMonitors[1] ? root.sortedMonitors[1].name : "M2"
+                                                        return name + ": Área " + (w - 10)
+                                                    }
+                                                }
                                                 if (w >= 11 && w <= 19) return "Mon 2: Área " + (w - 10)
                                                 return "Área " + w
                                             }
@@ -447,22 +467,31 @@ Column {
                                 Repeater {
                                     model: [1, 2, 3, 4, 5]
                                     delegate: Rectangle {
+                                        id: m1Btn
                                         required property int modelData
                                         readonly property bool cur: appRow.ws === modelData
-                                        width: 54; height: 28; radius: 14
+                                        readonly property string monLabel: {
+                                            if (root.sortedMonitors.length > 1 && root.sortedMonitors[0]) {
+                                                return root.sortedMonitors[0].name + ":"
+                                            }
+                                            return Quickshell.screens.length > 1 ? "M1:" : "Área"
+                                        }
+                                        width: Math.max(54, m1Text.implicitWidth + 18)
+                                        height: 28; radius: 14
                                         color: cur ? Theme.fill : (m1Mouse.containsMouse ? Theme.raised : Theme.field)
                                         Text {
+                                            id: m1Text
                                             anchors.centerIn: parent
-                                            text: (Quickshell.screens.length > 1 ? "M1: " : "Área ") + modelData
-                                            color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                            text: m1Btn.monLabel + " " + m1Btn.modelData
+                                            color: m1Btn.cur ? Theme.onAccent : Theme.textPrimary
                                             font.family: Theme.font; font.pixelSize: 11
-                                            font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                            font.weight: m1Btn.cur ? Font.DemiBold : Font.Normal
                                         }
                                         MouseArea {
                                             id: m1Mouse
                                             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                AutostartManager.setWorkspace(appRow.modelData.id, modelData)
+                                                AutostartManager.setWorkspace(appRow.modelData.id, m1Btn.modelData)
                                                 root.expandedAppId = ""
                                             }
                                         }
@@ -471,24 +500,33 @@ Column {
 
                                 // Monitor 2: 11 a 15
                                 Repeater {
-                                    model: Quickshell.screens.length > 1 ? [11, 12, 13, 14, 15] : []
+                                    model: (root.sortedMonitors.length > 1 || Quickshell.screens.length > 1) ? [11, 12, 13, 14, 15] : []
                                     delegate: Rectangle {
+                                        id: m2Btn
                                         required property int modelData
                                         readonly property bool cur: appRow.ws === modelData
-                                        width: 54; height: 28; radius: 14
+                                        readonly property string monLabel: {
+                                            if (root.sortedMonitors.length > 1 && root.sortedMonitors[1]) {
+                                                return root.sortedMonitors[1].name + ":"
+                                            }
+                                            return "M2:"
+                                        }
+                                        width: Math.max(54, m2Text.implicitWidth + 18)
+                                        height: 28; radius: 14
                                         color: cur ? Theme.fill : (m2Mouse.containsMouse ? Theme.raised : Theme.field)
                                         Text {
+                                            id: m2Text
                                             anchors.centerIn: parent
-                                            text: "M2: " + (modelData - 10)
-                                            color: parent.cur ? Theme.onAccent : Theme.textPrimary
+                                            text: m2Btn.monLabel + " " + (m2Btn.modelData - 10)
+                                            color: m2Btn.cur ? Theme.onAccent : Theme.textPrimary
                                             font.family: Theme.font; font.pixelSize: 11
-                                            font.weight: parent.cur ? Font.DemiBold : Font.Normal
+                                            font.weight: m2Btn.cur ? Font.DemiBold : Font.Normal
                                         }
                                         MouseArea {
                                             id: m2Mouse
                                             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                AutostartManager.setWorkspace(appRow.modelData.id, modelData)
+                                                AutostartManager.setWorkspace(appRow.modelData.id, m2Btn.modelData)
                                                 root.expandedAppId = ""
                                             }
                                         }

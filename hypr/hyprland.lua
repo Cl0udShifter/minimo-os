@@ -20,6 +20,7 @@ end
 
 -- Ao iniciar: exportar o ambiente para o systemd e iniciar a sessão (minimo-shell.service e minimo-polkit.service).
 hl.on("hyprland.start", function()
+	hl.exec_cmd("python3 " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/update-workspaces.py")
 	hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 	hl.exec_cmd("systemctl --user start hyprland-session.target")
 	hl.exec_cmd("systemctl --user start minimo-polkit.service")

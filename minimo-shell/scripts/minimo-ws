@@ -47,17 +47,23 @@ def get_state():
     except Exception:
         return {}
 
-def get_focused_monitor():
+def get_monitors():
     raw = send_hypr("j/monitors")
-    if raw:
-        try:
-            mons = json.loads(raw)
-            for m in mons:
-                if m.get("focused"):
-                    return m.get("id", 0)
-        except Exception:
-            pass
-    return 0
+    if not raw:
+        return []
+    try:
+        return json.loads(raw)
+    except Exception:
+        return []
+
+def get_sorted_monitors(monitors, state):
+    primary_name = state.get("primaryMonitor")
+    active_mons = [m for m in monitors if not m.get("disabled")]
+    def sort_key(m):
+        name = m.get("name", "")
+        is_primary = (name == primary_name) if primary_name else (m.get("x", 0) == 0 and m.get("y", 0) == 0)
+        return (0 if is_primary else 1, m.get("x", 0), m.get("y", 0))
+    return sorted(active_mons, key=sort_key)
 
 def main():
     if len(sys.argv) < 2:
@@ -66,26 +72,39 @@ def main():
     action = sys.argv[1]
     param = sys.argv[2] if len(sys.argv) > 2 else None
 
-    # Obter dados da área de trabalho ativa e monitor focado
+    state = get_state()
+    split = state.get("splitWorkspaces", True)
+
+    monitors = get_monitors()
+    sorted_mons = get_sorted_monitors(monitors, state)
+
+    # Identificar o monitor focado pelo nome
+    focused_name = None
     ws_raw = send_hypr("j/activeworkspace")
     ws_data = {}
     if ws_raw:
         try:
             ws_data = json.loads(ws_raw)
+            focused_name = ws_data.get("monitor")
         except Exception:
             pass
 
-    mon_id = ws_data.get("monitorID")
-    if mon_id is None:
-        mon_id = get_focused_monitor()
+    if not focused_name:
+        for m in monitors:
+            if m.get("focused"):
+                focused_name = m.get("name")
+                break
+
+    # Índice lógico do monitor (0 = Monitor 1/Principal, 1 = Monitor 2/Secundário, ...)
+    logical_index = 0
+    if focused_name and sorted_mons:
+        for idx, m in enumerate(sorted_mons):
+            if m.get("name") == focused_name:
+                logical_index = idx
+                break
 
     cur_id = ws_data.get("id", 1)
-
-    state = get_state()
-    # Padrão: ativado se houver splitWorkspaces em state.json
-    split = state.get("splitWorkspaces", True)
-
-    offset = (mon_id * 10) if split else 0
+    offset = (logical_index * 10) if split else 0
 
     if action == "focus" and param:
         num = int(param)

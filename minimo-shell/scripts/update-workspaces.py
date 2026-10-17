@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS
 import os
+import sys
 import json
 import socket
 
@@ -38,14 +39,16 @@ def send_hypr(cmd_str):
     except Exception:
         return None
 
-def main():
+def get_state():
     state_file = os.path.expanduser("~/.config/minimo-os/state.json")
     try:
         with open(state_file, "r") as f:
-            state = json.load(f)
+            return json.load(f)
     except Exception:
-        state = {}
+        return {}
 
+def main():
+    state = get_state()
     split = state.get("splitWorkspaces", True)
 
     mon_raw = send_hypr("j/monitors")
@@ -56,19 +59,55 @@ def main():
         except Exception:
             pass
 
+    # Ordenação estável e determinística dos monitores:
+    # Monitor principal (DP-1 ou menor X/Y) é sempre o índice 0 (Monitor 1)
+    primary_name = state.get("primaryMonitor")
+    active_mons = [m for m in monitors if not m.get("disabled")]
+
+    def sort_key(m):
+        name = m.get("name", "")
+        is_primary = (name == primary_name) if primary_name else (m.get("x", 0) == 0 and m.get("y", 0) == 0)
+        return (0 if is_primary else 1, m.get("x", 0), m.get("y", 0))
+
+    sorted_monitors = sorted(active_mons, key=sort_key)
+
+    # Persistir lista estável de monitores para consumo pelo shell
+    monitors_info = []
+    for idx, m in enumerate(sorted_monitors):
+        monitors_info.append({
+            "index": idx,
+            "number": idx + 1,
+            "name": m.get("name", ""),
+            "model": (m.get("make", "") + " " + m.get("model", "")).strip() or m.get("name", ""),
+            "primary": idx == 0,
+            "x": m.get("x", 0),
+            "y": m.get("y", 0),
+            "width": m.get("width", 1920),
+            "height": m.get("height", 1080),
+            "scale": m.get("scale", 1.0)
+        })
+
+    monitors_json_path = os.path.expanduser("~/.config/minimo-os/monitors.json")
+    try:
+        os.makedirs(os.path.dirname(monitors_json_path), exist_ok=True)
+        with open(monitors_json_path, "w", encoding="utf-8") as f:
+            json.dump({"monitors": monitors_info}, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
     out = "-- SPDX-License-Identifier: MIT\n"
     out += "-- Copyright (c) 2026 Diego Ledesma (TRN1) — Minimo OS\n"
     out += "-- Regras de workspaces independentes por monitor — gerado dinamicamente.\n\n"
 
-    if split and len(monitors) > 0:
-        for idx, m in enumerate(monitors):
+    if split and len(sorted_monitors) > 0:
+        for idx, m in enumerate(sorted_monitors):
             name = m.get("name", "")
-            mid = m.get("id", idx)
             if not name:
                 continue
-            out += f"-- Monitor {mid}: {name} (Workspaces {mid * 10 + 1} a {mid * 10 + 9})\n"
+            base = idx * 10
+            out += f"-- Monitor {idx + 1}: {name} (Workspaces {base + 1} a {base + 9})\n"
             for w in range(1, 10):
-                ws_id = mid * 10 + w
+                ws_id = base + w
                 is_default = "true" if w == 1 else "false"
                 out += f'hl.workspace_rule({{ workspace = "{ws_id}", monitor = "{name}", default = {is_default} }})\n'
             out += "\n"
@@ -81,7 +120,7 @@ def main():
     for p in target_paths:
         try:
             os.makedirs(os.path.dirname(p), exist_ok=True)
-            with open(p, "w") as f:
+            with open(p, "w", encoding="utf-8") as f:
                 f.write(out)
         except Exception:
             pass

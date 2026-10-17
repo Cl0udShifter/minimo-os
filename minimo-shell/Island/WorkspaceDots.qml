@@ -18,8 +18,17 @@ Row {
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
 
     readonly property var mon: screen ? Hyprland.monitorFor(screen) : null
-    readonly property int monId: mon ? mon.id : 0
-    readonly property int baseWs: DisplayState.splitWorkspaces ? (monId * 10) : 0
+    readonly property int logicalMonIndex: {
+        if (!mon) return 0
+        const mons = (Hyprland.monitors ? Hyprland.monitors.values : []).slice().filter(m => !m.disabled).sort((a, b) => {
+            const ax = a.x || 0, bx = b.x || 0
+            if (ax !== bx) return ax - bx
+            return (a.y || 0) - (b.y || 0)
+        })
+        const idx = mons.findIndex(m => m.name === mon.name)
+        return idx >= 0 ? idx : 0
+    }
+    readonly property int baseWs: DisplayState.splitWorkspaces ? (logicalMonIndex * 10) : 0
     readonly property var filteredList: {
         if (!DisplayState.splitWorkspaces) return Workspaces.list
         return Workspaces.list.filter(w => w.id > baseWs && w.id <= baseWs + 9)

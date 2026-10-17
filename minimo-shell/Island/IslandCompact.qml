@@ -23,7 +23,7 @@ Item {
         id: row
         anchors.centerIn: parent
         spacing: 10
-        Character { id: chr; size: 22; active: root.active && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter }
+        Character { id: chr; size: 22; screen: root.screen; active: root.active && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter }
         Text {
             visible: !root.notif
             enabled: false              // texto decorativo: sin interacción ni selección

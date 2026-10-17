@@ -44,7 +44,6 @@ Singleton {
         { id: "terminal", cat: "Aplicativos e Shell", name: "Terminal", desc: "Abre o terminal acelerado por GPU", icon: "terminal", defaultKeys: "SUPER + T" },
         { id: "island", cat: "Aplicativos e Shell", name: "Menu da Ilha (Notch)", desc: "Expande a ilha dinâmica de controle e monitoramento", icon: "apps", defaultKeys: "SUPER + X" },
         { id: "recorder", cat: "Aplicativos e Shell", name: "Gravação de Tela", desc: "Inicia ou para a gravação da tela", icon: "record", defaultKeys: "SUPER + SHIFT + R" },
-        { id: "toggle_kb_layout", cat: "Aplicativos e Shell", name: "Alternar Layout de Teclado", desc: "Alterna rapidamente entre Português (ABNT2) e Inglês (Internacional)", icon: "keyboard", defaultKeys: "SUPER + backslash" },
 
         // 2. Janelas
         { id: "close_window", cat: "Janelas", name: "Fechar Janela", desc: "Fecha a janela atualmente em foco", icon: "power", defaultKeys: "SUPER + Q" },
@@ -325,7 +324,6 @@ Singleton {
         out += "local bind, dsp = hl.bind, hl.dsp\n"
         out += 'local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "\n'
         out += 'local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "\n'
-        out += 'local switch_kb = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/switch-layout.sh"\n'
         out += "local fixo, repete = { locked = true }, { locked = true, repeating = true }\n"
         out += 'local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]\n\n'
         out += "local mod_syms = {\n"
@@ -395,9 +393,6 @@ Singleton {
         out += 'bind_key("' + map.terminal + '", dsp.exec_cmd("ghostty"))\n'
         out += 'bind_key("' + map.island + '", dsp.exec_cmd(qs .. "island open"))\n'
         out += 'bind_key("' + map.recorder + '", dsp.exec_cmd(qs .. "recorder toggle"))\n'
-        if (map.toggle_kb_layout) {
-            out += 'bind_key("' + map.toggle_kb_layout + '", dsp.exec_cmd(switch_kb), fixo)\n'
-        }
         out += "\n"
 
         // Aplicativos personalizados adicionados pelo usuário

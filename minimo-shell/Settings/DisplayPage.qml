@@ -63,10 +63,16 @@ Column {
         }
         let names = monitors.map(m => m.name).sort().join(",")
         let currentNames = (layoutList || []).map(m => m.name).sort().join(",")
+        let sortedMons = monitors.slice().sort((a, b) => {
+            let ax = a.x || 0, bx = b.x || 0
+            if (ax !== bx) return ax - bx
+            return (a.y || 0) - (b.y || 0)
+        })
+
         if (!positionsDirty || names !== currentNames) {
             let list = []
-            for (let i = 0; i < monitors.length; i++) {
-                let m = monitors[i]
+            for (let i = 0; i < sortedMons.length; i++) {
+                let m = sortedMons[i]
                 list.push({
                     id: m.id !== undefined ? m.id : i,
                     name: m.name,
@@ -85,8 +91,8 @@ Column {
         } else if (positionsDirty && names === currentNames) {
             // Atualiza modos/resolução mantendo posições editadas
             let list = []
-            for (let i = 0; i < monitors.length; i++) {
-                let m = monitors[i]
+            for (let i = 0; i < sortedMons.length; i++) {
+                let m = sortedMons[i]
                 let cur = layoutList.find(x => x.name === m.name)
                 list.push({
                     id: m.id !== undefined ? m.id : i,
@@ -357,6 +363,7 @@ Column {
         writer.running = true
 
         positionsDirty = false
+        Quickshell.execDetached([Qt.resolvedUrl("../scripts/update-workspaces.py").toString().replace("file://", "")])
         saveToast.show("Posições dos monitores salvas com sucesso!")
         refreshLater.restart()
     }

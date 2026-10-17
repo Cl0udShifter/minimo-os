@@ -96,7 +96,11 @@ Singleton {
                 root.set(s.saturation ?? 1.0, s.brightness ?? 1.0)
             } catch (e) {}
             root.loaded = true
+            Quickshell.execDetached([Qt.resolvedUrl("../scripts/update-workspaces.py").toString().replace("file://", "")])
         }
-        onLoadFailed: root.loaded = true
+        onLoadFailed: {
+            root.loaded = true
+            Quickshell.execDetached([Qt.resolvedUrl("../scripts/update-workspaces.py").toString().replace("file://", "")])
+        }
     }
 }

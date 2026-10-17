@@ -6,7 +6,6 @@
 local bind, dsp = hl.bind, hl.dsp
 local qs = "qs -p " .. os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell ipc call "
 local ws = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/minimo-ws "
-local switch_kb = os.getenv("HOME") .. "/Projetos/minimo-os/minimo-shell/scripts/switch-layout.sh"
 local fixo, repete = { locked = true }, { locked = true, repeating = true }
 local dir = [[d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; f="$d/captura-$(date +%Y%m%d-%H%M%S).png"; ]]
 
@@ -76,7 +75,6 @@ bind_key("SUPER + V", dsp.exec_cmd(qs .. "clipboard toggle"), fixo)
 bind_key("SUPER + T", dsp.exec_cmd("ghostty"))
 bind_key("SUPER + X", dsp.exec_cmd(qs .. "island open"))
 bind_key("SUPER + SHIFT + R", dsp.exec_cmd(qs .. "recorder toggle"))
-bind_key("CTRL + SHIFT", dsp.exec_cmd(switch_kb), fixo)
 
 -- Sessão
 bind_key("SUPER + L", dsp.exec_cmd(qs .. "lock lock"), fixo)
