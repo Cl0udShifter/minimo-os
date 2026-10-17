@@ -51,9 +51,15 @@ Singleton {
         const n = current
         if (!n) return
         const def = Array.from(n.actions || []).find(a => a.identifier === "default")
-        if (def) def.invoke()
-        else Quickshell.execDetached([Qt.resolvedUrl("../scripts/focus-app.py").toString().replace("file://", ""),
+        if (def) {
+            def.invoke()
+        } else if (n.appName === "Captura de Tela" || (n.summary && n.summary.toLowerCase().includes("captura"))) {
+            const picsDir = Quickshell.env("HOME") + "/Imagens/Capturas"
+            Quickshell.execDetached(["xdg-open", picsDir])
+        } else {
+            Quickshell.execDetached([Qt.resolvedUrl("../scripts/focus-app.py").toString().replace("file://", ""),
                                       n.desktopEntry || "", n.appName || ""])
+        }
         finish(n)
     }
     function invoke(action) { const n = current; action.invoke(); if (n) finish(n) }

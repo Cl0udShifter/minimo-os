@@ -15,6 +15,8 @@ Singleton {
 
     property string kbLayout: "br"
     property string kbVariant: "abnt2"
+    property string altKbLayout: "us"
+    property string altKbVariant: "intl"
     property string kbModel: ""
     property bool numlockByDefault: true
     property int followMouse: 1              // 1 = foco segue o mouse (hover), 0 = apenas ao clicar
@@ -102,10 +104,22 @@ Singleton {
     }
 
     function toggleKbLayout() {
-        Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", "next"])
+        if (kbLayout === "br") {
+            const nextL = altKbLayout || "us"
+            const nextV = (altKbVariant !== undefined) ? altKbVariant : "intl"
+            setKbLayout(nextL, nextV)
+        } else {
+            altKbLayout = kbLayout
+            altKbVariant = kbVariant
+            setKbLayout("br", "abnt2")
+        }
     }
 
     function setKbLayout(layout, variant) {
+        if (kbLayout !== "br" && layout === "br") {
+            altKbLayout = kbLayout
+            altKbVariant = kbVariant
+        }
         kbLayout = layout
         kbVariant = variant || ""
         scheduleApply()
@@ -123,7 +137,7 @@ Singleton {
     }
 
     function setSensitivity(v) {
-        sensitivity = Math.max(-2.0, Math.min(2.0, Math.round(v * 10) / 10))
+        sensitivity = Math.max(-2.0, Math.min(2.0, Math.round(v * 100) / 100))
         scheduleApply()
     }
 
@@ -161,6 +175,8 @@ Singleton {
         return {
             kbLayout: root.kbLayout,
             kbVariant: root.kbVariant,
+            altKbLayout: root.altKbLayout,
+            altKbVariant: root.altKbVariant,
             kbModel: root.kbModel,
             numlockByDefault: root.numlockByDefault,
             followMouse: root.followMouse,
@@ -204,6 +220,8 @@ Singleton {
                 const s = JSON.parse(text())
                 if (s.kbLayout !== undefined) root.kbLayout = s.kbLayout
                 if (s.kbVariant !== undefined) root.kbVariant = s.kbVariant
+                if (s.altKbLayout !== undefined) root.altKbLayout = s.altKbLayout
+                if (s.altKbVariant !== undefined) root.altKbVariant = s.altKbVariant
                 if (s.kbModel !== undefined) root.kbModel = s.kbModel
                 if (s.numlockByDefault !== undefined) root.numlockByDefault = s.numlockByDefault
                 if (s.followMouse !== undefined) root.followMouse = s.followMouse

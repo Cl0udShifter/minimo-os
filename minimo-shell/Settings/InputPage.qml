@@ -186,15 +186,17 @@ Column {
                     width: 250
                     icon: "mouse"
                     iconClickable: true
+                    editable: true
+                    step: 0.01
                     from: -2.0; to: 2.0
                     value: InputState.sensitivity
                     valueText: {
-                        let r = Math.round(value * 10) / 10
-                        if (Math.abs(r) < 0.05) return "0"
-                        return r.toFixed(1).replace(".", ",")
+                        let r = Math.round(value * 100) / 100
+                        if (Math.abs(r) < 0.005) return "0,00"
+                        return r.toFixed(2).replace(".", ",")
                     }
                     onIconClicked: InputState.setSensitivity(0.0)
-                    onMoved: v => InputState.setSensitivity(Math.round(v * 10) / 10)
+                    onMoved: v => InputState.setSensitivity(Math.round(v * 100) / 100)
                 }
             }
 
@@ -486,11 +488,13 @@ Column {
                     width: 250
                     icon: "drop"
                     iconClickable: true
+                    editable: true
+                    step: 0.01
                     from: 0.2; to: 2.0
                     value: InputState.touchpadScrollFactor
-                    valueText: (Math.round(value * 10) / 10).toFixed(1).replace(".", ",") + "x"
+                    valueText: (Math.round(value * 100) / 100).toFixed(2).replace(".", ",") + "x"
                     onIconClicked: InputState.setTouchpadScrollFactor(1.0)
-                    onMoved: v => InputState.setTouchpadScrollFactor(Math.round(v * 10) / 10)
+                    onMoved: v => InputState.setTouchpadScrollFactor(Math.round(v * 100) / 100)
                 }
             }
 

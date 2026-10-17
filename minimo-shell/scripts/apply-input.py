@@ -107,7 +107,13 @@ def main():
         except Exception:
             pass
 
-    # 2. Aplicar dinamicamente ao Hyprland via eval e reload
+    # 2. Aplicar dinamicamente ao Hyprland via keyword, eval e reload
+    send_hypr(f"keyword input:kb_layout {kb_layout}\n")
+    send_hypr(f"keyword input:kb_variant {kb_variant}\n")
+    send_hypr(f"keyword input:sensitivity {sensitivity:.2f}\n")
+    send_hypr(f"keyword input:accel_profile {accel_profile}\n")
+    send_hypr(f"keyword input:natural_scroll {natural_scroll_mouse}\n")
+
     lua_eval = (
         f'return hl.config({{ '
         f'input = {{ '

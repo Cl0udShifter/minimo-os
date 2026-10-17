@@ -36,7 +36,16 @@ Singleton {
     }
 
     function iconFor(entry) {
-        const p = Quickshell.iconPath(entry ? entry.icon : "", true)
-        return p !== "" ? p : Qt.resolvedUrl("../assets/icons/gray/apps.svg")
+        // Vincula ThemeState.currentIcon para reavaliar no QML caso o tema mude
+        const _theme = ThemeState.currentIcon
+        if (!entry || !entry.icon) return Qt.resolvedUrl("../assets/icons/gray/apps.svg")
+        const rawIcon = entry.icon.toString().trim()
+        if (rawIcon.startsWith("/") || rawIcon.startsWith("file://")) return rawIcon
+        const cleanName = rawIcon.replace(/\.(png|svg|xpm)$/i, "")
+        const p = Quickshell.iconPath(cleanName, true)
+        if (p !== "") return p
+        const pRaw = Quickshell.iconPath(rawIcon, true)
+        if (pRaw !== "") return pRaw
+        return Qt.resolvedUrl("../assets/icons/gray/apps.svg")
     }
 }

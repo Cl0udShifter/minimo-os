@@ -15,7 +15,7 @@ Column {
 
     function run(cmd) { Quickshell.execDetached(["sh", "-c", cmd]); root.done() }
 
-    readonly property string shotCmd: 'd="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Imagens")/Capturas"; mkdir -p "$d"; g=$(slurp) || exit 0; grim -g "$g" "$d/captura-$(date +%Y%m%d-%H%M%S).png"'
+    readonly property string shotScript: Qt.resolvedUrl("../../scripts/screenshot.sh").toString().replace("file://", "")
 
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -27,7 +27,7 @@ Column {
             active: Recorder.recording
             onActivated: { if (Recorder.recording) Recorder.stop(); else Recorder.start(400); root.done() }
         }
-        MenuButton { icon: "capture"; label: "Captura"; onActivated: root.run("sleep 0.3; " + root.shotCmd) }
+        MenuButton { icon: "capture"; label: "Captura"; onActivated: root.run("sleep 0.3; " + root.shotScript + " area") }
         MenuButton { icon: "desktops"; label: "Áreas de trabalho"; onActivated: root.desktops() }
     }
     Row {
