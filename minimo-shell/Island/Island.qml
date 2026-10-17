@@ -301,6 +301,7 @@ PanelWindow {
             else if (cmd === "hide") { win.expanded = false; win.shown = false }
             else if (cmd === "open") win.expanded = true
             else if (cmd === "close") win.collapse()
+            else if (cmd === "calendar") { win.shown = true; win.expanded = true; menu.page = "calendar" }
             else if (cmd === "status" || cmd === "apps") {
                 // Si ya está abierto el otro panel, cambiar a este en vez de cerrar.
                 win.panel = !(win.panel && win.panelKind === cmd)

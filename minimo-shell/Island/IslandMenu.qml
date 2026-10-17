@@ -13,8 +13,8 @@ Item {
     property bool open: false
     readonly property bool searchFocused: search.hasFocus
     property alias character: chr
-    property string page: "menu"   // "menu" | "desks"
-    implicitHeight: (page === "desks" ? desks.implicitHeight : col.implicitHeight) + 48
+    property string page: "menu"   // "menu" | "desks" | "calendar"
+    implicitHeight: (page === "desks" ? desks.implicitHeight : page === "calendar" ? calendarView.implicitHeight : col.implicitHeight) + 48
 
     // El buscador no se enfoca solo: se activa al hacerle clic.
     function opened() { search.reset() }
@@ -51,25 +51,78 @@ Item {
 
         Reveal {
             step: 0; width: parent.width; height: 48
-            Row {
-                spacing: 16
-                Character {
-                    id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
-                    // Clic en el personaje: guiño, risita… (4+ clics rápidos: caricias)
-                    MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) }
-                }
-                Column {
+            Item {
+                width: parent.width; height: 48
+
+                Row {
+                    anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 0
-                    Text {
-                        text: Qt.formatDateTime(clock.date, "HH:mm")
-                        color: Theme.textPrimary; font.family: Theme.font
-                        font.pixelSize: 26; font.weight: Font.Medium
-                        font.features: { "tnum": 1 }
+                    spacing: 12
+
+                    Character {
+                        id: chr; size: 44; active: root.open && DisplayState.characterAnimated; anchors.verticalCenter: parent.verticalCenter
+                        // Clic en el personaje: guiño, risita… (4+ clics rápidos: caricias)
+                        MouseArea { anchors.fill: parent; anchors.margins: -4; cursorShape: Qt.PointingHandCursor; onClicked: m => chr.clicked((m.x - width / 2) / (width / 2)) }
                     }
-                    Text {
-                        text: { const t = clock.date.toLocaleDateString(Qt.locale("pt_BR"), "dddd, d 'de' MMMM"); return t.charAt(0).toUpperCase() + t.slice(1) }
-                        color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 12
+
+                    Rectangle {
+                        id: datePill
+                        anchors.verticalCenter: parent.verticalCenter
+                        height: 44
+                        width: dateCol.implicitWidth + 14
+                        radius: 10
+                        color: dateMouse.containsMouse ? Theme.field : "transparent"
+                        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+
+                        Column {
+                            id: dateCol
+                            anchors.centerIn: parent
+                            spacing: 0
+                            Text {
+                                text: Qt.formatDateTime(clock.date, "HH:mm")
+                                color: Theme.textPrimary; font.family: Theme.font
+                                font.pixelSize: 24; font.weight: Font.Medium
+                                font.features: { "tnum": 1 }
+                            }
+                            Text {
+                                text: { const t = clock.date.toLocaleDateString(Qt.locale("pt_BR"), "dddd, d 'de' MMMM"); return t.charAt(0).toUpperCase() + t.slice(1) }
+                                color: Theme.textSecondary; font.family: Theme.font; font.pixelSize: 11
+                            }
+                        }
+
+                        MouseArea {
+                            id: dateMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.page = "calendar"
+                        }
+                    }
+                }
+
+                // Botão de Calendário no topo direito do Notch
+                Rectangle {
+                    id: calBtn
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 38; height: 38; radius: 19
+                    color: calMouse.containsMouse ? Theme.hover : Theme.field
+                    scale: calMouse.pressed ? 0.92 : 1
+                    Behavior on color { ColorAnimation { duration: Theme.durFast } }
+                    Behavior on scale { NumberAnimation { duration: 100 } }
+
+                    Icon {
+                        anchors.centerIn: parent
+                        name: "calendar"
+                        size: 18
+                    }
+
+                    MouseArea {
+                        id: calMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.page = "calendar"
                     }
                 }
             }
@@ -101,5 +154,18 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 220 } }
         onBack: root.page = "menu"
         onPicked: root.done()
+    }
+
+    CalendarView {
+        id: calendarView
+        x: root.page === "calendar" ? 24 : root.width * 0.3
+        y: 24
+        width: root.width - 48
+        opacity: root.page === "calendar" ? 1 : 0
+        visible: opacity > 0
+        enabled: root.page === "calendar"
+        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutQuint } }
+        Behavior on opacity { NumberAnimation { duration: 220 } }
+        onBack: root.page = "menu"
     }
 }
